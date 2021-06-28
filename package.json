@@ -1,0 +1,64 @@
+{
+  "name": "koatty_router",
+  "version": "1.0.1",
+  "description": "Koatty routing component, adapt to http1/2, websocket, gRPC.",
+  "scripts": {
+    "build": "del-cli --force dist && tsc",
+    "eslint": "eslint --ext .ts,.js ./",
+    "prepublishOnly": "npm test && npm run build",
+    "release": "npm run build && standard-version",
+    "test": "npm run eslint && jest --passWithNoTests",
+    "test:cov": "jest --collectCoverage --detectOpenHandles",
+    "version": "conventional-changelog -p angular -i CHANGELOG.md -s"
+  },
+  "main": "./dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/koatty/koatty_router.git"
+  },
+  "engines": {
+    "node": ">10.0.0"
+  },
+  "author": "richenlin@gmail.com",
+  "license": "BSD (3-Clause)",
+  "devDependencies": {
+    "@babel/core": "^7.x.x",
+    "@babel/plugin-proposal-decorators": "^7.x.x",
+    "@babel/preset-env": "^7.x.x",
+    "@babel/preset-typescript": "^7.x.x",
+    "@commitlint/cli": "^12.x.x",
+    "@commitlint/config-conventional": "^12.x.x",
+    "@types/cls-hooked": "^4.x.x",
+    "@types/jest": "^26.x.x",
+    "@types/koa": "^2.x.x",
+    "@types/koa__router": "^8.x.x",
+    "@types/node": "^12.x.x",
+    "@typescript-eslint/eslint-plugin": "^4.x.x",
+    "@typescript-eslint/parser": "^4.x.x",
+    "conventional-changelog-cli": "^2.x.x",
+    "del-cli": "^3.x.x",
+    "eslint": "^7.x.x",
+    "eslint-plugin-jest": "^24.x.x",
+    "husky": "^6.x.x",
+    "jest": "^27.0.4",
+    "jest-html-reporters": "^2.x.x",
+    "koatty_cacheable": "^1.x.x",
+    "koatty_schedule": "^1.x.x",
+    "standard-version": "^9.x.x",
+    "ts-jest": "^27.x.x",
+    "ts-node": "^10.x.x",
+    "typescript": "^4.x.x"
+  },
+  "dependencies": {
+    "@koa/router": "^10.0.0",
+    "koa": "^2.x.x",
+    "koatty": "^3.x.x",
+    "koatty_container": "^1.x.x",
+    "koatty_validation": "^1.x.x"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  }
+}
