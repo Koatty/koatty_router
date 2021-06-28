@@ -1,13 +1,13 @@
 {
   "name": "koatty_router",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Koatty routing component, adapt to http1/2, websocket, gRPC.",
   "scripts": {
     "build": "del-cli --force dist && tsc",
     "eslint": "eslint --ext .ts,.js ./",
     "prepublishOnly": "npm test && npm run build",
-    "release": "npm run build && standard-version",
-    "test": "npm run eslint && jest --passWithNoTests",
+    "release": "standard-version",
+    "test": "npm run eslint && npm run build && jest --passWithNoTests",
     "test:cov": "jest --collectCoverage --detectOpenHandles",
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s"
   },
@@ -51,10 +51,10 @@
   },
   "dependencies": {
     "@koa/router": "^10.0.0",
-    "koa": "^2.x.x",
     "koatty": "^3.x.x",
     "koatty_container": "^1.x.x",
-    "koatty_validation": "^1.x.x"
+    "koatty_validation": "^1.x.x",
+    "tslib": "^2.3.0"
   },
   "husky": {
     "hooks": {
