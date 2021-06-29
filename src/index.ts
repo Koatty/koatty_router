@@ -3,10 +3,13 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 18:48:14
- * @LastEditTime: 2021-06-28 19:25:10
+ * @LastEditTime: 2021-06-29 14:27:20
  */
 import { Koatty } from "koatty";
+import { GrpcRouter } from "./grpc";
+import { RequestMethod } from "./reuest_mapping";
 import { HttpRouter } from "./router";
+import { WebsocketRouter } from "./websocket";
 
 export const PARAM_KEY = 'PARAM_KEY';
 export const CONTROLLER_ROUTER = 'CONTROLLER_ROUTER';
@@ -25,6 +28,7 @@ export interface Router {
     options: any;
     router: any;
 
+    SetRouter: (path: string, func: Function, method?: RequestMethod) => void;
     LoadRouter: () => void;
 }
 
@@ -50,12 +54,14 @@ enum SERVE_MODE {
  * @param {*} options
  * @returns {*}  
  */
-export function NewRouter(mode: string, app: Koatty, options: any) {
+export function NewRouter(mode: string, app: Koatty, options: any): HttpRouter | GrpcRouter | WebsocketRouter {
     switch (mode) {
-        // case SERVE_MODE.RPC:
-        //     break;
-        // case SERVE_MODE.WEBSOCKET:
-        //     break;
+        case SERVE_MODE.RPC:
+            return new GrpcRouter(app, options);
+            break;
+        case SERVE_MODE.WEBSOCKET:
+            return new WebsocketRouter(app, options);
+            break;
         default:
             return new HttpRouter(app, options);
             break;

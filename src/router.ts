@@ -3,14 +3,39 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 19:02:06
- * @LastEditTime: 2021-06-28 19:10:44
+ * @LastEditTime: 2021-06-29 14:12:39
  */
 import KoaRouter from "@koa/router";
 import { Helper, Koatty, KoattyContext, Logger } from "koatty";
 import { IOCContainer, RecursiveGetMetadata } from "koatty_container";
 import { checkParams, PARAM_CHECK_KEY, PARAM_RULE_KEY } from "koatty_validation";
-import { CONTROLLER_ROUTER, PARAM_KEY, Router, ROUTER_KEY } from "./index";
+import { CONTROLLER_ROUTER, PARAM_KEY, RequestMethod, Router, ROUTER_KEY } from "./index";
 
+/**
+ * HttpRouter Options
+ *
+ * @export
+ * @interface HttpRouterOptions
+ */
+export interface HttpRouterOptions {
+    prefix: string;
+    /**
+     * Methods which should be supported by the router.
+     */
+    methods?: string[];
+    routerPath?: string;
+    /**
+     * Whether or not routing should be case-sensitive.
+     */
+    sensitive?: boolean;
+    /**
+     * Whether or not routes should matched strictly.
+     *
+     * If strict matching is enabled, the trailing slash is taken into
+     * account when matching routes.
+     */
+    strict?: boolean;
+}
 /**
  * HttpRouter class
  */
@@ -19,30 +44,27 @@ export class HttpRouter implements Router {
     options: any;
     router: KoaRouter<any, unknown>;
 
-    constructor(app: Koatty, options?: any) {
+    constructor(app: Koatty, options?: HttpRouterOptions) {
         this.app = app;
-        // prefix: string;
-        // /**
-        //  * Methods which should be supported by the router.
-        //  */
-        // methods ?: string[];
-        // routerPath ?: string;
-        // /**
-        //  * Whether or not routing should be case-sensitive.
-        //  */
-        // sensitive ?: boolean;
-        // /**
-        //  * Whether or not routes should matched strictly.
-        //  *
-        //  * If strict matching is enabled, the trailing slash is taken into
-        //  * account when matching routes.
-        //  */
-        // strict ?: boolean;
         this.options = {
             ...options
         };
         // initialize
         this.router = new KoaRouter(this.options);
+    }
+
+    /**
+     * Set router
+     *
+     * @param {string} path
+     * @param {RequestMethod} [method]
+     * @memberof HttpRouter
+     */
+    SetRouter(path: string, func: Function, method?: RequestMethod) {
+        if (Helper.isEmpty(method)) {
+            return;
+        }
+        this.router[method](path, <any>func);
     }
 
     /**
@@ -75,7 +97,7 @@ export class HttpRouter implements Router {
 
             // Load in the 'appStart' event to facilitate the expansion of middleware
             // exp: in middleware
-            // app.Router.get('/xxx',  (ctx: Koa.Context): any => {...})
+            // app.Router.SetRouter('/xxx',  (ctx: Koa.Context): any => {...}, 'GET')
             app.on('appStart', () => {
                 app.use(kRouter.routes()).use(kRouter.allowedMethods());
             });

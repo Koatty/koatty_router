@@ -1501,7 +1501,7 @@
   dependencies:
     "@types/istanbul-lib-report" "*"
 
-"@types/jest@^26.0.23":
+"@types/jest@^26.x.x":
   version "26.0.23"
   resolved "https://registry.yarnpkg.com/@types/jest/-/jest-26.0.23.tgz#a1b7eab3c503b80451d019efb588ec63522ee4e7"
   integrity sha512-ZHLmWMJ9jJ9PTiT58juykZpL7KjwJywFN3Rr2pTSkyQfydf/rk22yS7W8p5DaVUMQ2BQC7oYiU3FjbTM/mYrOA==
@@ -1540,7 +1540,7 @@
     "@types/koa-compose" "*"
     "@types/node" "*"
 
-"@types/koa__router@^8.0.4":
+"@types/koa__router@^8.x.x":
   version "8.0.4"
   resolved "https://registry.yarnpkg.com/@types/koa__router/-/koa__router-8.0.4.tgz#0b754a5e5be3262fc649afc7e93800f30cfc5fe0"
   integrity sha512-SXpZy6ICU/bsTZbNhg7QMNUQuNE7ka94zeLPHXhej2QZ09u2tz5S3WlBRB85HLSUosUZFbIRgfrFtu+PSIAUVA==
