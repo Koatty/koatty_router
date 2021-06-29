@@ -3,10 +3,10 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2021-06-29 14:16:33
+ * @LastEditTime: 2021-06-29 16:30:37
  */
 
-import { Koatty } from "koatty";
+import { Application } from "koatty_container";
 import { RequestMethod, Router } from ".";
 
 /**
@@ -25,11 +25,11 @@ export interface GrpcRouterOptions {
 }
 
 export class GrpcRouter implements Router {
-    app: Koatty;
+    app: Application;
     options: any;
     router: any;
 
-    constructor(app: Koatty, options?: GrpcRouterOptions) {
+    constructor(app: Application, options?: GrpcRouterOptions) {
         this.app = app;
         this.options = {
             ...options

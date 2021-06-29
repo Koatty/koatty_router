@@ -3,9 +3,9 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 18:48:14
- * @LastEditTime: 2021-06-29 14:27:20
+ * @LastEditTime: 2021-06-29 16:30:17
  */
-import { Koatty } from "koatty";
+import { Application } from "koatty_container";
 import { GrpcRouter } from "./grpc";
 import { RequestMethod } from "./reuest_mapping";
 import { HttpRouter } from "./router";
@@ -24,7 +24,7 @@ export * from "./reuest_mapping";
  * @interface Router
  */
 export interface Router {
-    app: Koatty;
+    app: Application;
     options: any;
     router: any;
 
@@ -54,7 +54,7 @@ enum SERVE_MODE {
  * @param {*} options
  * @returns {*}  
  */
-export function NewRouter(mode: string, app: Koatty, options: any): HttpRouter | GrpcRouter | WebsocketRouter {
+export function NewRouter(mode: string, app: Application, options: any): HttpRouter | GrpcRouter | WebsocketRouter {
     switch (mode) {
         case SERVE_MODE.RPC:
             return new GrpcRouter(app, options);

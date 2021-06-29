@@ -3,11 +3,12 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 19:02:06
- * @LastEditTime: 2021-06-29 14:12:39
+ * @LastEditTime: 2021-06-29 16:35:02
  */
 import KoaRouter from "@koa/router";
-import { Helper, Koatty, KoattyContext, Logger } from "koatty";
-import { IOCContainer, RecursiveGetMetadata } from "koatty_container";
+import * as Helper from "koatty_lib";
+import { DefaultLogger as Logger } from "koatty_logger";
+import { Application, Context, IOCContainer, RecursiveGetMetadata } from "koatty_container";
 import { checkParams, PARAM_CHECK_KEY, PARAM_RULE_KEY } from "koatty_validation";
 import { CONTROLLER_ROUTER, PARAM_KEY, RequestMethod, Router, ROUTER_KEY } from "./index";
 
@@ -40,11 +41,11 @@ export interface HttpRouterOptions {
  * HttpRouter class
  */
 export class HttpRouter implements Router {
-    app: Koatty;
+    app: Application;
     options: any;
     router: KoaRouter<any, unknown>;
 
-    constructor(app: Koatty, options?: HttpRouterOptions) {
+    constructor(app: Application, options?: HttpRouterOptions) {
         this.app = app;
         this.options = {
             ...options
@@ -88,7 +89,7 @@ export class HttpRouter implements Router {
                 // tslint:disable-next-line: forin
                 for (const it in ctlRouters) {
                     Logger.Debug(`Register request mapping: [${ctlRouters[it].requestMethod}] : ["${ctlRouters[it].path}" => ${n}.${ctlRouters[it].method}]`);
-                    kRouter[ctlRouters[it].requestMethod](ctlRouters[it].path, function (ctx: KoattyContext): Promise<any> {
+                    kRouter[ctlRouters[it].requestMethod](ctlRouters[it].path, function (ctx: Context): Promise<any> {
                         const router = ctlRouters[it];
                         return execRouter(app, ctx, n, router, ctlParams[router.method]);
                     });
@@ -119,7 +120,7 @@ export class HttpRouter implements Router {
  * @returns
  * @memberof Router
  */
-async function execRouter(app: Koatty, ctx: KoattyContext, identifier: string, router: any, ctlParams: any) {
+async function execRouter(app: Application, ctx: Context, identifier: string, router: any, ctlParams: any) {
     const ctl: any = IOCContainer.get(identifier, "CONTROLLER", [ctx]);
 
     // const ctl: any = container.get(identifier, "CONTROLLER");
@@ -143,7 +144,7 @@ async function execRouter(app: Koatty, ctx: KoattyContext, identifier: string, r
  * @param {*} [instance]
  * @returns {*} 
  */
-function injectRouter(app: Koatty, target: any, instance?: any) {
+function injectRouter(app: Application, target: any, instance?: any) {
     // Controller router path
     const metaDatas = IOCContainer.listPropertyData(CONTROLLER_ROUTER, target);
     let path = "";
@@ -179,7 +180,7 @@ function injectRouter(app: Koatty, target: any, instance?: any) {
  * @param {*} [instance]
  * @returns {*} 
  */
-function injectParam(app: Koatty, target: any, instance?: any) {
+function injectParam(app: Application, target: any, instance?: any) {
     instance = instance ?? target.prototype;
     const metaDatas = RecursiveGetMetadata(PARAM_KEY, target);
     const validMetaDatas = RecursiveGetMetadata(PARAM_RULE_KEY, target);
@@ -219,7 +220,7 @@ function injectParam(app: Koatty, target: any, instance?: any) {
  * @param {any[]} params
  * @returns
  */
-async function getParamter(app: Koatty, ctx: KoattyContext, ctlParams: any = {}) {
+async function getParamter(app: Application, ctx: Context, ctlParams: any = {}) {
     //convert type
     const params = ctlParams.data ?? [];
     const validRules = ctlParams.valids ?? {};

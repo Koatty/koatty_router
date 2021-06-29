@@ -3,10 +3,10 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:16:44
- * @LastEditTime: 2021-06-29 14:25:53
+ * @LastEditTime: 2021-06-29 16:35:26
  */
 
-import { Koatty } from "koatty";
+import { Application } from "koatty_container";
 import { RequestMethod, Router } from ".";
 
 /**
@@ -39,11 +39,11 @@ export interface WebsocketRouterOptions {
 }
 
 export class WebsocketRouter implements Router {
-    app: Koatty;
+    app: Application;
     options: any;
     router: any;
 
-    constructor(app: Koatty, options?: WebsocketRouterOptions) {
+    constructor(app: Application, options?: WebsocketRouterOptions) {
         this.app = app;
         this.options = {
             ...options
