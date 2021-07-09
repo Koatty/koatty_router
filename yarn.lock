@@ -4241,9 +4241,9 @@ koatty_cacheable@^1.x.x:
     tslib "^2.3.0"
 
 koatty_container@^1.x.x:
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/koatty_container/-/koatty_container-1.4.3.tgz#e410e0e0ed8fd99a233891986507cb1aa3d5c251"
-  integrity sha512-xYms3Nt7FMrqFGC/hSNS4V/Em8MI/Pf6OqMstmGCwdtBFtpcHeQoF2P7Rh4pPqKSscJlyHdfaO3TS+9Wl9e8UQ==
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/koatty_container/-/koatty_container-1.5.2.tgz#016db67a9dfdcee5970aaa639d03d548ddaf03a7"
+  integrity sha512-x4d+dNkHV6N9SPdLHN0QElUB4Muf35E5el30C38gNHQDFeR01SZ7khfwRo0Bx0Jxo25J988cYXKlUVcq1/JXZA==
   dependencies:
     koa "^2.x.x"
     koatty_lib "^1.x.x"

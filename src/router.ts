@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 19:02:06
- * @LastEditTime: 2021-06-29 16:35:02
+ * @LastEditTime: 2021-07-09 18:09:42
  */
 import KoaRouter from "@koa/router";
 import * as Helper from "koatty_lib";
@@ -78,7 +78,7 @@ export class HttpRouter implements Router {
             const app = this.app;
             const kRouter: any = this.router;
 
-            const controllers = app.getMap("controllers") ?? {};
+            const controllers: any = app.getMetaData("controllers") ?? {};
             // tslint:disable-next-line: forin
             for (const n in controllers) {
                 const ctl = IOCContainer.getClass(n, "CONTROLLER");
@@ -181,7 +181,7 @@ function injectRouter(app: Application, target: any, instance?: any) {
  * @returns {*} 
  */
 function injectParam(app: Application, target: any, instance?: any) {
-    instance = instance ?? target.prototype;
+    instance = instance || target.prototype;
     const metaDatas = RecursiveGetMetadata(PARAM_KEY, target);
     const validMetaDatas = RecursiveGetMetadata(PARAM_RULE_KEY, target);
     const validatedMetaDatas = RecursiveGetMetadata(PARAM_CHECK_KEY, target);
@@ -224,7 +224,7 @@ async function getParamter(app: Application, ctx: Context, ctlParams: any = {}) 
     //convert type
     const params = ctlParams.data ?? [];
     const validRules = ctlParams.valids ?? {};
-    const dtoCheck = ctlParams.dtoCheck ?? false;
+    const dtoCheck = ctlParams.dtoCheck || false;
     const props: any[] = params.map(async (v: any, k: number) => {
         let value: any = null;
         if (v.fn && Helper.isFunction(v.fn)) {
