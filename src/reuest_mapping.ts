@@ -7,7 +7,8 @@
 // tslint:disable-next-line: no-import-side-effect
 import "reflect-metadata";
 import * as Helper from "koatty_lib";
-import { Context, IOCContainer } from 'koatty_container';
+import { KoattyContext } from "koatty_core";
+import { IOCContainer } from 'koatty_container';
 import { paramterTypes } from "koatty_validation";
 import { PARAM_KEY, ROUTER_KEY } from "./index";
 
@@ -250,7 +251,7 @@ const Inject = (fn: Function, name: string): ParameterDecorator => {
  * @returns
  */
 export function Header(name?: string): ParameterDecorator {
-    return Inject((ctx: Context) => {
+    return Inject((ctx: KoattyContext) => {
         if (name !== undefined) {
             return ctx.get(name);
         }
@@ -266,7 +267,7 @@ export function Header(name?: string): ParameterDecorator {
  * @returns
  */
 export function PathVariable(name?: string): ParameterDecorator {
-    return Inject((ctx: Context) => {
+    return Inject((ctx: KoattyContext) => {
         const getParams: any = ctx.params ?? {};
         if (name === undefined) {
             return getParams;
@@ -283,7 +284,7 @@ export function PathVariable(name?: string): ParameterDecorator {
  * @returns
  */
 export function Get(name?: string): ParameterDecorator {
-    return Inject((ctx: Context) => {
+    return Inject((ctx: KoattyContext) => {
         const getParams: any = ctx.query ?? {};
         if (name === undefined) {
             return getParams;
@@ -300,7 +301,7 @@ export function Get(name?: string): ParameterDecorator {
  * @returns
  */
 export function Post(name?: string): ParameterDecorator {
-    return Inject((ctx: Context) => {
+    return Inject((ctx: KoattyContext) => {
         return ctx.bodyParser().then((body: {
             post: Object
         }) => {
@@ -321,7 +322,7 @@ export function Post(name?: string): ParameterDecorator {
  * @returns
  */
 export function File(name?: string): ParameterDecorator {
-    return Inject((ctx: Context) => {
+    return Inject((ctx: KoattyContext) => {
         return ctx.bodyParser().then((body: {
             file: Object
         }) => {
@@ -342,7 +343,7 @@ export function File(name?: string): ParameterDecorator {
  * @returns
  */
 export function RequestBody(): ParameterDecorator {
-    return Inject((ctx: Context) => {
+    return Inject((ctx: KoattyContext) => {
         return ctx.bodyParser();
     }, "RequestBody");
 }
@@ -355,7 +356,7 @@ export function RequestBody(): ParameterDecorator {
  * @returns {ParameterDecorator}
  */
 export function RequestParam(name?: string): ParameterDecorator {
-    return Inject((ctx: Context) => {
+    return Inject((ctx: KoattyContext) => {
         return ctx.bodyParser().then((body: {
             post: Object
         }) => {

@@ -3,12 +3,13 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 19:02:06
- * @LastEditTime: 2021-07-09 18:09:42
+ * @LastEditTime: 2021-07-09 18:58:43
  */
 import KoaRouter from "@koa/router";
 import * as Helper from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
-import { Application, Context, IOCContainer, RecursiveGetMetadata } from "koatty_container";
+import { Koatty, KoattyContext } from "koatty_core";
+import { IOCContainer, RecursiveGetMetadata } from "koatty_container";
 import { checkParams, PARAM_CHECK_KEY, PARAM_RULE_KEY } from "koatty_validation";
 import { CONTROLLER_ROUTER, PARAM_KEY, RequestMethod, Router, ROUTER_KEY } from "./index";
 
@@ -41,11 +42,11 @@ export interface HttpRouterOptions {
  * HttpRouter class
  */
 export class HttpRouter implements Router {
-    app: Application;
+    app: Koatty;
     options: any;
     router: KoaRouter<any, unknown>;
 
-    constructor(app: Application, options?: HttpRouterOptions) {
+    constructor(app: Koatty, options?: HttpRouterOptions) {
         this.app = app;
         this.options = {
             ...options
@@ -89,7 +90,7 @@ export class HttpRouter implements Router {
                 // tslint:disable-next-line: forin
                 for (const it in ctlRouters) {
                     Logger.Debug(`Register request mapping: [${ctlRouters[it].requestMethod}] : ["${ctlRouters[it].path}" => ${n}.${ctlRouters[it].method}]`);
-                    kRouter[ctlRouters[it].requestMethod](ctlRouters[it].path, function (ctx: Context): Promise<any> {
+                    kRouter[ctlRouters[it].requestMethod](ctlRouters[it].path, function (ctx: KoattyContext): Promise<any> {
                         const router = ctlRouters[it];
                         return execRouter(app, ctx, n, router, ctlParams[router.method]);
                     });
@@ -98,7 +99,7 @@ export class HttpRouter implements Router {
 
             // Load in the 'appStart' event to facilitate the expansion of middleware
             // exp: in middleware
-            // app.Router.SetRouter('/xxx',  (ctx: Koa.Context): any => {...}, 'GET')
+            // app.Router.SetRouter('/xxx',  (ctx: Koa.KoattyContext): any => {...}, 'GET')
             app.on('appStart', () => {
                 app.use(kRouter.routes()).use(kRouter.allowedMethods());
             });
@@ -120,7 +121,7 @@ export class HttpRouter implements Router {
  * @returns
  * @memberof Router
  */
-async function execRouter(app: Application, ctx: Context, identifier: string, router: any, ctlParams: any) {
+async function execRouter(app: Koatty, ctx: KoattyContext, identifier: string, router: any, ctlParams: any) {
     const ctl: any = IOCContainer.get(identifier, "CONTROLLER", [ctx]);
 
     // const ctl: any = container.get(identifier, "CONTROLLER");
@@ -144,7 +145,7 @@ async function execRouter(app: Application, ctx: Context, identifier: string, ro
  * @param {*} [instance]
  * @returns {*} 
  */
-function injectRouter(app: Application, target: any, instance?: any) {
+function injectRouter(app: Koatty, target: any, instance?: any) {
     // Controller router path
     const metaDatas = IOCContainer.listPropertyData(CONTROLLER_ROUTER, target);
     let path = "";
@@ -180,7 +181,7 @@ function injectRouter(app: Application, target: any, instance?: any) {
  * @param {*} [instance]
  * @returns {*} 
  */
-function injectParam(app: Application, target: any, instance?: any) {
+function injectParam(app: Koatty, target: any, instance?: any) {
     instance = instance || target.prototype;
     const metaDatas = RecursiveGetMetadata(PARAM_KEY, target);
     const validMetaDatas = RecursiveGetMetadata(PARAM_RULE_KEY, target);
@@ -220,7 +221,7 @@ function injectParam(app: Application, target: any, instance?: any) {
  * @param {any[]} params
  * @returns
  */
-async function getParamter(app: Application, ctx: Context, ctlParams: any = {}) {
+async function getParamter(app: Koatty, ctx: KoattyContext, ctlParams: any = {}) {
     //convert type
     const params = ctlParams.data ?? [];
     const validRules = ctlParams.valids ?? {};
