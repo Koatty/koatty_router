@@ -1,6 +1,6 @@
 {
   "name": "koatty_router",
-  "version": "1.2.2",
+  "version": "1.2.4",
   "description": "Koatty routing component, adapt to http1/2, websocket, gRPC.",
   "scripts": {
     "build": "del-cli --force dist && tsc",
