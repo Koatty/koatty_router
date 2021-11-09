@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:16:44
- * @LastEditTime: 2021-07-09 18:59:06
+ * @LastEditTime: 2021-07-13 10:37:05
  */
 
 import { Koatty } from "koatty_core";
@@ -67,7 +67,7 @@ export class WebsocketRouter implements Router {
      *
      * @memberof Router
      */
-    LoadRouter() {
+    LoadRouter(list: any[]) {
         // todo
         return;
     }

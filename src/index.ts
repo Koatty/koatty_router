@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 18:48:14
- * @LastEditTime: 2021-07-09 18:59:30
+ * @LastEditTime: 2021-07-13 10:36:29
  */
 import { Koatty } from "koatty_core";
 import { GrpcRouter } from "./grpc";
@@ -29,7 +29,7 @@ export interface Router {
     router: any;
 
     SetRouter: (path: string, func: Function, method?: RequestMethod) => void;
-    LoadRouter: () => void;
+    LoadRouter: (list: any[]) => void;
 }
 
 /**

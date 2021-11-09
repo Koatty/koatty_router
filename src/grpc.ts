@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2021-07-09 18:57:07
+ * @LastEditTime: 2021-07-13 10:36:57
  */
 import { Koatty } from "koatty_core";
 import { RequestMethod, Router } from ".";
@@ -52,7 +52,7 @@ export class GrpcRouter implements Router {
      *
      * @memberof Router
      */
-    LoadRouter() {
+    LoadRouter(list: any[]) {
         // todo
         return;
     }
