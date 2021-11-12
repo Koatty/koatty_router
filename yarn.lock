@@ -4192,10 +4192,10 @@ koatty_container@^1.x.x:
     reflect-metadata "^0.1.13"
     tslib "^2.3.0"
 
-koatty_core@^1.1.9:
-  version "1.1.9"
-  resolved "https://registry.yarnpkg.com/koatty_core/-/koatty_core-1.1.9.tgz#687477093ddcb813e17ac20f484446a7483d42ce"
-  integrity sha512-9LPYk41Lrn5NNP7Hb1qsm/+lfitY5ONfg/fsAMtDmKe8uLMVHDR048KyHJ5tI9sI/kKy3BZLRdL2jcK2mGHCtQ==
+koatty_core@^1.x.x:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/koatty_core/-/koatty_core-1.2.2.tgz#c00b1cb18fd984b6d09693a3fbb1f0393eabacdf"
+  integrity sha512-xIN02qkaMJMqSHCTHnKaQHQtQ4lniWBM/A8fyF6Wf8ixm2FjKXL2jOz4Dd5IgIyAljsbpWENT+kbSZ2oE3A40A==
   dependencies:
     koatty_container "^1.x.x"
     koatty_lib "^1.x.x"
