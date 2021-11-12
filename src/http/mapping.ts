@@ -10,7 +10,7 @@ import * as Helper from "koatty_lib";
 import { KoattyContext } from "koatty_core";
 import { IOCContainer } from 'koatty_container';
 import { paramterTypes } from "koatty_validation";
-import { PARAM_KEY, ROUTER_KEY } from "./index";
+import { PARAM_KEY, ROUTER_KEY } from "../index";
 
 /**
  * Koatty router options
