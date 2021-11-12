@@ -1,6 +1,6 @@
 {
   "name": "koatty_router",
-  "version": "1.4.0",
+  "version": "1.4.2",
   "description": "Koatty routing component, adapt to http1/2, websocket, gRPC.",
   "scripts": {
     "build": "del-cli --force dist && tsc",
@@ -58,7 +58,7 @@
     "koatty_lib": "^1.x.x",
     "koatty_logger": "^1.x.x",
     "koatty_validation": "^1.x.x",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.1"
   },
   "husky": {
     "hooks": {
