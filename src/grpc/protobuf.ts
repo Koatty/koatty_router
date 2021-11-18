@@ -3,11 +3,11 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-10 10:19:48
- * @LastEditTime: 2021-11-11 17:24:00
+ * @LastEditTime: 2021-11-18 16:17:16
  */
 import * as Helper from "koatty_lib";
-import { GrpcObject, loadPackageDefinition } from "@grpc/grpc-js";
-import { loadSync, Options } from "@grpc/proto-loader";
+import { GrpcObject, loadPackageDefinition, ServiceDefinition } from "@grpc/grpc-js";
+import { loadSync, Options, ProtobufTypeDefinition } from "@grpc/proto-loader";
 
 /**
  *
@@ -17,8 +17,14 @@ import { loadSync, Options } from "@grpc/proto-loader";
  */
 export interface ProtoDef {
     name: string;
+    service: ServiceDefinition;
+    handlers: ProtoDefHandler[];
+}
+
+export interface ProtoDefHandler {
+    name: string;
     path: string;
-    service: GrpcObject;
+    fn?: Function;
 }
 
 /**
@@ -28,39 +34,53 @@ export interface ProtoDef {
  * @param {string} protoFile
  * @returns {*}  
  */
-export async function LoadProto(protoFile: string, options?: Options): Promise<ProtoDef[]> {
+export function LoadProto(protoFile: string, options: Options = {
+    keepCase: true,
+    longs: String,
+    enums: String,
+    defaults: true,
+    oneofs: true
+}): ProtoDef[] {
     if (!Helper.isFile(protoFile)) {
         throw new Error("no such file: " + protoFile);
     }
     // Loading file
-    const parsedObj = await loadSync(protoFile, options);
+    const parsedObj = loadSync(protoFile, options);
     const def = loadPackageDefinition(parsedObj);
-    return ListServices('', def);
+    return ListServices(def);
 }
 
 /**
  * ListServices
  *
  * @export
- * @param {string} root
  * @param {*} def
  * @returns {*}  {*}
  */
-export function ListServices(root: string, def: GrpcObject): ProtoDef[] {
+export function ListServices(def: GrpcObject | ProtobufTypeDefinition): ProtoDef[] {
     const results: ProtoDef[] = [];
     for (const [propName, value] of Object.entries(def)) {
-        let objPath = propName;
-        if (root) {
-            objPath = root + '.' + propName;
-        }
-        if (value && value.hasOwnProperty('service')) {
-            results.push({
-                name: propName,
-                path: objPath,
-                service: <GrpcObject>value,
-            });
-        } else if (value && typeof value === "object") {
-            results.push(...ListServices(objPath, <GrpcObject>value));
+        if (value) {
+            if (typeof value === "function" && value.hasOwnProperty('service')) {
+                const service = value.service;
+                const handlers = [];
+                for (const key in service) {
+                    if (Object.hasOwnProperty.call(service, key)) {
+                        const element = service[key];
+                        handlers.push({
+                            name: key,
+                            path: element.path,
+                        })
+                    }
+                }
+                results.push({
+                    name: propName,
+                    service: service,
+                    handlers: handlers,
+                });
+            } else if (Helper.isObject(value)) {
+                results.push(...ListServices(value));
+            }
         }
     }
     return results;

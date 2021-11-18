@@ -3,14 +3,16 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2021-11-12 15:12:19
+ * @LastEditTime: 2021-11-18 17:42:10
  */
 import { IOCContainer } from "koatty_container";
-import { Koatty, KoattyContext, KoattyRouter, KoattyRouterOptions } from "koatty_core";
+import { Koatty, KoattyRouter, KoattyRouterOptions, IRpcServerUnaryCall, IRpcServerCallback, CreateGrpcContext, KoattyContext } from "koatty_core";
 import * as Helper from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { Handler, injectParam } from "../inject";
 import { LoadProto, ProtoDef } from "./protobuf";
+import koaCompose from "koa-compose";
+import { ServiceDefinition, UntypedHandleCall, UntypedServiceImplementation } from "@grpc/grpc-js";
 
 /**
  * GrpcRouter Options
@@ -23,14 +25,23 @@ export interface GrpcRouterOptions extends KoattyRouterOptions {
 }
 
 /**
- *
+ * ServiceImplementation
  *
  * @export
  * @interface ServiceImplementation
  */
 export interface ServiceImplementation {
-    service: any;
-    implementation: any;
+    service: ServiceDefinition;
+    implementation: Implementation;
+}
+/**
+ * Implementation
+ *
+ * @export
+ * @interface Implementation
+ */
+export interface Implementation {
+    [methodName: string]: UntypedHandleCall;
 }
 
 export class GrpcRouter implements KoattyRouter {
@@ -48,29 +59,24 @@ export class GrpcRouter implements KoattyRouter {
         this.router = new Map();
     }
 
-    /**
+    /** 
+     * SetRouter
      *
-     *
-     * @param {string} path
-     * @param {Function} func
-     * @param {ProtoDef} proto
+     * @param {string} name
+     * @param {ServiceDefinition<UntypedServiceImplementation>} service
+     * @param {UntypedServiceImplementation} implementation
+     * @returns {*}  
      * @memberof GrpcRouter
      */
-    SetRouter(path: string, func: Function, proto: ProtoDef) {
-        if (Helper.isEmpty(path)) {
-            return this.router;
+    SetRouter(name: string, service: any, implementation: UntypedServiceImplementation) {
+        if (Helper.isEmpty(name)) {
+            return;
         }
-        const value: ServiceImplementation = {
-            service: proto.service.service,
-            implementation: {
-                [path]: func,
-            },
+        const value = {
+            service: service,
+            implementation: implementation
         }
-        if (this.router.has(proto.name)) {
-            const ex = this.router.get(proto.name);
-            value.implementation = Object.assign(ex.implementation, value);
-        }
-        this.router.set(proto.name, value);
+        this.router.set(name, value);
     }
 
     /**
@@ -92,7 +98,7 @@ export class GrpcRouter implements KoattyRouter {
         try {
             const app = this.app;
             // load proto files
-            const services = await LoadProto(this.options.protoFile);
+            const services = LoadProto(this.options.protoFile);
 
             // tslint:disable-next-line: forin
             for (const n in list) {
@@ -103,17 +109,22 @@ export class GrpcRouter implements KoattyRouter {
                     const serviceName = it.name;
                     if (n === `${serviceName}Controller`) {
                         // Verifying
-                        if (!it.service || !it.service.hasOwnProperty('service') ||
-                            Object.keys(it.service.service).length === 0) {
+                        if (!it.service || it.handlers.length === 0) {
                             Logger.Warn('Ignore', it.name, 'which is an empty service');
                             return;
                         }
-                        for (const method of Object.keys(it.service.service)) {
-                            Logger.Debug(`Register request mapping: ["${it.path}" => ${n}.${method}]`);
+                        const impl: { [key: string]: UntypedHandleCall } = {};
+                        for (const handler of it.handlers) {
+                            const method = handler.name;
+                            Logger.Debug(`Register request mapping: ["${it.name}" => ${n}.${method}]`);
                             const params = ctlParams[method];
-                            this.SetRouter(it.path, function (ctx: KoattyContext): Promise<any> {
-                                return Handler(app, ctx, n, method, params);
-                            }, it);
+
+                            impl[handler.name] = (call: IRpcServerUnaryCall<any, any>, callback: IRpcServerCallback<any>) => {
+                                return this.wrapGrpcHandler(call, callback, (ctx: KoattyContext) => {
+                                    return Handler(app, ctx, n, method, params);
+                                });
+                            }
+                            this.SetRouter(it.name, it.service, impl);
                         }
                     }
                 }
@@ -121,6 +132,22 @@ export class GrpcRouter implements KoattyRouter {
         } catch (err) {
             Logger.Error(err);
         }
+    }
+
+    /**
+     * Wrap gRPC handler with other middleware.
+     *
+     * @private
+     * @param {IRpcServerUnaryCall<any, any>} call
+     * @param {IRpcServerCallback<any>} callback
+     * @param {(ctx: KoattyContext) => any} reqHandler
+     * @memberof GrpcRouter
+     */
+    private async wrapGrpcHandler(call: IRpcServerUnaryCall<any, any>, callback: IRpcServerCallback<any>, reqHandler: (ctx: KoattyContext) => any) {
+        const context = this.app.createContext(call, call, "grpc");
+        const middlewares = [...this.app.middleware, reqHandler];
+        const res = await koaCompose(middlewares)(context);
+        callback(null, res)
     }
 
 }
