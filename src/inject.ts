@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-10 16:58:57
- * @LastEditTime: 2021-11-18 02:09:33
+ * @LastEditTime: 2021-11-19 16:29:56
  */
 import * as Helper from "koatty_lib";
 import { IOCContainer, RecursiveGetMetadata } from "koatty_container";
@@ -67,7 +67,7 @@ export function injectRouter(app: Koatty, target: any, instance?: any) {
                 ...val,
                 path: `${path}${val.path}`.replace("//", "/")
             };
-            router[`${tmp.path}-${tmp.requestMethod}`] = tmp;
+            router[`${tmp.path}||${tmp.requestMethod}`] = tmp;
         }
     }
 
