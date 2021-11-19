@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 19:02:06
- * @LastEditTime: 2021-11-17 18:25:26
+ * @LastEditTime: 2021-11-19 16:36:58
  */
 import KoaRouter from "@koa/router";
 import * as Helper from "koatty_lib";
@@ -64,9 +64,11 @@ export class HttpRouter implements KoattyRouter {
                 for (const it in ctlRouters) {
                     const router = ctlRouters[it];
                     const method = router.method;
+                    const path = router.path;
+                    const requestMethod = router.requestMethod;
                     const params = ctlParams[method];
-                    Logger.Debug(`Register request mapping: [${ctlRouters[it].requestMethod}] : ["${ctlRouters[it].path}" => ${n}.${method}]`);
-                    kRouter[ctlRouters[it].requestMethod](ctlRouters[it].path, function (ctx: KoattyContext): Promise<any> {
+                    Logger.Debug(`Register request mapping: [${requestMethod}] : ["${path}" => ${n}.${method}]`);
+                    kRouter[requestMethod](path, function (ctx: KoattyContext): Promise<any> {
                         return Handler(app, ctx, n, method, params);
                     });
                 }

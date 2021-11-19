@@ -3,14 +3,16 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:16:44
- * @LastEditTime: 2021-11-18 13:46:56
+ * @LastEditTime: 2021-11-18 23:25:11
  */
 
 import { Koatty, KoattyRouter, KoattyRouterOptions, KoattyContext } from "koatty_core";
 import { DefaultLogger as Logger } from "koatty_logger";
+import * as Helper from "koatty_lib";
 import { Handler, injectParam, injectRouter } from "../inject";
 import { IOCContainer } from "koatty_container";
 import koaCompose from "koa-compose";
+import { WebSocket } from "ws";
 
 /**
  * WebsocketRouter Options
@@ -22,7 +24,7 @@ export interface WebsocketRouterOptions extends KoattyRouterOptions {
     prefix: string;
 }
 // WsImplementation
-export type WsImplementation = (request: any, data: any) => Promise<any>;
+export type WsImplementation = (socket: WebSocket, request: any, data: any) => Promise<any>;
 
 export class WebsocketRouter implements KoattyRouter {
     app: Koatty;
@@ -79,8 +81,8 @@ export class WebsocketRouter implements KoattyRouter {
                     const method = router.method;
                     const params = ctlParams[method];
                     Logger.Debug(`Register request mapping: ["${ctlRouters[it].path}" => ${n}.${method}]`);
-                    this.SetRouter(ctlRouters[it].path, (request: any, data: any) => {
-                        return this.wrapWebSocketHandler(request, data, (ctx: KoattyContext) => {
+                    this.SetRouter(ctlRouters[it].path, (socket: WebSocket, request: any, data: any) => {
+                        return this.wrapWebSocketHandler(socket, request, data, (ctx: KoattyContext) => {
                             return Handler(app, ctx, n, method, params);
                         });
                     });
@@ -95,14 +97,16 @@ export class WebsocketRouter implements KoattyRouter {
      * Wrap websocket handler with other middleware.
      *
      * @private
+     * @param {WebSocket} socket
      * @param {*} request
      * @param {*} data
      * @param {(ctx: KoattyContext) => any} reqHandler
      * @returns {*}  
      * @memberof WebsocketRouter
      */
-    private async wrapWebSocketHandler(request: any, data: any, reqHandler: (ctx: KoattyContext) => any) {
+    private async wrapWebSocketHandler(socket: WebSocket, request: any, data: any, reqHandler: (ctx: KoattyContext) => any) {
         const context = this.app.createContext(request, data, "ws");
+        Helper.define(context, "websocket", socket);
         const middlewares = [...this.app.middleware, reqHandler];
         return koaCompose(middlewares)(context);
     }

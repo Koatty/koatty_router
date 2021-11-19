@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-17 17:36:13
- * @LastEditTime: 2021-11-17 17:36:14
+ * @LastEditTime: 2021-11-19 16:50:37
  */
 
 import { KoattyContext } from "koatty_core";
@@ -34,11 +34,11 @@ export function Header(name?: string): ParameterDecorator {
  */
 export function PathVariable(name?: string): ParameterDecorator {
     return Inject((ctx: KoattyContext) => {
-        const getParams: any = ctx.params ?? {};
+        const pathParams: any = ctx.params ?? {};
         if (name === undefined) {
-            return getParams;
+            return pathParams;
         }
-        return getParams[name];
+        return pathParams[name];
     }, "PathVariable");
 }
 
@@ -51,11 +51,11 @@ export function PathVariable(name?: string): ParameterDecorator {
  */
 export function Get(name?: string): ParameterDecorator {
     return Inject((ctx: KoattyContext) => {
-        const getParams: any = ctx.query ?? {};
+        const queryParams: any = ctx.query ?? {};
         if (name === undefined) {
-            return getParams;
+            return queryParams;
         }
-        return getParams[name];
+        return queryParams[name];
     }, "Get");
 }
 
@@ -126,12 +126,12 @@ export function RequestParam(name?: string): ParameterDecorator {
         return ctx.bodyParser().then((body: {
             post: Object
         }) => {
-            const getParams: any = ctx.queryParser() ?? {};
+            const queryParams: any = ctx.queryParser() ?? {};
             const postParams: any = (body.post ? body.post : body) ?? {};
             if (name !== undefined) {
-                return postParams[name] === undefined ? getParams[name] : postParams[name];
+                return postParams[name] === undefined ? queryParams[name] : postParams[name];
             }
-            return { ...getParams, ...postParams };
+            return { ...queryParams, ...postParams };
         });
     }, "RequestParam");
 }

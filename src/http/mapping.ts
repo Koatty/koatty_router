@@ -6,10 +6,8 @@
  */
 // tslint:disable-next-line: no-import-side-effect
 import "reflect-metadata";
-import { KoattyContext } from "koatty_core";
 import { IOCContainer } from 'koatty_container';
 import { ROUTER_KEY } from "../index";
-import { Inject } from "../inject";
 
 /**
  * Koatty router options
