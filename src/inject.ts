@@ -3,12 +3,12 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-10 16:58:57
- * @LastEditTime: 2021-11-19 16:29:56
+ * @LastEditTime: 2021-11-23 14:45:29
  */
 import * as Helper from "koatty_lib";
 import { IOCContainer, RecursiveGetMetadata } from "koatty_container";
 import { Koatty, KoattyContext } from "koatty_core";
-import { DefaultLogger as Logger } from "koatty_logger";
+// import { DefaultLogger as Logger } from "koatty_logger";
 import { checkParams, paramterTypes, PARAM_CHECK_KEY, PARAM_RULE_KEY } from "koatty_validation";
 import { CONTROLLER_ROUTER, PARAM_KEY, ROUTER_KEY } from "./index";
 
@@ -60,7 +60,7 @@ export function injectRouter(app: Koatty, target: any, instance?: any) {
     const router: any = {};
     // tslint:disable-next-line: forin
     for (const metaKey in rmetaData) {
-        Logger.Debug(`Register inject method Router key: ${metaKey} => value: ${JSON.stringify(rmetaData[metaKey])}`);
+        // Logger.Debug(`Register inject method Router key: ${metaKey} => value: ${JSON.stringify(rmetaData[metaKey])}`);
         //.sort((a, b) => b.priority - a.priority) 
         for (const val of rmetaData[metaKey]) {
             const tmp = {
@@ -90,7 +90,7 @@ export function injectParam(app: Koatty, target: any, instance?: any) {
     const argsMetaObj: any = {};
     for (const meta in metaDatas) {
         if (instance[meta] && instance[meta].length <= metaDatas[meta].length) {
-            Logger.Debug(`Register inject ${IOCContainer.getIdentifier(target)} param key: ${Helper.toString(meta)} => value: ${JSON.stringify(metaDatas[meta])}`);
+            // Logger.Debug(`Register inject ${IOCContainer.getIdentifier(target)} param key: ${Helper.toString(meta)} => value: ${JSON.stringify(metaDatas[meta])}`);
 
             // cover to obj
             const data = (metaDatas[meta] ?? []).sort((a: any, b: any) => a.index - b.index);
