@@ -1,6 +1,6 @@
 {
   "name": "koatty_router",
-  "version": "1.5.10",
+  "version": "1.5.12",
   "description": "Koatty routing component, adapt to http1/2, websocket, gRPC.",
   "scripts": {
     "build": "del-cli --force dist && tsc",
@@ -35,8 +35,8 @@
     "@types/node": "^16.x.x",
     "@types/validator": "^13.7.0",
     "@types/ws": "^8.x.x",
-    "@typescript-eslint/eslint-plugin": "^5.x.0",
-    "@typescript-eslint/parser": "^5.x.0",
+    "@typescript-eslint/eslint-plugin": "^5.x.x",
+    "@typescript-eslint/parser": "^5.x.x",
     "conventional-changelog-cli": "^2.x.x",
     "del-cli": "^4.x.x",
     "eslint": "^8.x.x",
