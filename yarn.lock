@@ -1718,7 +1718,7 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-"@typescript-eslint/eslint-plugin@^5.x.0":
+"@typescript-eslint/eslint-plugin@^5.x.x":
   version "5.4.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-5.4.0.tgz#05e711a2e7b68342661fde61bccbd1531c19521a"
   integrity sha512-9/yPSBlwzsetCsGEn9j24D8vGQgJkOTr4oMLas/w886ZtzKIs1iyoqFrwsX2fqYEeUwsdBpC21gcjRGo57u0eg==
@@ -1744,7 +1744,7 @@
     eslint-scope "^5.1.1"
     eslint-utils "^3.0.0"
 
-"@typescript-eslint/parser@^5.x.0":
+"@typescript-eslint/parser@^5.x.x":
   version "5.4.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-5.4.0.tgz#3aa83ce349d66e39b84151f6d5464928044ca9e3"
   integrity sha512-JoB41EmxiYpaEsRwpZEYAJ9XQURPFer8hpkIW9GiaspVLX8oqbqNM8P4EP8HOZg96yaALiLEVWllA2E8vwsIKw==
@@ -4087,9 +4087,9 @@ koatty_logger@^1.x.x:
     koatty_lib "^1.x.x"
 
 koatty_validation@^1.x.x:
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/koatty_validation/-/koatty_validation-1.0.8.tgz#4ea624fa274d12dd3819a119bb699f1c52bc32b9"
-  integrity sha512-bUJBNwuD8GGwL23c6mJBBXl6KIXz+lAx8TORcfzCzbL+ugStmkybg5RHBfdVxP/bpUmHD5coxVDGjW57NqHx9Q==
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/koatty_validation/-/koatty_validation-1.0.10.tgz#68c3075f079cfc876a29563ee4e3e98084f3f3ad"
+  integrity sha512-jjY5rIAHz4JoYhRvzdILm4FoFCtXnwx6b54bio8vOt6HXC6bqD3fHrTbrWW28j37NumDBMkyH+Um1FjIctKLgQ==
   dependencies:
     class-validator "^0.13.2"
     koatty_container "^1.x.x"
