@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.14](https://github.com/koatty/koatty_router/compare/v1.5.12...v1.5.14) (2021-12-13)
+
 ### [1.5.12](https://github.com/koatty/koatty_router/compare/v1.5.10...v1.5.12) (2021-11-25)
 
 ### [1.5.10](https://github.com/koatty/koatty_router/compare/v1.5.8...v1.5.10) (2021-11-23)
