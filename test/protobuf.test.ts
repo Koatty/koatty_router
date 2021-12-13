@@ -3,10 +3,10 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-10 15:04:26
- * @LastEditTime: 2021-11-10 19:16:04
+ * @LastEditTime: 2021-12-13 16:52:36
  */
 import path from "path";
-import { LoadProto } from "../src/grpc/protobuf";
+import { LoadProto } from "koatty_proto";
 
 
 const protoFile = path.resolve("./test/example.proto");

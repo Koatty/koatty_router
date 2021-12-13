@@ -3,11 +3,11 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2021-11-19 16:55:55
+ * @LastEditTime: 2021-12-13 16:37:03
  */
 import { IOCContainer } from "koatty_container";
 import * as Helper from "koatty_lib";
-import { LoadProto } from "./protobuf";
+import { LoadProto } from "koatty_proto";
 import koaCompose from "koa-compose";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { Handler, injectParam, injectRouter } from "../inject";

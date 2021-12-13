@@ -4086,6 +4086,16 @@ koatty_logger@^1.x.x:
   dependencies:
     koatty_lib "^1.x.x"
 
+koatty_proto@^1.x.x:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/koatty_proto/-/koatty_proto-1.1.2.tgz#5e44ef93fb557ed73c6b3c3fa7abc64e923ddfc5"
+  integrity sha512-tP9JDCcWuAHkwfxyQ+cru4OHlrbNUYRu6Uq96nVpjG6si+9xVGov9SZ03/3BzrdkYb1iCr/HGUGKbRK2RSV/6Q==
+  dependencies:
+    "@grpc/grpc-js" "^1.4.4"
+    "@grpc/proto-loader" "^0.6.7"
+    koatty_lib "^1.x.x"
+    protobufjs "^6.11.2"
+
 koatty_validation@^1.x.x:
   version "1.0.10"
   resolved "https://registry.yarnpkg.com/koatty_validation/-/koatty_validation-1.0.10.tgz#68c3075f079cfc876a29563ee4e3e98084f3f3ad"
@@ -4705,7 +4715,7 @@ prompts@^2.0.1:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-protobufjs@^6.10.0:
+protobufjs@^6.10.0, protobufjs@^6.11.2:
   version "6.11.2"
   resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-6.11.2.tgz#de39fabd4ed32beaa08e9bb1e30d08544c1edf8b"
   integrity sha512-4BQJoPooKJl2G9j3XftkIXjoC9C0Av2NOrWmbLWT1vH32GcSUHjM0Arra6UfTsVyfMAuFzaLucXn1sadxJydAw==
