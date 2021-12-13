@@ -3,11 +3,11 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2021-12-13 16:37:03
+ * @LastEditTime: 2021-12-13 17:30:35
  */
 import { IOCContainer } from "koatty_container";
 import * as Helper from "koatty_lib";
-import { LoadProto } from "koatty_proto";
+import { ListServices, LoadProto } from "koatty_proto";
 import koaCompose from "koa-compose";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { Handler, injectParam, injectRouter } from "../inject";
@@ -117,7 +117,8 @@ export class GrpcRouter implements KoattyRouter {
         try {
             const app = this.app;
             // load proto files
-            const services = LoadProto(this.options.protoFile);
+            const pdef = LoadProto(this.options.protoFile);
+            const services = ListServices(pdef);
 
             const ctls: CtlInterface = {};
             for (const n in list) {
