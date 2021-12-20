@@ -3,16 +3,15 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:16:44
- * @LastEditTime: 2021-11-18 23:25:11
+ * @LastEditTime: 2021-12-20 23:55:13
  */
 
-import { Koatty, KoattyRouter, KoattyRouterOptions, KoattyContext } from "koatty_core";
-import { DefaultLogger as Logger } from "koatty_logger";
-import * as Helper from "koatty_lib";
-import { Handler, injectParam, injectRouter } from "../inject";
-import { IOCContainer } from "koatty_container";
-import koaCompose from "koa-compose";
 import { WebSocket } from "ws";
+import koaCompose from "koa-compose";
+import { IOCContainer } from "koatty_container";
+import { DefaultLogger as Logger } from "koatty_logger";
+import { Handler, injectParam, injectRouter } from "../inject";
+import { Koatty, KoattyRouter, KoattyRouterOptions, KoattyContext } from "koatty_core";
 
 /**
  * WebsocketRouter Options
@@ -70,11 +69,11 @@ export class WebsocketRouter implements KoattyRouter {
             const app = this.app;
             // tslint:disable-next-line: forin
             for (const n in list) {
-                const ctl = IOCContainer.getClass(n, "CONTROLLER");
+                const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
                 // inject router
-                const ctlRouters = injectRouter(app, ctl);
+                const ctlRouters = injectRouter(app, ctlClass);
                 // inject param
-                const ctlParams = injectParam(app, ctl);
+                const ctlParams = injectParam(app, ctlClass);
                 // tslint:disable-next-line: forin
                 for (const it in ctlRouters) {
                     const router = ctlRouters[it];
@@ -82,8 +81,11 @@ export class WebsocketRouter implements KoattyRouter {
                     const params = ctlParams[method];
                     Logger.Debug(`Register request mapping: ["${ctlRouters[it].path}" => ${n}.${method}]`);
                     this.SetRouter(ctlRouters[it].path, (socket: WebSocket, request: any, data: any) => {
-                        return this.wrapWebSocketHandler(socket, request, data, (ctx: KoattyContext) => {
-                            return Handler(app, ctx, n, method, params);
+                        request.data = data;
+                        const context = app.createContext(request, socket, "ws");
+                        const ctl = IOCContainer.getInsByClass(ctlClass, [context]);
+                        return this.wrapHandler(context, (ctx: KoattyContext) => {
+                            return Handler(app, ctx, ctl, method, params);
                         });
                     });
                 }
@@ -94,19 +96,18 @@ export class WebsocketRouter implements KoattyRouter {
     }
 
     /**
-     * Wrap websocket handler with other middleware.
+     * Wrap handler with other middleware.
      *
      * @private
-     * @param {WebSocket} socket
-     * @param {*} request
-     * @param {*} data
-     * @param {(ctx: KoattyContext) => any} reqHandler
+     * @param {KoattyContext} context
+     * @param {(ctx: KoattyContext) => Promise<any>} reqHandler
      * @returns {*}  
      * @memberof WebsocketRouter
      */
-    private async wrapWebSocketHandler(socket: WebSocket, request: any, data: any, reqHandler: (ctx: KoattyContext) => any) {
-        const context = this.app.createContext(request, data, "ws");
-        Helper.define(context, "websocket", socket);
+    private async wrapHandler(
+        context: KoattyContext,
+        reqHandler: (ctx: KoattyContext) => Promise<any>,
+    ) {
         const middlewares = [...this.app.middleware, reqHandler];
         return koaCompose(middlewares)(context);
     }

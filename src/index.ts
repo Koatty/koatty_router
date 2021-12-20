@@ -3,12 +3,12 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 18:48:14
- * @LastEditTime: 2021-11-18 02:59:39
+ * @LastEditTime: 2021-12-20 23:56:51
  */
-import { Koatty, KoattyRouter, KoattyRouterOptions } from "koatty_core";
 import { GrpcRouter } from "./grpc/router";
 import { HttpRouter } from "./http/router";
 import { WebsocketRouter } from "./websocket/router";
+import { Koatty, KoattyRouter, KoattyRouterOptions } from "koatty_core";
 
 // export
 export const PARAM_KEY = 'PARAM_KEY';
@@ -39,9 +39,6 @@ export function NewRouter(app: Koatty, options: KoattyRouterOptions, protocol?: 
         case "wss":
             router = new WebsocketRouter(app, options)
             break;
-        case "http":
-        case "https":
-        case "http2":
         default:
             router = new HttpRouter(app, options);
     }

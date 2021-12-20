@@ -3,16 +3,15 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 19:02:06
- * @LastEditTime: 2021-11-19 16:36:58
+ * @LastEditTime: 2021-12-20 23:56:15
  */
 import KoaRouter from "@koa/router";
 import * as Helper from "koatty_lib";
-import { DefaultLogger as Logger } from "koatty_logger";
-import { Koatty, KoattyContext, KoattyRouter, KoattyRouterOptions } from "koatty_core";
-import { IOCContainer } from "koatty_container";
 import { RequestMethod } from "../index";
-import { Handler, injectParam, injectRouter } from "../inject";
-
+import { IOCContainer } from "koatty_container";
+import { DefaultLogger as Logger } from "koatty_logger";
+import { Handler, IHandler, injectParam, injectRouter } from "../inject";
+import { Koatty, KoattyContext, KoattyRouter, KoattyRouterOptions, CreateContext } from "koatty_core";
 
 /**
  * HttpRouter class
@@ -55,11 +54,11 @@ export class HttpRouter implements KoattyRouter {
             const kRouter: any = this.router;
             // tslint:disable-next-line: forin
             for (const n in list) {
-                const ctl = IOCContainer.getClass(n, "CONTROLLER");
+                const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
                 // inject router
-                const ctlRouters = injectRouter(app, ctl);
+                const ctlRouters = injectRouter(app, ctlClass);
                 // inject param
-                const ctlParams = injectParam(app, ctl);
+                const ctlParams = injectParam(app, ctlClass);
                 // tslint:disable-next-line: forin
                 for (const it in ctlRouters) {
                     const router = ctlRouters[it];
@@ -69,7 +68,8 @@ export class HttpRouter implements KoattyRouter {
                     const params = ctlParams[method];
                     Logger.Debug(`Register request mapping: [${requestMethod}] : ["${path}" => ${n}.${method}]`);
                     kRouter[requestMethod](path, function (ctx: KoattyContext): Promise<any> {
-                        return Handler(app, ctx, n, method, params);
+                        const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
+                        return Handler(app, ctx, ctl, method, params);
                     });
                 }
             }
@@ -84,5 +84,4 @@ export class HttpRouter implements KoattyRouter {
             Logger.Error(err);
         }
     }
-
 }

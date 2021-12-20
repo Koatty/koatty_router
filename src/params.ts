@@ -3,11 +3,11 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-24 23:21:26
- * @LastEditTime: 2021-11-25 11:23:06
+ * @LastEditTime: 2021-12-20 23:54:10
  */
+import { IOCContainer } from "koatty_container";
 import { Koatty, KoattyContext } from "koatty_core";
 import * as Helper from "koatty_lib";
-import { DefaultLogger as Logger } from "koatty_logger";
 import {
     ClassValidator, convertParamsType, checkParamsType,
     plainToClass, ValidatorFuncs
@@ -69,7 +69,7 @@ interface ParamOptions {
 async function checkParams(app: Koatty, value: any, opt: ParamOptions) {
     if (opt.isDto) {
         // DTO class
-        const clazz = app.container.getClass(opt.type, "COMPONENT");
+        const clazz = IOCContainer.getClass(opt.type, "COMPONENT");
         if (clazz) {
             if (opt.dtoCheck) {
                 value = await ClassValidator.valid(clazz, value, true);

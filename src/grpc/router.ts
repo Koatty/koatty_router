@@ -3,12 +3,12 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2021-12-13 17:30:35
+ * @LastEditTime: 2021-12-20 23:56:33
  */
-import { IOCContainer } from "koatty_container";
-import * as Helper from "koatty_lib";
-import { ListServices, LoadProto } from "koatty_proto";
 import koaCompose from "koa-compose";
+import * as Helper from "koatty_lib";
+import { IOCContainer } from "koatty_container";
+import { ListServices, LoadProto } from "koatty_proto";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { Handler, injectParam, injectRouter } from "../inject";
 import { ServiceDefinition, UntypedHandleCall, UntypedServiceImplementation } from "@grpc/grpc-js";
@@ -58,7 +58,8 @@ interface CtlInterface {
  * @interface CtlProperty
  */
 interface CtlProperty {
-    ctl: string;
+    name: string;
+    ctl: Function;
     method: string;
     params: any;
 }
@@ -122,11 +123,11 @@ export class GrpcRouter implements KoattyRouter {
 
             const ctls: CtlInterface = {};
             for (const n in list) {
-                const ctl = IOCContainer.getClass(n, "CONTROLLER");
+                const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
                 // inject router
-                const ctlRouters = injectRouter(app, ctl);
+                const ctlRouters = injectRouter(app, ctlClass);
                 // inject param
-                const ctlParams = injectParam(app, ctl);
+                const ctlParams = injectParam(app, ctlClass);
 
                 for (const it in ctlRouters) {
                     const router = ctlRouters[it];
@@ -135,7 +136,8 @@ export class GrpcRouter implements KoattyRouter {
                     const params = ctlParams[method];
 
                     ctls[path] = {
-                        ctl: n,
+                        name: n,
+                        ctl: ctlClass,
                         method,
                         params,
                     }
@@ -154,11 +156,13 @@ export class GrpcRouter implements KoattyRouter {
                 for (const handler of si.handlers) {
                     const path = handler.path;
                     if (ctls[path]) {
-                        const ctlIns = ctls[path];
-                        Logger.Debug(`Register request mapping: ["${path}" => ${ctlIns.ctl}.${ctlIns.method}]`);
+                        const ctlItem = ctls[path];
+                        Logger.Debug(`Register request mapping: ["${path}" => ${ctlItem.name}.${ctlItem.method}]`);
                         impl[handler.name] = (call: IRpcServerUnaryCall<any, any>, callback: IRpcServerCallback<any>) => {
-                            return this.wrapGrpcHandler(call, callback, (ctx: KoattyContext) => {
-                                return Handler(app, ctx, ctlIns.ctl, ctlIns.method, ctlIns.params);
+                            const context = app.createContext(call, callback, "grpc");
+                            const ctl = IOCContainer.getInsByClass(ctlItem.ctl, [context]);
+                            return this.wrapHandler(context, (ctx: KoattyContext) => {
+                                return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params);
                             });
                         }
                     }
@@ -172,7 +176,7 @@ export class GrpcRouter implements KoattyRouter {
     }
 
     /**
-     * Wrap gRPC handler with other middleware.
+     * Wrap handler with other middleware.
      *
      * @private
      * @param {IRpcServerUnaryCall<any, any>} call
@@ -180,9 +184,10 @@ export class GrpcRouter implements KoattyRouter {
      * @param {(ctx: KoattyContext) => any} reqHandler
      * @memberof GrpcRouter
      */
-    private async wrapGrpcHandler(call: IRpcServerUnaryCall<any, any>, callback: IRpcServerCallback<any>, reqHandler: (ctx: KoattyContext) => any) {
-        const context = this.app.createContext(call, call, "grpc");
-        Helper.define(context, "rpcCallback", callback);
+    private async wrapHandler(
+        context: KoattyContext,
+        reqHandler: (ctx: KoattyContext) => Promise<any>,
+    ) {
         const middlewares = [...this.app.middleware, reqHandler];
         return koaCompose(middlewares)(context);
     }

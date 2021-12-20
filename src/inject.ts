@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-10 16:58:57
- * @LastEditTime: 2021-11-25 11:20:27
+ * @LastEditTime: 2021-12-17 16:39:29
  */
 import * as Helper from "koatty_lib";
 import { IOCContainer, RecursiveGetMetadata } from "koatty_container";
@@ -54,23 +54,23 @@ export const Inject = (fn: Function, name: string): ParameterDecorator => {
     };
 };
 
+// IHandler
+export type IHandler = (app: Koatty, ctx: KoattyContext, ctl: any, method: string, ctlParams: any) => Promise<any>;
 /**
  * controller handler
  *
  * @param {Koatty} app
  * @param {KoattyContext} ctx
- * @param {string} identifier
- * @param {*} router
+ * @param {*} ctl
+ * @param {*} method
  * @param {*} ctlParams
  * @returns
  */
-export async function Handler(app: Koatty, ctx: KoattyContext, identifier: string, method: string, ctlParams: any) {
-    const ctl: any = IOCContainer.get(identifier, "CONTROLLER", [ctx]);
-
-    // const ctl: any = container.get(identifier, "CONTROLLER");
-    if (!ctx || !ctl || !ctl.init) {
-        return ctx.throw(404, `Controller ${identifier} not found.`);
+export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any, method: string, ctlParams: any) {
+    if (!ctx || !ctl) {
+        return ctx.throw(404, `Controller not found.`);
     }
+    ctl.ctx = ctx;
     // inject param
     let args = [];
     if (ctlParams) {
