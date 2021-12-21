@@ -3,15 +3,15 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-10 16:58:57
- * @LastEditTime: 2021-12-17 16:39:29
+ * @LastEditTime: 2021-12-22 01:03:24
  */
 import * as Helper from "koatty_lib";
-import { IOCContainer, RecursiveGetMetadata } from "koatty_container";
+import { getParamter } from "./params";
 import { Koatty, KoattyContext } from "koatty_core";
 import { DefaultLogger as Logger } from "koatty_logger";
-import { paramterTypes, PARAM_CHECK_KEY, PARAM_RULE_KEY } from "koatty_validation";
 import { CONTROLLER_ROUTER, PARAM_KEY, ROUTER_KEY } from "./index";
-import { getParamter } from "./params";
+import { getOriginMetadata, IOCContainer, RecursiveGetMetadata } from "koatty_container";
+import { paramterTypes, PARAM_CHECK_KEY, PARAM_RULE_KEY, PARAM_TYPE_KEY } from "koatty_validation";
 
 
 /**
@@ -83,12 +83,33 @@ export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any, method:
 /**
  *
  *
+ * @interface RouterMetadata
+ */
+interface RouterMetadata {
+    method: string;
+    path: string;
+    requestMethod: string;
+    routerName: string;
+}
+
+/**
+ *
+ *
+ * @interface RouterMetadataObject
+ */
+interface RouterMetadataObject {
+    [key: string]: RouterMetadata;
+}
+
+/**
+ *
+ *
  * @param {Koatty} app
  * @param {*} target
  * @param {*} [instance]
  * @returns {*} 
  */
-export function injectRouter(app: Koatty, target: any, instance?: any) {
+export function injectRouter(app: Koatty, target: any, instance?: any): RouterMetadataObject {
     // Controller router path
     const metaDatas = IOCContainer.listPropertyData(CONTROLLER_ROUTER, target);
     let path = "";
@@ -99,7 +120,7 @@ export function injectRouter(app: Koatty, target: any, instance?: any) {
     path = path.startsWith("/") || path === "" ? path : `/${path}`;
 
     const rmetaData = RecursiveGetMetadata(ROUTER_KEY, target);
-    const router: any = {};
+    const router: RouterMetadataObject = {};
     // tslint:disable-next-line: forin
     for (const metaKey in rmetaData) {
         // Logger.Debug(`Register inject method Router key: ${metaKey} => value: ${JSON.stringify(rmetaData[metaKey])}`);
@@ -119,17 +140,43 @@ export function injectRouter(app: Koatty, target: any, instance?: any) {
 /**
  *
  *
+ * @interface ParamMetadata
+ */
+export interface ParamMetadata {
+    "fn": any;
+    "name": string;
+    "index": number;
+    "clazz": any;
+    "type": string;
+    "isDto": boolean;
+    "rule": any;
+    "dtoCheck": boolean;
+    "dtoRule": any;
+}
+
+/**
+ *
+ *
+ * @interface ParamMetadataObject
+ */
+export interface ParamMetadataObject {
+    [key: string]: ParamMetadata[];
+}
+
+/**
+ *
+ *
  * @param {Koatty} app
  * @param {*} target
  * @param {*} [instance]
  * @returns {*} 
  */
-export function injectParam(app: Koatty, target: any, instance?: any) {
+export function injectParam(app: Koatty, target: any, instance?: any): ParamMetadataObject {
     instance = instance || target.prototype;
     const metaDatas = RecursiveGetMetadata(PARAM_KEY, target);
     const validMetaDatas = RecursiveGetMetadata(PARAM_RULE_KEY, target);
     const validatedMetaDatas = RecursiveGetMetadata(PARAM_CHECK_KEY, target);
-    const argsMetaObj: any = {};
+    const argsMetaObj: ParamMetadataObject = {};
     for (const meta in metaDatas) {
         if (instance[meta] && instance[meta].length <= metaDatas[meta].length) {
             Logger.Debug(`Register inject param key ${IOCContainer.getIdentifier(target)}: ${Helper.toString(meta)} => value: ${JSON.stringify(metaDatas[meta])}`);
@@ -137,22 +184,30 @@ export function injectParam(app: Koatty, target: any, instance?: any) {
             // cover to obj
             const data = (metaDatas[meta] ?? []).sort((a: any, b: any) => a.index - b.index);
             const validData = validMetaDatas[meta] ?? [];
-            const validMetaObj: any = {};
             data.forEach((v: any) => {
+                v.rule = {};
                 validData.forEach((it: any) => {
                     if (v.index === it.index) {
-                        validMetaObj[v.index] = it;
+                        v.rule = it;
                     }
                 });
                 if (v.type) {
                     v.type = v.isDto ? v.type : (v.type).toLowerCase();
                 }
+                v.dtoCheck = (validatedMetaDatas[meta] && validatedMetaDatas[meta].dtoCheck) ? true : false;
+                if (v.isDto) {
+                    v.clazz = IOCContainer.getClass(v.type, "COMPONENT");
+                    if (v.dtoCheck) {
+                        v.dtoRule = {};
+                        const originMap = getOriginMetadata(PARAM_TYPE_KEY, v.clazz);
+                        for (const [key, type] of originMap) {
+                            v.dtoRule[key] = type;
+                        }
+                        v.clazz.prototype["_typeDef"] = v.dtoRule;
+                    }
+                }
             });
-            argsMetaObj[meta] = {
-                valids: validMetaObj,
-                data,
-                dtoCheck: (validatedMetaDatas[meta] && validatedMetaDatas[meta].dtoCheck) ? true : false
-            };
+            argsMetaObj[meta] = data;
         }
     }
     return argsMetaObj;

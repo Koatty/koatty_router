@@ -3661,18 +3661,18 @@ koa-compose@^4.1.0:
   integrity sha512-8ODW8TrDuMYvXRwra/Kh7/rJo9BtOfPc6qO8eAfC80CnCvSjSl0bkRM24X6/XBBEyj0v1nRUQ1LyOy3dbqOWXw==
 
 koatty_container@^1.x.x:
-  version "1.6.11"
-  resolved "https://registry.yarnpkg.com/koatty_container/-/koatty_container-1.6.11.tgz#1239a0ecfe301f994c341b20d6bad7e1c164cada"
-  integrity sha512-FC4HnSZ+OX7pxGXfXg1OrDTIGDUoeVLKbeWgoPm5xgOVxDWLTx09RUKEqRzhjwj8VAPdzI4VjtNZ/g1gYBBJpA==
+  version "1.6.16"
+  resolved "https://registry.yarnpkg.com/koatty_container/-/koatty_container-1.6.16.tgz#aff06255cf2f47edebf90bcd68f21736c36618ef"
+  integrity sha512-lNP4GcrRhy3K4cOevESKQ492L9WZhUn5BndTcDGAl96fVSqVuaZ8Zjn8n4bZv9cpPJbOMzmZu/oQfRVRs3ciCQ==
   dependencies:
     koatty_lib "^1.x.x"
     reflect-metadata "^0.1.13"
     tslib "^2.3.1"
 
 koatty_core@^1.x.x:
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/koatty_core/-/koatty_core-1.4.2.tgz#e8b7782d215ae45aef1a469ee2b6dd4d1da88ce2"
-  integrity sha512-BoN32YrAWTD5EM0nVs80AAJOKPMI1y6+ZsxVcHKfVpn31yFwj6w7qyMa2mzLsto1VLJD1wDwblru9+negwQAcg==
+  version "1.4.12"
+  resolved "https://registry.yarnpkg.com/koatty_core/-/koatty_core-1.4.12.tgz#b790a9a8f32579d32aa5402f32f07cb59cce948a"
+  integrity sha512-soLoz+PMcOrk0Qn/10VlQZvING815HVfn9M0X1o5mWMrIUssXar00hoyCUfgr7EBx+gIoI5tQ9YVfUYUDwGuKw==
   dependencies:
     http-assert "^1.5.0"
     koatty_container "^1.x.x"
@@ -3702,9 +3702,9 @@ koatty_lib@^1.x.x:
     tslib "^2.3.1"
 
 koatty_logger@^1.x.x:
-  version "1.3.4"
-  resolved "https://registry.yarnpkg.com/koatty_logger/-/koatty_logger-1.3.4.tgz#c3b2922ddcdf0ba5d1c7fa381bd577cb2a178a2a"
-  integrity sha512-pDB9lu6qaZ7CwG6nkRxz0477HAbqklAZeygOllMf3jJRnYmsTV4MxnZT72tC2uUTPo3L20O7nj0gHvvmapJ/hw==
+  version "1.3.12"
+  resolved "https://registry.yarnpkg.com/koatty_logger/-/koatty_logger-1.3.12.tgz#ed736bcb5576d0bdf2e34bfd10330421dc725876"
+  integrity sha512-hrg7BxDtW7CQwbDHAgHdvzOj4nfU58/h/dTOk7BOif+3/dCg/ixPoy9rkJQ8smpq+rPDY/HTFpVq64sr2JDOJw==
   dependencies:
     koatty_lib "^1.x.x"
 
@@ -3719,9 +3719,9 @@ koatty_proto@^1.x.x:
     protobufjs "^6.11.2"
 
 koatty_validation@^1.x.x:
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/koatty_validation/-/koatty_validation-1.0.10.tgz#68c3075f079cfc876a29563ee4e3e98084f3f3ad"
-  integrity sha512-jjY5rIAHz4JoYhRvzdILm4FoFCtXnwx6b54bio8vOt6HXC6bqD3fHrTbrWW28j37NumDBMkyH+Um1FjIctKLgQ==
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/koatty_validation/-/koatty_validation-1.0.12.tgz#bf6169285ed20108ab810a4f01fa911511090fa3"
+  integrity sha512-uj8+f8TBNARHm4UTda7hlwxcjg/4Exl5RkWy2IIlL/DdCW2OVo7cGiXJ2AC+/kDKkMqRvH04cYPj0DY3AYgjGw==
   dependencies:
     class-validator "^0.13.2"
     koatty_container "^1.x.x"
