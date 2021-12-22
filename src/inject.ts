@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-10 16:58:57
- * @LastEditTime: 2021-12-22 01:03:24
+ * @LastEditTime: 2021-12-23 00:43:51
  */
 import * as Helper from "koatty_lib";
 import { getParamter } from "./params";
@@ -70,7 +70,9 @@ export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any, method:
     if (!ctx || !ctl) {
         return ctx.throw(404, `Controller not found.`);
     }
-    ctl.ctx = ctx;
+    if (!ctl.ctx) {
+        ctl.ctx = ctx;
+    }
     // inject param
     let args = [];
     if (ctlParams) {
