@@ -82,10 +82,5 @@
     "koatty_logger": "^1.x.x",
     "koatty_proto": "^1.x.x",
     "koatty_validation": "^1.x.x"
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
   }
 }
