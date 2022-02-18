@@ -3,16 +3,16 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-24 23:21:26
- * @LastEditTime: 2022-02-19 00:22:38
+ * @LastEditTime: 2022-02-19 00:33:49
  */
 import { IOCContainer } from "koatty_container";
 import { Koatty, KoattyContext } from "koatty_core";
 import * as Helper from "koatty_lib";
 import {
-    ClassValidator, convertParamsType, checkParamsType,
+    ClassValidator, convertParamsType,
     ValidatorFuncs, plainToClass
 } from "koatty_validation";
-import { ParamMetadata, ParamMetadataObject } from "./inject";
+import { ParamMetadata } from "./inject";
 
 /**
  * Parameter binding assignment.

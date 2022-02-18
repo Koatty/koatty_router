@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2022-02-18 19:17:14
+ * @LastEditTime: 2022-02-19 00:33:34
  */
 import * as Helper from "koatty_lib";
 import { IOCContainer } from "koatty_container";
@@ -11,7 +11,7 @@ import { ListServices, LoadProto } from "koatty_proto";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { Handler, injectParam, injectRouter } from "../inject";
 import { ServiceDefinition, UntypedHandleCall, UntypedServiceImplementation } from "@grpc/grpc-js";
-import { Koatty, KoattyRouter, KoattyRouterOptions, IRpcServerUnaryCall, IRpcServerCallback, KoattyContext } from "koatty_core";
+import { Koatty, KoattyRouter, KoattyRouterOptions, IRpcServerUnaryCall, IRpcServerCallback } from "koatty_core";
 
 /**
  * GrpcRouter Options

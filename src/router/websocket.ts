@@ -7,11 +7,10 @@
  */
 
 import { WebSocket } from "ws";
-import koaCompose from "koa-compose";
 import { IOCContainer } from "koatty_container";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { Handler, injectParam, injectRouter } from "../inject";
-import { Koatty, KoattyRouter, KoattyRouterOptions, KoattyContext } from "koatty_core";
+import { Koatty, KoattyRouter, KoattyRouterOptions } from "koatty_core";
 
 /**
  * WebsocketRouter Options
