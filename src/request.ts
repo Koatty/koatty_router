@@ -3,11 +3,12 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-17 17:36:13
- * @LastEditTime: 2021-11-19 16:50:37
+ * @LastEditTime: 2022-02-19 00:23:58
  */
-
+import * as Helper from "koatty_lib";
 import { KoattyContext } from "koatty_core";
-import { Inject } from "../inject";
+import { IOCContainer, TAGGED_PARAM } from "koatty_container";
+import { paramterTypes } from "koatty_validation";
 
 /**
  * Get request header.
@@ -135,3 +136,47 @@ export function RequestParam(name?: string): ParameterDecorator {
         });
     }, "RequestParam");
 }
+
+
+/**
+ * Inject ParameterDecorator
+ *
+ * @param {Function} fn
+ * @param {string} name
+ * @returns {*}  {ParameterDecorator}
+ */
+const Inject = (fn: Function, name: string): ParameterDecorator => {
+    return (target: Object, propertyKey: string, descriptor: number) => {
+        const targetType = IOCContainer.getType(target);
+        if (targetType !== "CONTROLLER") {
+            throw Error(`${name} decorator is only used in controllers class.`);
+        }
+        // 获取成员类型
+        // const type = Reflect.getMetadata("design:type", target, propertyKey);
+        // 获取成员参数类型
+        const paramTypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
+        // 获取成员返回类型
+        // const returnType = Reflect.getMetadata("design:returntype", target, propertyKey);
+        // 获取所有元数据 key (由 TypeScript 注入)
+        // const keys = Reflect.getMetadataKeys(target, propertyKey);
+        let type = (paramTypes[descriptor] && paramTypes[descriptor].name) ? paramTypes[descriptor].name : "object";
+        let isDto = false;
+        //DTO class
+        if (!(Helper.toString(type) in paramterTypes)) {
+            type = IOCContainer.getIdentifier(paramTypes[descriptor]);
+            // reg to IOC container
+            // IOCContainer.reg(type, paramTypes[descriptor]);
+            isDto = true;
+        }
+
+        IOCContainer.attachPropertyData(TAGGED_PARAM, {
+            name: propertyKey,
+            fn,
+            index: descriptor,
+            type,
+            isDto
+        }, target, propertyKey);
+        return descriptor;
+
+    };
+};

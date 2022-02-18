@@ -66,9 +66,8 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.5.5",
     "@koa/router": "^10.1.1",
-    "koa-compose": "^4.1.0",
     "koatty_container": "^1.x.x",
-    "koatty_core": "^1.x.x",
+    "koatty_core": "^1.6.0-0",
     "koatty_lib": "^1.x.x",
     "koatty_logger": "^1.x.x",
     "koatty_proto": "^1.x.x",

@@ -2199,6 +2199,11 @@ dotgitignore@^2.1.0:
     find-up "^3.0.0"
     minimatch "^3.0.4"
 
+ee-first@1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
+  integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
+
 electron-to-chromium@^1.4.17:
   version "1.4.24"
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.24.tgz#9cf8a92d5729c480ee47ff0aa5555f57467ae2fa"
@@ -3669,24 +3674,26 @@ koa-compose@^4.1.0:
   integrity sha512-8ODW8TrDuMYvXRwra/Kh7/rJo9BtOfPc6qO8eAfC80CnCvSjSl0bkRM24X6/XBBEyj0v1nRUQ1LyOy3dbqOWXw==
 
 koatty_container@^1.x.x:
-  version "1.6.16"
-  resolved "https://registry.yarnpkg.com/koatty_container/-/koatty_container-1.6.16.tgz#aff06255cf2f47edebf90bcd68f21736c36618ef"
-  integrity sha512-lNP4GcrRhy3K4cOevESKQ492L9WZhUn5BndTcDGAl96fVSqVuaZ8Zjn8n4bZv9cpPJbOMzmZu/oQfRVRs3ciCQ==
+  version "1.7.3"
+  resolved "https://registry.yarnpkg.com/koatty_container/-/koatty_container-1.7.3.tgz#652be9f0c54ba4d4825bb20c27429baf3b6f267a"
+  integrity sha512-lScatUpU2IP62MPGT5XR5h2Y6+eLQ+1wU+4vGxaGrlA+Qwx0lbTdRVi8IDVxYwa1XqwKbYx+8vmoMHkkJBvhdg==
   dependencies:
     koatty_lib "^1.x.x"
     reflect-metadata "^0.1.13"
     tslib "^2.3.1"
 
-koatty_core@^1.x.x:
-  version "1.4.12"
-  resolved "https://registry.yarnpkg.com/koatty_core/-/koatty_core-1.4.12.tgz#b790a9a8f32579d32aa5402f32f07cb59cce948a"
-  integrity sha512-soLoz+PMcOrk0Qn/10VlQZvING815HVfn9M0X1o5mWMrIUssXar00hoyCUfgr7EBx+gIoI5tQ9YVfUYUDwGuKw==
+koatty_core@^1.6.0-0:
+  version "1.6.0-0"
+  resolved "https://registry.yarnpkg.com/koatty_core/-/koatty_core-1.6.0-0.tgz#48e3510a3f82ffa1162ce1dd6c6c22183044ad4e"
+  integrity sha512-AIT9oGYfhs+u0xNMIV8GtvOeprHOMU9rFSLUqWxtNFO5LeMT1vYVhnqxght/M/+eX4J/mbQoSuJHhIzASSxANQ==
   dependencies:
     http-assert "^1.5.0"
+    koa-compose "^4.1.0"
     koatty_container "^1.x.x"
     koatty_exception "^1.x.x"
     koatty_lib "^1.x.x"
     koatty_logger "^1.x.x"
+    on-finished "^2.3.0"
     tslib "^2.3.1"
 
 koatty_exception@^1.x.x:
@@ -4102,6 +4109,13 @@ nwsapi@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/nwsapi/-/nwsapi-2.2.0.tgz#204879a9e3d068ff2a55139c2c772780681a38b7"
   integrity sha512-h2AatdwYH+JHiZpv7pt/gSX1XoRGb7L/qSIeuqA6GwYoF9w1vP1cw42TO0aI2pNyshRK5893hNSl+1//vHK7hQ==
+
+on-finished@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/on-finished/-/on-finished-2.3.0.tgz#20f1336481b083cd75337992a16971aa2d906947"
+  integrity sha1-IPEzZIGwg811M3mSoWlxqi2QaUc=
+  dependencies:
+    ee-first "1.1.1"
 
 once@^1.3.0:
   version "1.4.0"

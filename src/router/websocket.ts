@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:16:44
- * @LastEditTime: 2021-12-20 23:55:13
+ * @LastEditTime: 2022-02-18 19:17:02
  */
 
 import { WebSocket } from "ws";
@@ -67,6 +67,7 @@ export class WebsocketRouter implements KoattyRouter {
     LoadRouter(list: any[]) {
         try {
             const app = this.app;
+            const protocol = app.config("protocol") ?? "ws";
             // tslint:disable-next-line: forin
             for (const n in list) {
                 const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
@@ -82,11 +83,10 @@ export class WebsocketRouter implements KoattyRouter {
                     Logger.Debug(`Register request mapping: ["${ctlRouters[it].path}" => ${n}.${method}]`);
                     this.SetRouter(ctlRouters[it].path, (socket: WebSocket, request: any, data: any) => {
                         request.data = data;
-                        const context = app.createContext(request, socket, "ws");
-                        const ctl = IOCContainer.getInsByClass(ctlClass, [context]);
-                        return this.wrapHandler(context, (ctx: KoattyContext) => {
+                        return app.callback(protocol, (ctx) => {
+                            const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
                             return Handler(app, ctx, ctl, method, params);
-                        });
+                        })(request, socket);
                     });
                 }
             }
@@ -95,20 +95,4 @@ export class WebsocketRouter implements KoattyRouter {
         }
     }
 
-    /**
-     * Wrap handler with other middleware.
-     *
-     * @private
-     * @param {KoattyContext} context
-     * @param {(ctx: KoattyContext) => Promise<any>} reqHandler
-     * @returns {*}  
-     * @memberof WebsocketRouter
-     */
-    private async wrapHandler(
-        context: KoattyContext,
-        reqHandler: (ctx: KoattyContext) => Promise<any>,
-    ) {
-        const middlewares = [...this.app.middleware, reqHandler];
-        return koaCompose(middlewares)(context);
-    }
 }

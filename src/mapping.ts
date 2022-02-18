@@ -7,7 +7,7 @@
 // tslint:disable-next-line: no-import-side-effect
 import "reflect-metadata";
 import { IOCContainer } from 'koatty_container';
-import { ROUTER_KEY } from "../index";
+import { ROUTER_KEY } from "./inject";
 
 /**
  * Koatty router options

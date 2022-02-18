@@ -3,9 +3,8 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2021-12-20 23:56:33
+ * @LastEditTime: 2022-02-18 19:17:14
  */
-import koaCompose from "koa-compose";
 import * as Helper from "koatty_lib";
 import { IOCContainer } from "koatty_container";
 import { ListServices, LoadProto } from "koatty_proto";
@@ -159,11 +158,10 @@ export class GrpcRouter implements KoattyRouter {
                         const ctlItem = ctls[path];
                         Logger.Debug(`Register request mapping: ["${path}" => ${ctlItem.name}.${ctlItem.method}]`);
                         impl[handler.name] = (call: IRpcServerUnaryCall<any, any>, callback: IRpcServerCallback<any>) => {
-                            const context = app.createContext(call, callback, "grpc");
-                            const ctl = IOCContainer.getInsByClass(ctlItem.ctl, [context]);
-                            return this.wrapHandler(context, (ctx: KoattyContext) => {
+                            return app.callback("grpc", (ctx) => {
+                                const ctl = IOCContainer.getInsByClass(ctlItem.ctl, [ctx]);
                                 return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params);
-                            });
+                            })(call, callback);
                         }
                     }
                 }
@@ -173,23 +171,6 @@ export class GrpcRouter implements KoattyRouter {
         } catch (err) {
             Logger.Error(err);
         }
-    }
-
-    /**
-     * Wrap handler with other middleware.
-     *
-     * @private
-     * @param {IRpcServerUnaryCall<any, any>} call
-     * @param {IRpcServerCallback<any>} callback
-     * @param {(ctx: KoattyContext) => any} reqHandler
-     * @memberof GrpcRouter
-     */
-    private async wrapHandler(
-        context: KoattyContext,
-        reqHandler: (ctx: KoattyContext) => Promise<any>,
-    ) {
-        const middlewares = [...this.app.middleware, reqHandler];
-        return koaCompose(middlewares)(context);
     }
 
 }

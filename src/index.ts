@@ -3,22 +3,19 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 18:48:14
- * @LastEditTime: 2021-12-20 23:56:51
+ * @LastEditTime: 2022-02-19 00:25:57
  */
-import { GrpcRouter } from "./grpc/router";
-import { HttpRouter } from "./http/router";
-import { WebsocketRouter } from "./websocket/router";
+import { GrpcRouter } from "./router/grpc";
+import { HttpRouter } from "./router/http";
+import { WebsocketRouter } from "./router/websocket";
 import { Koatty, KoattyRouter, KoattyRouterOptions } from "koatty_core";
 
 // export
-export const PARAM_KEY = 'PARAM_KEY';
-export const CONTROLLER_ROUTER = 'CONTROLLER_ROUTER';
-export const ROUTER_KEY = 'ROUTER_KEY';
-export * from "./http/mapping";
-export * from "./http/request";
-export * from "./http/router";
-export * from "./grpc/router";
-export * from "./websocket/router";
+export * from "./mapping";
+export * from "./request";
+export * from "./router/http";
+export * from "./router/grpc";
+export * from "./router/websocket";
 
 /**
  * get instance of Router
