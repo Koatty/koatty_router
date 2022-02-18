@@ -45,6 +45,7 @@
 
 |  Variable | Description |
 |  --- | --- |
+|  [CONTROLLER\_ROUTER](./koatty_router.controller_router.md) |  |
 |  [DeleteMapping](./koatty_router.deletemapping.md) | Routes HTTP DELETE requests to the specified path. |
 |  [GetMapping](./koatty_router.getmapping.md) | Routes HTTP GET requests to the specified path. |
 |  [HeadMapping](./koatty_router.headmapping.md) | Routes HTTP HEAD requests to the specified path. |
@@ -53,6 +54,7 @@
 |  [PostMapping](./koatty_router.postmapping.md) | Routes HTTP POST requests to the specified path. |
 |  [PutMapping](./koatty_router.putmapping.md) | Routes HTTP PUT requests to the specified path. |
 |  [RequestMapping](./koatty_router.requestmapping.md) | Routes HTTP requests to the specified path. |
+|  [ROUTER\_KEY](./koatty_router.router_key.md) |  |
 
 ## Type Aliases
 
