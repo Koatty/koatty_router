@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-10 16:58:57
- * @LastEditTime: 2022-02-19 00:40:33
+ * @LastEditTime: 2022-02-22 14:35:08
  */
 import * as Helper from "koatty_lib";
 import { getParamter } from "./params";
@@ -153,7 +153,7 @@ export function injectParam(app: Koatty, target: any, instance?: any): ParamMeta
                 if (v.type) {
                     v.type = v.isDto ? v.type : (v.type).toLowerCase();
                 }
-                v.dtoCheck = (validatedMetaDatas[meta] && validatedMetaDatas[meta].dtoCheck) ? true : false;
+                v.dtoCheck = !!((validatedMetaDatas[meta]?.dtoCheck));
                 if (v.isDto) {
                     v.clazz = IOCContainer.getClass(v.type, "COMPONENT");
                     if (v.dtoCheck) {

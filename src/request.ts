@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-17 17:36:13
- * @LastEditTime: 2022-02-19 00:23:58
+ * @LastEditTime: 2022-02-22 14:48:38
  */
 import * as Helper from "koatty_lib";
 import { KoattyContext } from "koatty_core";
@@ -159,7 +159,7 @@ const Inject = (fn: Function, name: string): ParameterDecorator => {
         // const returnType = Reflect.getMetadata("design:returntype", target, propertyKey);
         // 获取所有元数据 key (由 TypeScript 注入)
         // const keys = Reflect.getMetadataKeys(target, propertyKey);
-        let type = (paramTypes[descriptor] && paramTypes[descriptor].name) ? paramTypes[descriptor].name : "object";
+        let type = (paramTypes[descriptor]?.name) ? paramTypes[descriptor].name : 'object';
         let isDto = false;
         //DTO class
         if (!(Helper.toString(type) in paramterTypes)) {
