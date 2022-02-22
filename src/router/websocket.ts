@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:16:44
- * @LastEditTime: 2022-02-18 19:17:02
+ * @LastEditTime: 2022-02-22 14:52:06
  */
 
 import { WebSocket } from "ws";
@@ -33,7 +33,7 @@ export class WebsocketRouter implements KoattyRouter {
         this.app = app;
         this.options = Object.assign({
             prefix: options.prefix
-        }, options)
+        }, options);
         this.router = new Map();
     }
 
