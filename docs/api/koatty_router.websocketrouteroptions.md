@@ -11,9 +11,9 @@ WebsocketRouter Options
 <b>Signature:</b>
 
 ```typescript
-export interface WebsocketRouterOptions extends KoattyRouterOptions 
+export interface WebsocketRouterOptions extends RouterOptions 
 ```
-<b>Extends:</b> KoattyRouterOptions
+<b>Extends:</b> RouterOptions
 
 ## Properties
 

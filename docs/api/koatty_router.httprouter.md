@@ -24,7 +24,7 @@ export declare class HttpRouter implements KoattyRouter
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
 |  [app](./koatty_router.httprouter.app.md) |  | Koatty |  |
-|  [options](./koatty_router.httprouter.options.md) |  | KoattyRouterOptions |  |
+|  [options](./koatty_router.httprouter.options.md) |  | RouterOptions |  |
 |  [router](./koatty_router.httprouter.router.md) |  | KoaRouter&lt;any, unknown&gt; |  |
 
 ## Methods

@@ -9,7 +9,7 @@ Constructs a new instance of the `WebsocketRouter` class
 <b>Signature:</b>
 
 ```typescript
-constructor(app: Koatty, options?: KoattyRouterOptions);
+constructor(app: Koatty, options?: RouterOptions);
 ```
 
 ## Parameters
@@ -17,5 +17,5 @@ constructor(app: Koatty, options?: KoattyRouterOptions);
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  app | Koatty |  |
-|  options | KoattyRouterOptions |  |
+|  options | RouterOptions |  |
 

@@ -11,9 +11,9 @@ GrpcRouter Options
 <b>Signature:</b>
 
 ```typescript
-export interface GrpcRouterOptions extends KoattyRouterOptions 
+export interface GrpcRouterOptions extends RouterOptions 
 ```
-<b>Extends:</b> KoattyRouterOptions
+<b>Extends:</b> RouterOptions
 
 ## Properties
 
