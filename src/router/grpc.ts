@@ -3,15 +3,16 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2022-02-19 00:33:34
+ * @LastEditTime: 2022-02-23 14:53:16
  */
 import * as Helper from "koatty_lib";
+import { RouterOptions } from "../index";
 import { IOCContainer } from "koatty_container";
 import { ListServices, LoadProto } from "koatty_proto";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { Handler, injectParam, injectRouter } from "../inject";
 import { ServiceDefinition, UntypedHandleCall, UntypedServiceImplementation } from "@grpc/grpc-js";
-import { Koatty, KoattyRouter, KoattyRouterOptions, IRpcServerUnaryCall, IRpcServerCallback } from "koatty_core";
+import { Koatty, KoattyRouter, IRpcServerUnaryCall, IRpcServerCallback } from "koatty_core";
 
 /**
  * GrpcRouter Options
@@ -19,7 +20,7 @@ import { Koatty, KoattyRouter, KoattyRouterOptions, IRpcServerUnaryCall, IRpcSer
  * @export
  * @interface GrpcRouterOptions
  */
-export interface GrpcRouterOptions extends KoattyRouterOptions {
+export interface GrpcRouterOptions extends RouterOptions {
     protoFile: string;
 }
 
@@ -68,7 +69,7 @@ export class GrpcRouter implements KoattyRouter {
     options: GrpcRouterOptions;
     router: Map<string, ServiceImplementation>;
 
-    constructor(app: Koatty, options?: KoattyRouterOptions) {
+    constructor(app: Koatty, options?: RouterOptions) {
         this.app = app;
         options.ext = options.ext || {};
         this.options = {

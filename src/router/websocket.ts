@@ -3,14 +3,15 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:16:44
- * @LastEditTime: 2022-02-22 14:52:06
+ * @LastEditTime: 2022-02-23 11:19:40
  */
 
 import { WebSocket } from "ws";
+import { RouterOptions } from "../index";
 import { IOCContainer } from "koatty_container";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { Handler, injectParam, injectRouter } from "../inject";
-import { Koatty, KoattyRouter, KoattyRouterOptions } from "koatty_core";
+import { Koatty, KoattyRouter } from "koatty_core";
 
 /**
  * WebsocketRouter Options
@@ -18,7 +19,7 @@ import { Koatty, KoattyRouter, KoattyRouterOptions } from "koatty_core";
  * @export
  * @interface WebsocketRouterOptions
  */
-export interface WebsocketRouterOptions extends KoattyRouterOptions {
+export interface WebsocketRouterOptions extends RouterOptions {
     prefix: string;
 }
 // WsImplementation
@@ -29,7 +30,7 @@ export class WebsocketRouter implements KoattyRouter {
     options: WebsocketRouterOptions;
     router: Map<string, WsImplementation>;
 
-    constructor(app: Koatty, options?: KoattyRouterOptions) {
+    constructor(app: Koatty, options?: RouterOptions) {
         this.app = app;
         this.options = Object.assign({
             prefix: options.prefix

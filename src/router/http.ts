@@ -3,25 +3,26 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 19:02:06
- * @LastEditTime: 2022-02-19 00:19:14
+ * @LastEditTime: 2022-02-23 11:19:01
  */
 import KoaRouter from "@koa/router";
 import * as Helper from "koatty_lib";
-import { RequestMethod } from "../index";
+import { RouterOptions } from "../index";
 import { IOCContainer } from "koatty_container";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { Handler, injectParam, injectRouter } from "../inject";
-import { Koatty, KoattyContext, KoattyRouter, KoattyRouterOptions } from "koatty_core";
+import { RequestMethod } from "../mapping";
+import { Koatty, KoattyContext, KoattyRouter } from "koatty_core";
 
 /**
  * HttpRouter class
  */
 export class HttpRouter implements KoattyRouter {
     app: Koatty;
-    options: KoattyRouterOptions;
+    options: RouterOptions;
     router: KoaRouter<any, unknown>;
 
-    constructor(app: Koatty, options?: KoattyRouterOptions) {
+    constructor(app: Koatty, options?: RouterOptions) {
         this.app = app;
         this.options = {
             ...options
