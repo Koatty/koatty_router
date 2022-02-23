@@ -38,6 +38,7 @@
 |  [GrpcRouterOptions](./koatty_router.grpcrouteroptions.md) | GrpcRouter Options  GrpcRouterOptions |
 |  [Implementation](./koatty_router.implementation.md) | Implementation  Implementation |
 |  [RouterOption](./koatty_router.routeroption.md) | Koatty router options  RouterOption |
+|  [RouterOptions](./koatty_router.routeroptions.md) | RouterOptions  RouterOptions |
 |  [ServiceImplementation](./koatty_router.serviceimplementation.md) | ServiceImplementation  ServiceImplementation |
 |  [WebsocketRouterOptions](./koatty_router.websocketrouteroptions.md) | WebsocketRouter Options  WebsocketRouterOptions |
 

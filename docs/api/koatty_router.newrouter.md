@@ -18,7 +18,7 @@ export declare function NewRouter(app: Koatty, options: RouterOptions, protocol?
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  app | Koatty |  |
-|  options | RouterOptions |  |
+|  options | [RouterOptions](./koatty_router.routeroptions.md) |  |
 |  protocol | string |  |
 
 <b>Returns:</b>

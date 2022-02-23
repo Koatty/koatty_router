@@ -13,7 +13,7 @@ GrpcRouter Options
 ```typescript
 export interface GrpcRouterOptions extends RouterOptions 
 ```
-<b>Extends:</b> RouterOptions
+<b>Extends:</b> [RouterOptions](./koatty_router.routeroptions.md)
 
 ## Properties
 

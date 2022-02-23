@@ -13,7 +13,7 @@ WebsocketRouter Options
 ```typescript
 export interface WebsocketRouterOptions extends RouterOptions 
 ```
-<b>Extends:</b> RouterOptions
+<b>Extends:</b> [RouterOptions](./koatty_router.routeroptions.md)
 
 ## Properties
 
