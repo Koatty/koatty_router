@@ -3,14 +3,15 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-24 23:21:26
- * @LastEditTime: 2022-02-19 00:33:49
+ * @LastEditTime: 2022-02-25 11:24:12
  */
 import { IOCContainer } from "koatty_container";
 import { Koatty, KoattyContext } from "koatty_core";
+import { Exception } from "koatty_exception";
 import * as Helper from "koatty_lib";
 import {
-    ClassValidator, convertParamsType,
-    ValidatorFuncs, plainToClass
+    ClassValidator, FunctionValidator, convertParamsType,
+    plainToClass, ValidRules, ValidOtpions, checkParamsType
 } from "koatty_validation";
 import { ParamMetadata } from "./inject";
 
@@ -71,25 +72,68 @@ interface ParamOptions {
  * @returns {*}  
  */
 async function checkParams(app: Koatty, value: any, opt: ParamOptions) {
-    if (opt.isDto) {
-        // DTO class
-        if (!opt.clazz) {
-            opt.clazz = IOCContainer.getClass(opt.type, "COMPONENT");
-        }
-        if (opt.dtoCheck) {
-            value = await ClassValidator.valid(opt.clazz, value, true);
+    try {
+        if (opt.isDto) {
+            // DTO class
+            if (!opt.clazz) {
+                opt.clazz = IOCContainer.getClass(opt.type, "COMPONENT");
+            }
+            if (opt.dtoCheck) {
+                value = await ClassValidator.valid(opt.clazz, value, true);
+            } else {
+                value = plainToClass(opt.clazz, value, true);
+            }
         } else {
-            value = plainToClass(opt.clazz, value, true);
+            value = convertParamsType(value, opt.type);
+            //@Valid()
+            if (opt.validRules[opt.index]) {
+                const { type, rule, options } = opt.validRules[opt.index];
+                if (type && rule) {
+                    validatorFuncs(`${opt.index}`, value, type, rule, options, false);
+                }
+            }
         }
+        return value;
+    } catch (err) {
+        throw new Exception(err.message || `ValidatorError: invalid arguments.`, 1, 400);
+    }
+}
+
+
+/**
+ * Validated by funcs.
+ *
+ * @export
+ * @param {string} name
+ * @param {*} value
+ * @param {string} type
+ * @param {(ValidRules | ValidRules[] | Function)} rule
+ * @param {ValidOtpions} [options]
+ * @param {boolean} [checkType=true]
+ * @returns
+ */
+function validatorFuncs(name: string, value: any, type: string,
+    rule: ValidRules | ValidRules[] | Function, options?: ValidOtpions, checkType = true) {
+    // check type
+    if (checkType && !checkParamsType(value, type)) {
+        throw new Exception(options.message || `TypeError: invalid arguments '${name}'.`, 1, 400);
+    }
+
+    if (Helper.isFunction(rule)) {
+        // Function no return value
+        rule(value);
     } else {
-        value = convertParamsType(value, opt.type);
-        //@Valid()
-        if (opt.validRules[opt.index]) {
-            const { type, rule, message } = opt.validRules[opt.index];
-            if (type && rule) {
-                ValidatorFuncs(`${opt.index}`, value, type, rule, message, false);
+        const funcs: any[] = [];
+        if (Helper.isString(rule)) {
+            funcs.push(rule);
+        } else if (Helper.isArray(rule)) {
+            funcs.push(...<any[]>rule);
+        }
+        for (const func of funcs) {
+            if (Object.hasOwnProperty.call(FunctionValidator, func)) {
+                // FunctionValidator just throws error, no return value
+                FunctionValidator[<ValidRules>func](value, options);
             }
         }
     }
-    return value;
 }
