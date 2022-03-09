@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-24 23:21:26
- * @LastEditTime: 2022-02-25 11:24:12
+ * @LastEditTime: 2022-03-09 18:14:25
  */
 import { IOCContainer } from "koatty_container";
 import { Koatty, KoattyContext } from "koatty_core";
@@ -37,7 +37,8 @@ export async function getParamter(app: Koatty, ctx: KoattyContext, params?: Para
             index: k,
             isDto: v.isDto,
             type: v.type,
-            validRules: v.rule,
+            validRule: v.rule,
+            validOpt: v.options,
             dtoCheck: v.dtoCheck,
             dtoRule: v.dtoRule,
             clazz: v.clazz,
@@ -55,7 +56,8 @@ interface ParamOptions {
     index: number;
     isDto: boolean;
     type: string;
-    validRules: any[];
+    validRule: Function | ValidRules | ValidRules[];
+    validOpt: ValidOtpions;
     dtoCheck: boolean;
     dtoRule: any;
     clazz: any;
@@ -86,10 +88,10 @@ async function checkParams(app: Koatty, value: any, opt: ParamOptions) {
         } else {
             value = convertParamsType(value, opt.type);
             //@Valid()
-            if (opt.validRules[opt.index]) {
-                const { type, rule, options } = opt.validRules[opt.index];
-                if (type && rule) {
-                    validatorFuncs(`${opt.index}`, value, type, rule, options, false);
+            if (opt) {
+                const { type, validRule, validOpt } = opt;
+                if (type && validRule) {
+                    validatorFuncs(`${opt.index}`, value, type, validRule, validOpt, false);
                 }
             }
         }

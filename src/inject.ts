@@ -3,14 +3,14 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-10 16:58:57
- * @LastEditTime: 2022-02-22 14:35:08
+ * @LastEditTime: 2022-03-09 18:14:12
  */
 import * as Helper from "koatty_lib";
 import { getParamter } from "./params";
 import { Koatty, KoattyContext } from "koatty_core";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { getOriginMetadata, IOCContainer, RecursiveGetMetadata, TAGGED_PARAM } from "koatty_container";
-import { PARAM_CHECK_KEY, PARAM_RULE_KEY, PARAM_TYPE_KEY } from "koatty_validation";
+import { PARAM_CHECK_KEY, PARAM_RULE_KEY, PARAM_TYPE_KEY, ValidOtpions, ValidRules } from "koatty_validation";
 import { CONTROLLER_ROUTER, ROUTER_KEY } from "./mapping";
 
 /**
@@ -108,7 +108,8 @@ export interface ParamMetadata {
     "clazz": any;
     "type": string;
     "isDto": boolean;
-    "rule": any;
+    "rule": Function | ValidRules | ValidRules[];
+    "options": ValidOtpions;
     "dtoCheck": boolean;
     "dtoRule": any;
 }
@@ -137,17 +138,18 @@ export function injectParam(app: Koatty, target: any, instance?: any): ParamMeta
     const validatedMetaDatas = RecursiveGetMetadata(PARAM_CHECK_KEY, target);
     const argsMetaObj: ParamMetadataObject = {};
     for (const meta in metaDatas) {
+        // 实例方法带规则形参必须小于等于原型形参(如果不存在验证规则，则小于)
         if (instance[meta] && instance[meta].length <= metaDatas[meta].length) {
             Logger.Debug(`Register inject param key ${IOCContainer.getIdentifier(target)}: ${Helper.toString(meta)} => value: ${JSON.stringify(metaDatas[meta])}`);
 
             // cover to obj
-            const data = (metaDatas[meta] ?? []).sort((a: any, b: any) => a.index - b.index);
+            const data: ParamMetadata[] = (metaDatas[meta] ?? []).sort((a: ParamMetadata, b: ParamMetadata) => a.index - b.index);
             const validData = validMetaDatas[meta] ?? [];
-            data.forEach((v: any) => {
-                v.rule = {};
+            data.forEach((v: ParamMetadata) => {
                 validData.forEach((it: any) => {
-                    if (v.index === it.index) {
-                        v.rule = it;
+                    if (v.index === it.index && it.name === v.name) {
+                        v.rule = it.rule;
+                        v.options = it.options;
                     }
                 });
                 if (v.type) {
