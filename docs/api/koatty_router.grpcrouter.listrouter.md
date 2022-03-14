@@ -15,5 +15,5 @@ ListRouter(): Map<string, ServiceImplementation>;
 
 Map&lt;string, [ServiceImplementation](./koatty_router.serviceimplementation.md)<!-- -->&gt;
 
-{<!-- -->\*<!-- -->} {<!-- -->ServiceImplementation\[\]<!-- -->}  GrpcRouter
+{<!-- -->\*<!-- -->} {<!-- -->Map<!-- -->&lt;<!-- -->string, ServiceImplementation<!-- -->&gt;<!-- -->}  GrpcRouter
 

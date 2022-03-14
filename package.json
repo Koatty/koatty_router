@@ -34,6 +34,7 @@
   "author": "richenlin@gmail.com",
   "license": "BSD-3-Clause",
   "devDependencies": {
+    "@grpc/grpc-js": "^1.x.x",
     "@microsoft/api-documenter": "^7.x.x",
     "@microsoft/api-extractor": "^7.x.x",
     "@rollup/plugin-json": "^4.x.x",
@@ -42,7 +43,7 @@
     "@types/koa__router": "^8.0.11",
     "@types/node": "^16.x.x",
     "@types/validator": "^13.7.0",
-    "@types/ws": "^8.2.2",
+    "@types/ws": "^8.x.x",
     "@typescript-eslint/eslint-plugin": "^5.x.x",
     "@typescript-eslint/parser": "^5.x.x",
     "commitlint": "^15.x.x",
@@ -63,7 +64,6 @@
     "typescript": "^4.x.x"
   },
   "dependencies": {
-    "@grpc/grpc-js": "^1.5.5",
     "@koa/router": "^10.1.1",
     "koatty_container": "^1.x.x",
     "koatty_core": "^1.x.x",

@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-17 17:36:13
- * @LastEditTime: 2022-02-22 14:48:38
+ * @LastEditTime: 2022-03-14 11:23:26
  */
 import * as Helper from "koatty_lib";
 import { KoattyContext } from "koatty_core";
@@ -116,6 +116,13 @@ export function RequestBody(): ParameterDecorator {
 }
 
 /**
+ * Alias of @RequestBody
+ * @param {*}
+ * @return {*}
+ */
+export const Body = RequestBody;
+
+/**
  * Get POST/GET parameters, POST priority
  *
  * @export
@@ -137,6 +144,12 @@ export function RequestParam(name?: string): ParameterDecorator {
     }, "RequestParam");
 }
 
+/**
+ * Alias of @RequestParam
+ * @param {*}
+ * @return {*}
+ */
+export const Param = RequestParam;
 
 /**
  * Inject ParameterDecorator

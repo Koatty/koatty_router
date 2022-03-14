@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2022-02-23 14:53:16
+ * @LastEditTime: 2022-03-14 16:29:52
  */
 import * as Helper from "koatty_lib";
 import { RouterOptions } from "../index";
@@ -97,12 +97,13 @@ export class GrpcRouter implements KoattyRouter {
             implementation: implementation
         }
         this.router.set(name, value);
+        this.app?.server?.RegisterService(value);
     }
 
     /**
      * ListRouter
      *
-     * @returns {*}  {ServiceImplementation[]}
+     * @returns {*}  {Map<string, ServiceImplementation>}
      * @memberof GrpcRouter
      */
     ListRouter(): Map<string, ServiceImplementation> {
@@ -116,7 +117,6 @@ export class GrpcRouter implements KoattyRouter {
      */
     async LoadRouter(list: any[]) {
         try {
-            const app = this.app;
             // load proto files
             const pdef = LoadProto(this.options.protoFile);
             const services = ListServices(pdef);
@@ -125,9 +125,9 @@ export class GrpcRouter implements KoattyRouter {
             for (const n in list) {
                 const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
                 // inject router
-                const ctlRouters = injectRouter(app, ctlClass);
+                const ctlRouters = injectRouter(this.app, ctlClass);
                 // inject param
-                const ctlParams = injectParam(app, ctlClass);
+                const ctlParams = injectParam(this.app, ctlClass);
 
                 for (const it in ctlRouters) {
                     const router = ctlRouters[it];
@@ -159,11 +159,11 @@ export class GrpcRouter implements KoattyRouter {
                         const ctlItem = ctls[path];
                         Logger.Debug(`Register request mapping: ["${path}" => ${ctlItem.name}.${ctlItem.method}]`);
                         impl[handler.name] = (call: IRpcServerUnaryCall<any, any>, callback: IRpcServerCallback<any>) => {
-                            return app.callback("grpc", (ctx) => {
+                            return this.app.callback("grpc", (ctx) => {
                                 const ctl = IOCContainer.getInsByClass(ctlItem.ctl, [ctx]);
-                                return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params);
+                                return Handler(this.app, ctx, ctl, ctlItem.method, ctlItem.params);
                             })(call, callback);
-                        }
+                        };
                     }
                 }
                 this.SetRouter(serviceName, si.service, impl);

@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 19:02:06
- * @LastEditTime: 2022-02-23 11:19:01
+ * @LastEditTime: 2022-03-14 10:16:14
  */
 import KoaRouter from "@koa/router";
 import * as Helper from "koatty_lib";
@@ -12,7 +12,10 @@ import { IOCContainer } from "koatty_container";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { Handler, injectParam, injectRouter } from "../inject";
 import { RequestMethod } from "../mapping";
-import { Koatty, KoattyContext, KoattyRouter } from "koatty_core";
+import { Koatty, KoattyContext, KoattyNext, KoattyRouter } from "koatty_core";
+
+// HttpImplementation
+export type HttpImplementation = (ctx: KoattyContext, next: KoattyNext) => Promise<any>;
 
 /**
  * HttpRouter class
@@ -20,7 +23,7 @@ import { Koatty, KoattyContext, KoattyRouter } from "koatty_core";
 export class HttpRouter implements KoattyRouter {
     app: Koatty;
     options: RouterOptions;
-    router: KoaRouter<any, unknown>;
+    router: KoaRouter;
 
     constructor(app: Koatty, options?: RouterOptions) {
         this.app = app;
@@ -37,11 +40,21 @@ export class HttpRouter implements KoattyRouter {
      * @param {string} path
      * @param {RequestMethod} [method]
      */
-    SetRouter(path: string, func: Function, method?: RequestMethod) {
+    SetRouter(path: string, func: HttpImplementation, method?: RequestMethod) {
         if (Helper.isEmpty(method)) {
             return;
         }
-        this.router[method](path, <any>func);
+        method = method ?? RequestMethod.ALL;
+        this.router[method](path, func);
+    }
+
+    /**
+     * ListRouter
+     *
+     * @returns {*}  {KoaRouter.Middleware<any, unknown>}
+     */
+    ListRouter() {
+        return this.router.routes();
     }
 
     /**
@@ -51,36 +64,32 @@ export class HttpRouter implements KoattyRouter {
      */
     LoadRouter(list: any[]) {
         try {
-            const app = this.app;
-            const kRouter: any = this.router;
             // tslint:disable-next-line: forin
             for (const n in list) {
                 const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
                 // inject router
-                const ctlRouters = injectRouter(app, ctlClass);
+                const ctlRouters = injectRouter(this.app, ctlClass);
                 // inject param
-                const ctlParams = injectParam(app, ctlClass);
+                const ctlParams = injectParam(this.app, ctlClass);
                 // tslint:disable-next-line: forin
                 for (const it in ctlRouters) {
                     const router = ctlRouters[it];
                     const method = router.method;
                     const path = router.path;
-                    const requestMethod = router.requestMethod;
+                    const requestMethod = <RequestMethod>router.requestMethod;
                     const params = ctlParams[method];
                     Logger.Debug(`Register request mapping: [${requestMethod}] : ["${path}" => ${n}.${method}]`);
-                    kRouter[requestMethod](path, function (ctx: KoattyContext): Promise<any> {
+                    this.SetRouter(path, (ctx: KoattyContext): Promise<any> => {
                         const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
-                        return Handler(app, ctx, ctl, method, params);
-                    });
+                        return Handler(this.app, ctx, ctl, method, params);
+                    }, requestMethod);
                 }
             }
 
-            // Load in the 'appStart' event to facilitate the expansion of middleware
             // exp: in middleware
             // app.Router.SetRouter('/xxx',  (ctx: Koa.KoattyContext): any => {...}, 'GET')
-            app.on('appStart', () => {
-                app.use(kRouter.routes()).use(kRouter.allowedMethods());
-            });
+            this.app.use(this.ListRouter()).
+                use(this.router.allowedMethods());
         } catch (err) {
             Logger.Error(err);
         }

@@ -9,11 +9,11 @@ ListRouter
 <b>Signature:</b>
 
 ```typescript
-ListRouter(): KoaRouter.Middleware<import("koa").DefaultState, import("koa").DefaultContext>;
+ListRouter(): KoaRouter.Middleware<Koa.DefaultState, Koa.DefaultContext>;
 ```
 <b>Returns:</b>
 
-KoaRouter.Middleware&lt;import("koa").DefaultState, import("koa").DefaultContext&gt;
+KoaRouter.Middleware&lt;Koa.DefaultState, Koa.DefaultContext&gt;
 
-{<!-- -->\*<!-- -->} WsImplementation\[\]
+{<!-- -->\*<!-- -->} {<!-- -->KoaRouter.Middleware<!-- -->&lt;<!-- -->any, unknown<!-- -->&gt;<!-- -->}
 
