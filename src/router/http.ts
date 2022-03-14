@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 19:02:06
- * @LastEditTime: 2022-03-14 10:16:14
+ * @LastEditTime: 2022-03-14 17:22:32
  */
 import KoaRouter from "@koa/router";
 import * as Helper from "koatty_lib";
@@ -64,8 +64,7 @@ export class HttpRouter implements KoattyRouter {
      */
     LoadRouter(list: any[]) {
         try {
-            // tslint:disable-next-line: forin
-            for (const n in list) {
+            for (const n of list) {
                 const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
                 // inject router
                 const ctlRouters = injectRouter(this.app, ctlClass);

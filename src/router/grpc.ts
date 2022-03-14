@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2022-03-14 16:29:52
+ * @LastEditTime: 2022-03-14 17:22:28
  */
 import * as Helper from "koatty_lib";
 import { RouterOptions } from "../index";
@@ -122,7 +122,7 @@ export class GrpcRouter implements KoattyRouter {
             const services = ListServices(pdef);
 
             const ctls: CtlInterface = {};
-            for (const n in list) {
+            for (const n of list) {
                 const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
                 // inject router
                 const ctlRouters = injectRouter(this.app, ctlClass);
