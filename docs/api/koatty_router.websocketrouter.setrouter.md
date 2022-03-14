@@ -4,22 +4,25 @@
 
 ## WebsocketRouter.SetRouter() method
 
-SetRouter
+Set router
 
 <b>Signature:</b>
 
 ```typescript
-SetRouter(method: string, func: WsImplementation): void;
+SetRouter(path: string, func: WsImplementation, method?: RequestMethod): void;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  method | string |  |
-|  func | [WsImplementation](./koatty_router.wsimplementation.md) |  WebsocketRouter |
+|  path | string |  |
+|  func | [WsImplementation](./koatty_router.wsimplementation.md) |  |
+|  method | [RequestMethod](./koatty_router.requestmethod.md) |  |
 
 <b>Returns:</b>
 
 void
+
+{<!-- -->\*<!-- -->}  WebsocketRouter
 

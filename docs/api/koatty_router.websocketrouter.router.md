@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-router: Map<string, WsImplementation>;
+router: KoaRouter;
 ```

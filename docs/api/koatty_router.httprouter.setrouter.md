@@ -9,7 +9,7 @@ Set router
 <b>Signature:</b>
 
 ```typescript
-SetRouter(path: string, func: Function, method?: RequestMethod): void;
+SetRouter(path: string, func: HttpImplementation, method?: RequestMethod): void;
 ```
 
 ## Parameters
@@ -17,7 +17,7 @@ SetRouter(path: string, func: Function, method?: RequestMethod): void;
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  path | string |  |
-|  func | Function |  |
+|  func | [HttpImplementation](./koatty_router.httpimplementation.md) |  |
 |  method | [RequestMethod](./koatty_router.requestmethod.md) |  |
 
 <b>Returns:</b>

@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-export declare type WsImplementation = (socket: WebSocket, request: any, data: any) => Promise<any>;
+export declare type WsImplementation = (ctx: KoattyContext, next: KoattyNext) => Promise<any>;
 ```

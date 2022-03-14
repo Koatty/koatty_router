@@ -25,12 +25,13 @@ export declare class HttpRouter implements KoattyRouter
 |  --- | --- | --- | --- |
 |  [app](./koatty_router.httprouter.app.md) |  | Koatty |  |
 |  [options](./koatty_router.httprouter.options.md) |  | [RouterOptions](./koatty_router.routeroptions.md) |  |
-|  [router](./koatty_router.httprouter.router.md) |  | KoaRouter&lt;any, unknown&gt; |  |
+|  [router](./koatty_router.httprouter.router.md) |  | KoaRouter |  |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
+|  [ListRouter()](./koatty_router.httprouter.listrouter.md) |  | ListRouter |
 |  [LoadRouter(list)](./koatty_router.httprouter.loadrouter.md) |  |  |
 |  [SetRouter(path, func, method)](./koatty_router.httprouter.setrouter.md) |  | Set router |
 

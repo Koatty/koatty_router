@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-router: KoaRouter<any, unknown>;
+router: KoaRouter;
 ```

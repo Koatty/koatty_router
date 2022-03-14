@@ -23,13 +23,13 @@ export declare class WebsocketRouter implements KoattyRouter
 |  --- | --- | --- | --- |
 |  [app](./koatty_router.websocketrouter.app.md) |  | Koatty |  |
 |  [options](./koatty_router.websocketrouter.options.md) |  | [WebsocketRouterOptions](./koatty_router.websocketrouteroptions.md) |  |
-|  [router](./koatty_router.websocketrouter.router.md) |  | Map&lt;string, [WsImplementation](./koatty_router.wsimplementation.md)<!-- -->&gt; |  |
+|  [router](./koatty_router.websocketrouter.router.md) |  | KoaRouter |  |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [ListRouter()](./koatty_router.websocketrouter.listrouter.md) |  |  |
+|  [ListRouter()](./koatty_router.websocketrouter.listrouter.md) |  | ListRouter |
 |  [LoadRouter(list)](./koatty_router.websocketrouter.loadrouter.md) |  |  |
-|  [SetRouter(method, func)](./koatty_router.websocketrouter.setrouter.md) |  | SetRouter |
+|  [SetRouter(path, func, method)](./koatty_router.websocketrouter.setrouter.md) |  | Set router |
 
