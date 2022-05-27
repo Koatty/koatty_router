@@ -17,7 +17,7 @@ export declare function PathVariable(name?: string): ParameterDecorator;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  name | string | params name |
+|  name | string | <i>(Optional)</i> params name |
 
 <b>Returns:</b>
 

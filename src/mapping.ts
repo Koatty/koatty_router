@@ -18,10 +18,10 @@ export const ROUTER_KEY = 'ROUTER_KEY';
  * @interface RouterOption
  */
 export interface RouterOption {
-    path?: string;
-    requestMethod: string;
-    routerName?: string;
-    method: string;
+  path?: string;
+  requestMethod: string;
+  routerName?: string;
+  method: string;
 }
 
 /**
@@ -31,14 +31,14 @@ export interface RouterOption {
  * @var RequestMethod
  */
 export enum RequestMethod {
-    "GET" = "get",
-    "POST" = "post",
-    "PUT" = "put",
-    "DELETE" = "delete",
-    "PATCH" = "patch",
-    "ALL" = "all",
-    "OPTIONS" = "options",
-    "HEAD" = "head"
+  "GET" = "get",
+  "POST" = "post",
+  "PUT" = "put",
+  "DELETE" = "delete",
+  "PATCH" = "patch",
+  "ALL" = "all",
+  "OPTIONS" = "options",
+  "HEAD" = "head"
 }
 
 /**
@@ -52,28 +52,28 @@ export enum RequestMethod {
  * @returns {*}  {MethodDecorator}
  */
 export const RequestMapping = (
-    path = "/",
-    reqMethod: RequestMethod = RequestMethod.GET,
-    routerOptions: {
-        routerName?: string;
-    } = {}
+  path = "/",
+  reqMethod: RequestMethod = RequestMethod.GET,
+  routerOptions: {
+    routerName?: string;
+  } = {}
 ): MethodDecorator => {
-    const routerName = routerOptions.routerName ?? "";
-    return (target, key: string, descriptor: PropertyDescriptor) => {
-        const targetType = IOCContainer.getType(target);
-        if (targetType !== "CONTROLLER") {
-            throw Error("RequestMapping decorator is only used in controllers class.");
-        }
-        // tslint:disable-next-line: no-object-literal-type-assertion
-        IOCContainer.attachPropertyData(ROUTER_KEY, {
-            path,
-            requestMethod: reqMethod,
-            routerName,
-            method: key
-        } as RouterOption, target, key);
+  const routerName = routerOptions.routerName ?? "";
+  return (target, key: string, descriptor: PropertyDescriptor) => {
+    const targetType = IOCContainer.getType(target);
+    if (targetType !== "CONTROLLER") {
+      throw Error("RequestMapping decorator is only used in controllers class.");
+    }
+    // tslint:disable-next-line: no-object-literal-type-assertion
+    IOCContainer.attachPropertyData(ROUTER_KEY, {
+      path,
+      requestMethod: reqMethod,
+      routerName,
+      method: key
+    } as RouterOption, target, key);
 
-        return descriptor;
-    };
+    return descriptor;
+  };
 };
 
 /**
@@ -86,12 +86,12 @@ export const RequestMapping = (
  * @returns {MethodDecorator}
  */
 export const PostMapping = (
-    path = "/",
-    routerOptions: {
-        routerName?: string;
-    } = {}
+  path = "/",
+  routerOptions: {
+    routerName?: string;
+  } = {}
 ): MethodDecorator => {
-    return RequestMapping(path, RequestMethod.POST, routerOptions);
+  return RequestMapping(path, RequestMethod.POST, routerOptions);
 };
 
 /**
@@ -104,12 +104,12 @@ export const PostMapping = (
  * @returns {MethodDecorator}
  */
 export const GetMapping = (
-    path = "/",
-    routerOptions: {
-        routerName?: string;
-    } = {}
+  path = "/",
+  routerOptions: {
+    routerName?: string;
+  } = {}
 ): MethodDecorator => {
-    return RequestMapping(path, RequestMethod.GET, routerOptions);
+  return RequestMapping(path, RequestMethod.GET, routerOptions);
 };
 
 /**
@@ -122,12 +122,12 @@ export const GetMapping = (
  * @returns {MethodDecorator}
  */
 export const DeleteMapping = (
-    path = "/",
-    routerOptions: {
-        routerName?: string;
-    } = {}
+  path = "/",
+  routerOptions: {
+    routerName?: string;
+  } = {}
 ): MethodDecorator => {
-    return RequestMapping(path, RequestMethod.DELETE, routerOptions);
+  return RequestMapping(path, RequestMethod.DELETE, routerOptions);
 };
 
 /**
@@ -140,12 +140,12 @@ export const DeleteMapping = (
  * @returns {MethodDecorator}
  */
 export const PutMapping = (
-    path = "/",
-    routerOptions: {
-        routerName?: string;
-    } = {}
+  path = "/",
+  routerOptions: {
+    routerName?: string;
+  } = {}
 ): MethodDecorator => {
-    return RequestMapping(path, RequestMethod.PUT, routerOptions);
+  return RequestMapping(path, RequestMethod.PUT, routerOptions);
 };
 
 /**
@@ -158,12 +158,12 @@ export const PutMapping = (
  * @returns {MethodDecorator}
  */
 export const PatchMapping = (
-    path = "/",
-    routerOptions: {
-        routerName?: string;
-    } = {}
+  path = "/",
+  routerOptions: {
+    routerName?: string;
+  } = {}
 ): MethodDecorator => {
-    return RequestMapping(path, RequestMethod.PATCH, routerOptions);
+  return RequestMapping(path, RequestMethod.PATCH, routerOptions);
 };
 
 /**
@@ -176,12 +176,12 @@ export const PatchMapping = (
  * @returns {MethodDecorator}
  */
 export const OptionsMapping = (
-    path = "/",
-    routerOptions: {
-        routerName?: string;
-    } = {}
+  path = "/",
+  routerOptions: {
+    routerName?: string;
+  } = {}
 ): MethodDecorator => {
-    return RequestMapping(path, RequestMethod.OPTIONS, routerOptions);
+  return RequestMapping(path, RequestMethod.OPTIONS, routerOptions);
 };
 
 /**
@@ -194,10 +194,10 @@ export const OptionsMapping = (
  * @returns {MethodDecorator}
  */
 export const HeadMapping = (
-    path = "/",
-    routerOptions: {
-        routerName?: string;
-    } = {}
+  path = "/",
+  routerOptions: {
+    routerName?: string;
+  } = {}
 ): MethodDecorator => {
-    return RequestMapping(path, RequestMethod.HEAD, routerOptions);
+  return RequestMapping(path, RequestMethod.HEAD, routerOptions);
 };

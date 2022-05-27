@@ -17,7 +17,7 @@ export declare function RequestParam(name?: string): ParameterDecorator;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  name | string |  |
+|  name | string | <i>(Optional)</i> |
 
 <b>Returns:</b>
 

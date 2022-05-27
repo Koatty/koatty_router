@@ -18,7 +18,7 @@ SetRouter(path: string, func: HttpImplementation, method?: RequestMethod): void;
 |  --- | --- | --- |
 |  path | string |  |
 |  func | [HttpImplementation](./koatty_router.httpimplementation.md) |  |
-|  method | [RequestMethod](./koatty_router.requestmethod.md) |  |
+|  method | [RequestMethod](./koatty_router.requestmethod.md) | <i>(Optional)</i> |
 
 <b>Returns:</b>
 

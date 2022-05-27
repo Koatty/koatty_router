@@ -17,5 +17,5 @@ constructor(app: Koatty, options?: RouterOptions);
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  app | Koatty |  |
-|  options | [RouterOptions](./koatty_router.routeroptions.md) |  |
+|  options | [RouterOptions](./koatty_router.routeroptions.md) | <i>(Optional)</i> |
 

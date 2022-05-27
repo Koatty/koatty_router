@@ -19,7 +19,7 @@ export declare function NewRouter(app: Koatty, options: RouterOptions, protocol?
 |  --- | --- | --- |
 |  app | Koatty |  |
 |  options | [RouterOptions](./koatty_router.routeroptions.md) |  |
-|  protocol | string |  |
+|  protocol | string | <i>(Optional)</i> |
 
 <b>Returns:</b>
 

@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2022-03-14 17:22:28
+ * @LastEditTime: 2022-03-15 17:10:19
  */
 import * as Helper from "koatty_lib";
 import { RouterOptions } from "../index";
@@ -21,7 +21,7 @@ import { Koatty, KoattyRouter, IRpcServerUnaryCall, IRpcServerCallback } from "k
  * @interface GrpcRouterOptions
  */
 export interface GrpcRouterOptions extends RouterOptions {
-    protoFile: string;
+  protoFile: string;
 }
 
 /**
@@ -31,8 +31,8 @@ export interface GrpcRouterOptions extends RouterOptions {
  * @interface ServiceImplementation
  */
 export interface ServiceImplementation {
-    service: ServiceDefinition;
-    implementation: Implementation;
+  service: ServiceDefinition;
+  implementation: Implementation;
 }
 /**
  * Implementation
@@ -41,7 +41,7 @@ export interface ServiceImplementation {
  * @interface Implementation
  */
 export interface Implementation {
-    [methodName: string]: UntypedHandleCall;
+  [methodName: string]: UntypedHandleCall;
 }
 
 /**
@@ -50,7 +50,7 @@ export interface Implementation {
  * @interface CtlInterface
  */
 interface CtlInterface {
-    [path: string]: CtlProperty
+  [path: string]: CtlProperty
 }
 /**
  * CtlProperty
@@ -58,120 +58,120 @@ interface CtlInterface {
  * @interface CtlProperty
  */
 interface CtlProperty {
-    name: string;
-    ctl: Function;
-    method: string;
-    params: any;
+  name: string;
+  ctl: Function;
+  method: string;
+  params: any;
 }
 
 export class GrpcRouter implements KoattyRouter {
-    app: Koatty;
-    options: GrpcRouterOptions;
-    router: Map<string, ServiceImplementation>;
+  app: Koatty;
+  options: GrpcRouterOptions;
+  router: Map<string, ServiceImplementation>;
 
-    constructor(app: Koatty, options?: RouterOptions) {
-        this.app = app;
-        options.ext = options.ext || {};
-        this.options = {
-            ...options,
-            protoFile: options.ext.protoFile,
-        };
-        this.router = new Map();
+  constructor(app: Koatty, options?: RouterOptions) {
+    this.app = app;
+    options.ext = options.ext || {};
+    this.options = {
+      ...options,
+      protoFile: options.ext.protoFile,
+    };
+    this.router = new Map();
+  }
+
+  /** 
+   * SetRouter
+   *
+   * @param {string} name
+   * @param {ServiceDefinition<UntypedServiceImplementation>} service
+   * @param {UntypedServiceImplementation} implementation
+   * @returns {*}  
+   * @memberof GrpcRouter
+   */
+  SetRouter(name: string, service: any, implementation: UntypedServiceImplementation) {
+    if (Helper.isEmpty(name)) {
+      return;
     }
+    const value = {
+      service: service,
+      implementation: implementation
+    }
+    this.router.set(name, value);
+    this.app?.server?.RegisterService(value);
+  }
 
-    /** 
-     * SetRouter
-     *
-     * @param {string} name
-     * @param {ServiceDefinition<UntypedServiceImplementation>} service
-     * @param {UntypedServiceImplementation} implementation
-     * @returns {*}  
-     * @memberof GrpcRouter
-     */
-    SetRouter(name: string, service: any, implementation: UntypedServiceImplementation) {
-        if (Helper.isEmpty(name)) {
-            return;
+  /**
+   * ListRouter
+   *
+   * @returns {*}  {Map<string, ServiceImplementation>}
+   * @memberof GrpcRouter
+   */
+  ListRouter(): Map<string, ServiceImplementation> {
+    return this.router;
+  }
+
+  /**
+   * Loading router
+   *
+   * @memberof Router
+   */
+  async LoadRouter(list: any[]) {
+    try {
+      // load proto files
+      const pdef = LoadProto(this.options.protoFile);
+      const services = ListServices(pdef);
+
+      const ctls: CtlInterface = {};
+      for (const n of list) {
+        const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
+        // inject router
+        const ctlRouters = injectRouter(this.app, ctlClass);
+        // inject param
+        const ctlParams = injectParam(this.app, ctlClass);
+
+        for (const it in ctlRouters) {
+          const router = ctlRouters[it];
+          const method = router.method;
+          const path = router.path;
+          const params = ctlParams[method];
+
+          ctls[path] = {
+            name: n,
+            ctl: ctlClass,
+            method,
+            params,
+          }
         }
-        const value = {
-            service: service,
-            implementation: implementation
+      }
+
+      // 循环匹配服务绑定路由
+      for (const si of services) {
+        const serviceName = si.name;
+        // Verifying
+        if (!si.service || si.handlers.length === 0) {
+          Logger.Warn('Ignore', serviceName, 'which is an empty service');
+          return;
         }
-        this.router.set(name, value);
-        this.app?.server?.RegisterService(value);
-    }
-
-    /**
-     * ListRouter
-     *
-     * @returns {*}  {Map<string, ServiceImplementation>}
-     * @memberof GrpcRouter
-     */
-    ListRouter(): Map<string, ServiceImplementation> {
-        return this.router;
-    }
-
-    /**
-     * Loading router
-     *
-     * @memberof Router
-     */
-    async LoadRouter(list: any[]) {
-        try {
-            // load proto files
-            const pdef = LoadProto(this.options.protoFile);
-            const services = ListServices(pdef);
-
-            const ctls: CtlInterface = {};
-            for (const n of list) {
-                const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
-                // inject router
-                const ctlRouters = injectRouter(this.app, ctlClass);
-                // inject param
-                const ctlParams = injectParam(this.app, ctlClass);
-
-                for (const it in ctlRouters) {
-                    const router = ctlRouters[it];
-                    const method = router.method;
-                    const path = router.path;
-                    const params = ctlParams[method];
-
-                    ctls[path] = {
-                        name: n,
-                        ctl: ctlClass,
-                        method,
-                        params,
-                    }
-                }
-            }
-
-            // 循环匹配服务绑定路由
-            for (const si of services) {
-                const serviceName = si.name;
-                // Verifying
-                if (!si.service || si.handlers.length === 0) {
-                    Logger.Warn('Ignore', serviceName, 'which is an empty service');
-                    return;
-                }
-                const impl: { [key: string]: UntypedHandleCall } = {};
-                for (const handler of si.handlers) {
-                    const path = handler.path;
-                    if (ctls[path]) {
-                        const ctlItem = ctls[path];
-                        Logger.Debug(`Register request mapping: ["${path}" => ${ctlItem.name}.${ctlItem.method}]`);
-                        impl[handler.name] = (call: IRpcServerUnaryCall<any, any>, callback: IRpcServerCallback<any>) => {
-                            return this.app.callback("grpc", (ctx) => {
-                                const ctl = IOCContainer.getInsByClass(ctlItem.ctl, [ctx]);
-                                return Handler(this.app, ctx, ctl, ctlItem.method, ctlItem.params);
-                            })(call, callback);
-                        };
-                    }
-                }
-                this.SetRouter(serviceName, si.service, impl);
-            }
-
-        } catch (err) {
-            Logger.Error(err);
+        const impl: { [key: string]: UntypedHandleCall } = {};
+        for (const handler of si.handlers) {
+          const path = handler.path;
+          if (ctls[path]) {
+            const ctlItem = ctls[path];
+            Logger.Debug(`Register request mapping: ["${path}" => ${ctlItem.name}.${ctlItem.method}]`);
+            impl[handler.name] = (call: IRpcServerUnaryCall<any, any>, callback: IRpcServerCallback<any>) => {
+              return this.app.callback("grpc", (ctx) => {
+                const ctl = IOCContainer.getInsByClass(ctlItem.ctl, [ctx]);
+                return Handler(this.app, ctx, ctl, ctlItem.method, ctlItem.params);
+              })(call, callback);
+            };
+          }
         }
+        this.SetRouter(serviceName, si.service, impl);
+      }
+
+    } catch (err) {
+      Logger.Error(err);
     }
+  }
 
 }

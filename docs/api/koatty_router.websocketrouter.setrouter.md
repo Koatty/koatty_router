@@ -18,7 +18,7 @@ SetRouter(path: string, func: WsImplementation, method?: RequestMethod): void;
 |  --- | --- | --- |
 |  path | string |  |
 |  func | [WsImplementation](./koatty_router.wsimplementation.md) |  |
-|  method | [RequestMethod](./koatty_router.requestmethod.md) |  |
+|  method | [RequestMethod](./koatty_router.requestmethod.md) | <i>(Optional)</i> |
 
 <b>Returns:</b>
 
