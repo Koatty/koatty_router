@@ -3503,9 +3503,9 @@ koatty_proto@^1.x.x:
     protobufjs "^6.11.3"
 
 koatty_validation@^1.x.x:
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/koatty_validation/-/koatty_validation-1.2.4.tgz#941f0b324f9f0adc4cc091c744a739e23ddb3cc8"
-  integrity sha512-Xl62p93u0SjLXnAPbpXw8i5e6hHFD2Fy5ZIOP2BId8wsbEs3FAYTuNykVVQ+9QNbAPy2yu4G8jGGJc+jUdMJJw==
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/koatty_validation/-/koatty_validation-1.2.5.tgz#359d0ee2bc92841e6796ed96bdf209c66fb87967"
+  integrity sha512-6R+gbch4VXM7tO9IglUq+XAHNrnyO8QPrMK4izD1PaEakO99+IUhhfl5eRO71RGaUFejy1ncz9IaI8x+x/Xmeg==
   dependencies:
     class-validator "^0.13.2"
     koatty_container "^1.x.x"
