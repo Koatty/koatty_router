@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-24 23:21:26
- * @LastEditTime: 2022-03-15 17:11:03
+ * @LastEditTime: 2022-08-19 14:33:52
  */
 import { IOCContainer } from "koatty_container";
 import { Koatty, KoattyContext } from "koatty_core";
@@ -75,24 +75,24 @@ interface ParamOptions {
  */
 async function checkParams(app: Koatty, value: any, opt: ParamOptions) {
   try {
+    //@Validated
     if (opt.isDto) {
       // DTO class
       if (!opt.clazz) {
         opt.clazz = IOCContainer.getClass(opt.type, "COMPONENT");
       }
       if (opt.dtoCheck) {
-        value = await ClassValidator.valid(opt.clazz, value, true);
+        value = await ClassValidator.valid(opt.clazz, value, false);
       } else {
-        value = plainToClass(opt.clazz, value, true);
+        value = plainToClass(opt.clazz, value, false);
       }
     } else {
-      value = convertParamsType(value, opt.type);
       //@Valid()
-      if (opt) {
-        const { type, validRule, validOpt } = opt;
-        if (type && validRule) {
-          validatorFuncs(`${opt.index}`, value, type, validRule, validOpt, false);
-        }
+      if (opt.validRule) {
+        validatorFuncs(`${opt.index}`, value, opt.type, opt.validRule, opt.validOpt);
+      }
+      if (!checkParamsType(value, opt.type)) {
+        throw new Exception(`TypeError: invalid arguments`, 1, 400);
       }
     }
     return value;
@@ -115,12 +115,7 @@ async function checkParams(app: Koatty, value: any, opt: ParamOptions) {
  * @returns
  */
 function validatorFuncs(name: string, value: any, type: string,
-  rule: ValidRules | ValidRules[] | Function, options?: ValidOtpions, checkType = true) {
-  // check type
-  if (checkType && !checkParamsType(value, type)) {
-    throw new Exception(options.message || `TypeError: invalid arguments '${name}'.`, 1, 400);
-  }
-
+  rule: ValidRules | ValidRules[] | Function, options?: ValidOtpions) {
   if (Helper.isFunction(rule)) {
     // Function no return value
     rule(value);
