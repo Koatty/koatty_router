@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.7](https://github.com/koatty/koatty_router/compare/v1.7.6...v1.7.7) (2022-08-19)
+
+
+### Bug Fixes
+
+* 移除强制类型转换，增加类型检查 ([199fa8d](https://github.com/koatty/koatty_router/commit/199fa8d16a3a8bc271f445e8a39a7e760afa982b))
+
 ### [1.7.6](https://github.com/koatty/koatty_router/compare/v1.7.5...v1.7.6) (2022-05-27)
 
 ### [1.7.5](https://github.com/koatty/koatty_router/compare/v1.7.4...v1.7.5) (2022-03-14)
