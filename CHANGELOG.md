@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.9](https://github.com/koatty/koatty_router/compare/v1.7.8...v1.7.9) (2022-08-19)
+
+
+### Bug Fixes
+
+* querystring must be convert type ([1bec352](https://github.com/koatty/koatty_router/commit/1bec3528a4f29d398a3158a25bcab4824e483433))
+
 ### [1.7.8](https://github.com/koatty/koatty_router/compare/v1.7.7...v1.7.8) (2022-08-19)
 
 ### [1.7.7](https://github.com/koatty/koatty_router/compare/v1.7.6...v1.7.7) (2022-08-19)
