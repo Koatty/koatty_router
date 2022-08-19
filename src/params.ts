@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-24 23:21:26
- * @LastEditTime: 2022-08-19 14:33:52
+ * @LastEditTime: 2022-08-19 15:37:12
  */
 import { IOCContainer } from "koatty_container";
 import { Koatty, KoattyContext } from "koatty_core";
@@ -87,12 +87,11 @@ async function checkParams(app: Koatty, value: any, opt: ParamOptions) {
         value = plainToClass(opt.clazz, value, false);
       }
     } else {
+      // querystring must be convert type
+      value = convertParamsType(value, opt.type)
       //@Valid()
       if (opt.validRule) {
         validatorFuncs(`${opt.index}`, value, opt.type, opt.validRule, opt.validOpt);
-      }
-      if (!checkParamsType(value, opt.type)) {
-        throw new Exception(`TypeError: invalid arguments`, 1, 400);
       }
     }
     return value;
