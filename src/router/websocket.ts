@@ -3,11 +3,11 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:16:44
- * @LastEditTime: 2022-03-15 17:10:30
+ * @LastEditTime: 2022-10-29 11:25:18
  */
 
 import KoaRouter from "@koa/router";
-import { RouterOptions } from "../index";
+import { RouterOptions } from "../router";
 import { RequestMethod } from "../mapping";
 import { IOCContainer } from "koatty_container";
 import { DefaultLogger as Logger } from "koatty_logger";
@@ -29,6 +29,7 @@ export type WsImplementation = (ctx: KoattyContext, next: KoattyNext) => Promise
 
 export class WebsocketRouter implements KoattyRouter {
   app: Koatty;
+  readonly protocol: string;
   options: WebsocketRouterOptions;
   router: KoaRouter;
 

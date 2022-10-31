@@ -3,10 +3,10 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2022-03-15 17:10:19
+ * @LastEditTime: 2022-10-29 11:24:18
  */
 import * as Helper from "koatty_lib";
-import { RouterOptions } from "../index";
+import { RouterOptions } from "../router";
 import { IOCContainer } from "koatty_container";
 import { ListServices, LoadProto } from "koatty_proto";
 import { DefaultLogger as Logger } from "koatty_logger";
@@ -66,6 +66,7 @@ interface CtlProperty {
 
 export class GrpcRouter implements KoattyRouter {
   app: Koatty;
+  readonly protocol: string;
   options: GrpcRouterOptions;
   router: Map<string, ServiceImplementation>;
 
