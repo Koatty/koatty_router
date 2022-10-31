@@ -23,6 +23,7 @@ export declare class GrpcRouter implements KoattyRouter
 |  --- | --- | --- | --- |
 |  [app](./koatty_router.grpcrouter.app.md) |  | Koatty |  |
 |  [options](./koatty_router.grpcrouter.options.md) |  | [GrpcRouterOptions](./koatty_router.grpcrouteroptions.md) |  |
+|  [protocol](./koatty_router.grpcrouter.protocol.md) |  | string |  |
 |  [router](./koatty_router.grpcrouter.router.md) |  | Map&lt;string, [ServiceImplementation](./koatty_router.serviceimplementation.md)<!-- -->&gt; |  |
 
 ## Methods

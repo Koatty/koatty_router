@@ -23,6 +23,7 @@ export declare class WebsocketRouter implements KoattyRouter
 |  --- | --- | --- | --- |
 |  [app](./koatty_router.websocketrouter.app.md) |  | Koatty |  |
 |  [options](./koatty_router.websocketrouter.options.md) |  | [WebsocketRouterOptions](./koatty_router.websocketrouteroptions.md) |  |
+|  [protocol](./koatty_router.websocketrouter.protocol.md) |  | string |  |
 |  [router](./koatty_router.websocketrouter.router.md) |  | KoaRouter |  |
 
 ## Methods
