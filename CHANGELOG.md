@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.12](https://github.com/koatty/koatty_router/compare/v1.7.10...v1.7.12) (2022-11-01)
+
+
+### Bug Fixes
+
+* ctx.body 赋值 ([2a8d8c8](https://github.com/koatty/koatty_router/commit/2a8d8c8d4e8615777f50dc4ccaf331e4f10bc66b))
+
 ### [1.7.10](https://github.com/koatty/koatty_router/compare/v1.7.9...v1.7.10) (2022-10-31)
 
 ### [1.7.9](https://github.com/koatty/koatty_router/compare/v1.7.8...v1.7.9) (2022-08-19)
