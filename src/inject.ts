@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-10 16:58:57
- * @LastEditTime: 2022-03-15 17:10:46
+ * @LastEditTime: 2022-11-01 15:41:24
  */
 import * as Helper from "koatty_lib";
 import { getParamter } from "./params";
@@ -36,7 +36,8 @@ export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any, method:
     args = await getParamter(app, ctx, ctlParams);
   }
   // method
-  return ctl[method](...args);
+  const res = await ctl[method](...args);
+  ctx.body = res;
 }
 
 /**
