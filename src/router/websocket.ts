@@ -47,7 +47,7 @@ export class WebsocketRouter implements KoattyRouter {
    * @param {string} path
    * @param {WsImplementation} func
    * @param {RequestMethod} [method]
-   * @returns {*}  
+   * @returns {*}
    * @memberof WebsocketRouter
    */
   SetRouter(path: string, func: WsImplementation, method?: RequestMethod) {
@@ -87,11 +87,15 @@ export class WebsocketRouter implements KoattyRouter {
           const method = router.method;
           const requestMethod = <RequestMethod>router.requestMethod;
           const params = ctlParams[method];
-          Logger.Debug(`Register request mapping: ["${path}" => ${n}.${method}]`);
-          this.SetRouter(path, (ctx: KoattyContext): Promise<any> => {
-            const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
-            return Handler(this.app, ctx, ctl, method, params);
-          }, requestMethod);
+          // websocket only handler get request
+          if (requestMethod == RequestMethod.GET || requestMethod == RequestMethod.ALL) {
+            Logger.Debug(`Register request mapping: [${requestMethod}] : ["${path}" => ${n}.${method}]`);
+            this.SetRouter(path, (ctx: KoattyContext): Promise<any> => {
+              const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
+              return Handler(this.app, ctx, ctl, method, params);
+            }, requestMethod);
+          }
+
         }
       }
       // Add websocket handler

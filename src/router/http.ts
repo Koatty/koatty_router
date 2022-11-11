@@ -78,14 +78,11 @@ export class HttpRouter implements KoattyRouter {
           const path = router.path;
           const requestMethod = <RequestMethod>router.requestMethod;
           const params = ctlParams[method];
-          // websocket only handler get request 
-          if (requestMethod == RequestMethod.GET || requestMethod == RequestMethod.ALL) {
-            Logger.Debug(`Register request mapping: [${requestMethod}] : ["${path}" => ${n}.${method}]`);
-            this.SetRouter(path, (ctx: KoattyContext): Promise<any> => {
-              const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
-              return Handler(this.app, ctx, ctl, method, params);
-            }, requestMethod);
-          }
+          Logger.Debug(`Register request mapping: ["${path}" => ${n}.${method}]`);
+          this.SetRouter(path, (ctx: KoattyContext): Promise<any> => {
+            const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
+            return Handler(this.app, ctx, ctl, method, params);
+          }, requestMethod);
         }
       }
 
