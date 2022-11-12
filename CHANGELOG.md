@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.8.0](https://github.com/koatty/koatty_router/compare/v1.7.12...v1.8.0) (2022-11-12)
+
+
+### Bug Fixes
+
+* httpRouter与wsRouter使用了错误的加载方式 ([94d111c](https://github.com/koatty/koatty_router/commit/94d111cc321d80b3098a3abcb999ca64d0cc4f95))
+
 ### [1.7.12](https://github.com/koatty/koatty_router/compare/v1.7.10...v1.7.12) (2022-11-01)
 
 
