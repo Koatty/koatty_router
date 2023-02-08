@@ -37,7 +37,7 @@ export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any, method:
   }
   // method
   const res = await ctl[method](...args);
-  ctx.body = res;
+  ctx.body = ctx.body || res;
 }
 
 /**
