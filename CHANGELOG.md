@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.3](https://github.com/koatty/koatty_router/compare/v1.8.2...v1.8.3) (2023-02-10)
+
+
+### Bug Fixes
+
+*  koa's redirect function not available ([8b5dde5](https://github.com/koatty/koatty_router/commit/8b5dde52870f5b331cb8da8881c0774875a79ef2))
+* words ([06d2803](https://github.com/koatty/koatty_router/commit/06d28038a9140e509b9bd3bb083ee2503d2b0f75))
+
 ### [1.8.2](https://github.com/koatty/koatty_router/compare/v1.8.0...v1.8.2) (2023-01-13)
 
 ## [1.8.0](https://github.com/koatty/koatty_router/compare/v1.7.12...v1.8.0) (2022-11-12)
