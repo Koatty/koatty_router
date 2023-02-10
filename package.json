@@ -1,6 +1,6 @@
 {
   "name": "koatty_router",
-  "version": "1.8.3",
+  "version": "1.8.4",
   "description": "Koatty routing component, adapt to http1/2, websocket, gRPC.",
   "scripts": {
     "build": "npm run build:js && npm run build:dts && npm run build:doc && npm run build:cp",
@@ -57,9 +57,11 @@
     "standard-version": "^9.x.x",
     "ts-jest": "^29.x.x",
     "ts-node": "^10.x.x",
-    "typescript": "^4.x.x"
+    "typescript": "^4.x.x",
+    "ws": "^8.x.x"
   },
   "dependencies": {
+    "@koa/router": "^12.0.0",
     "koatty_container": "^1.x.x",
     "koatty_core": "^1.x.x",
     "koatty_exception": "^1.x.x",
