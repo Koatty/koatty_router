@@ -3,10 +3,10 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-10 16:58:57
- * @LastEditTime: 2022-11-01 15:41:24
+ * @LastEditTime: 2023-02-10 18:09:56
  */
 import * as Helper from "koatty_lib";
-import { getParamter } from "./params";
+import { getParameter } from "./params";
 import { Koatty, KoattyContext } from "koatty_core";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { getOriginMetadata, IOCContainer, RecursiveGetMetadata, TAGGED_PARAM } from "koatty_container";
@@ -33,7 +33,7 @@ export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any, method:
   // inject param
   let args = [];
   if (ctlParams) {
-    args = await getParamter(app, ctx, ctlParams);
+    args = await getParameter(app, ctx, ctlParams);
   }
   // method
   const res = await ctl[method](...args);

@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-24 23:21:26
- * @LastEditTime: 2022-08-19 15:37:12
+ * @LastEditTime: 2023-02-10 18:09:57
  */
 import { IOCContainer } from "koatty_container";
 import { Koatty, KoattyContext } from "koatty_core";
@@ -23,7 +23,7 @@ import { ParamMetadata } from "./inject";
  * @param {any[]} params
  * @returns
  */
-export async function getParamter(app: Koatty, ctx: KoattyContext, params?: ParamMetadata[]) {
+export async function getParameter(app: Koatty, ctx: KoattyContext, params?: ParamMetadata[]) {
   //convert type
   params = params || <ParamMetadata[]>[];
   const props: any[] = params.map(async (v: ParamMetadata, k: number) => {
