@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-11-24 23:21:26
- * @LastEditTime: 2023-02-10 18:09:57
+ * @LastEditTime: 2023-02-17 11:34:03
  */
 import { IOCContainer } from "koatty_container";
 import { Koatty, KoattyContext } from "koatty_core";
@@ -82,13 +82,13 @@ async function checkParams(app: Koatty, value: any, opt: ParamOptions) {
         opt.clazz = IOCContainer.getClass(opt.type, "COMPONENT");
       }
       if (opt.dtoCheck) {
-        value = await ClassValidator.valid(opt.clazz, value, false);
+        value = await ClassValidator.valid(opt.clazz, value, true);
       } else {
         value = plainToClass(opt.clazz, value, false);
       }
     } else {
       // querystring must be convert type
-      value = convertParamsType(value, opt.type)
+      value = convertParamsType(value, opt.type);
       //@Valid()
       if (opt.validRule) {
         validatorFuncs(`${opt.index}`, value, opt.type, opt.validRule, opt.validOpt);
