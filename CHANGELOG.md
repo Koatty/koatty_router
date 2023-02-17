@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.5](https://github.com/koatty/koatty_router/compare/v1.8.4...v1.8.5) (2023-02-17)
+
+
+### Bug Fixes
+
+* 修复dto参数类型转换 ([7fd8f64](https://github.com/koatty/koatty_router/commit/7fd8f642c8094e2f93ce1cd50bb91b56043e71d3))
+
 ### [1.8.4](https://github.com/koatty/koatty_router/compare/v1.8.3...v1.8.4) (2023-02-10)
 
 ### [1.8.3](https://github.com/koatty/koatty_router/compare/v1.8.2...v1.8.3) (2023-02-10)
