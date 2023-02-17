@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.6](https://github.com/koatty/koatty_router/compare/v1.8.5...v1.8.6) (2023-02-17)
+
+
+### Bug Fixes
+
+* convert param types ([46f5e80](https://github.com/koatty/koatty_router/commit/46f5e80a6bd35d6b77e20fa36fe46971f67be0b9))
+
 ### [1.8.5](https://github.com/koatty/koatty_router/compare/v1.8.4...v1.8.5) (2023-02-17)
 
 
