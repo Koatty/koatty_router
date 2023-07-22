@@ -69,7 +69,7 @@
     "koatty_logger": "^2.x.x",
     "koatty_proto": "^1.x.x",
     "koatty_validation": "^1.x.x",
-    "tslib": "^2.4.1"
+    "tslib": "^2.6.0"
   },
   "peerDependencies": {
     "koatty_container": "^1.x.x",
