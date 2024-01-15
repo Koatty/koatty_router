@@ -6,7 +6,7 @@
 
 Whether or not routing should be case-sensitive.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 sensitive?: boolean;

@@ -8,7 +8,7 @@ RouterOptions
 
   RouterOptions
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface RouterOptions 
@@ -16,13 +16,15 @@ export interface RouterOptions
 
 ## Properties
 
-|  Property | Type | Description |
-|  --- | --- | --- |
-|  [ext?](./koatty_router.routeroptions.ext.md) | any | <i>(Optional)</i> Other extended configuration |
-|  [methods?](./koatty_router.routeroptions.methods.md) | string\[\] | <i>(Optional)</i> Methods which should be supported by the router. |
-|  [prefix](./koatty_router.routeroptions.prefix.md) | string |  |
-|  [protoFile?](./koatty_router.routeroptions.protofile.md) | string | <i>(Optional)</i> gRPC protocol file |
-|  [routerPath?](./koatty_router.routeroptions.routerpath.md) | string | <i>(Optional)</i> |
-|  [sensitive?](./koatty_router.routeroptions.sensitive.md) | boolean | <i>(Optional)</i> Whether or not routing should be case-sensitive. |
-|  [strict?](./koatty_router.routeroptions.strict.md) | boolean | <i>(Optional)</i> Whether or not routes should matched strictly.<!-- -->If strict matching is enabled, the trailing slash is taken into account when matching routes. |
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [ext?](./koatty_router.routeroptions.ext.md) |  | any | _(Optional)_ Other extended configuration |
+|  [methods?](./koatty_router.routeroptions.methods.md) |  | string\[\] | _(Optional)_ Methods which should be supported by the router. |
+|  [payload?](./koatty_router.routeroptions.payload.md) |  | PayloadOptions | _(Optional)_ payload options |
+|  [prefix](./koatty_router.routeroptions.prefix.md) |  | string |  |
+|  [protocol](./koatty_router.routeroptions.protocol.md) |  | string |  |
+|  [protoFile?](./koatty_router.routeroptions.protofile.md) |  | string | _(Optional)_ gRPC protocol file |
+|  [routerPath?](./koatty_router.routeroptions.routerpath.md) |  | string | _(Optional)_ |
+|  [sensitive?](./koatty_router.routeroptions.sensitive.md) |  | boolean | _(Optional)_ Whether or not routing should be case-sensitive. |
+|  [strict?](./koatty_router.routeroptions.strict.md) |  | boolean | <p>_(Optional)_ Whether or not routes should matched strictly.</p><p>If strict matching is enabled, the trailing slash is taken into account when matching routes.</p> |
 

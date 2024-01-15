@@ -4,22 +4,15 @@
 
 ## RequestParam() function
 
-Get POST/GET parameters, POST priority
+Get parsed query-string and path variable(koa ctx.query and ctx.params), and set as an object.
 
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
-export declare function RequestParam(name?: string): ParameterDecorator;
+export declare function RequestParam(): ParameterDecorator;
 ```
-
-## Parameters
-
-|  Parameter | Type | Description |
-|  --- | --- | --- |
-|  name | string | <i>(Optional)</i> |
-
-<b>Returns:</b>
+**Returns:**
 
 ParameterDecorator
 

@@ -4,7 +4,7 @@
 
 ## RouterOption.routerName property
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 routerName?: string;

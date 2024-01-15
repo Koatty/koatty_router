@@ -4,7 +4,7 @@
 
 ## RouterOptions.routerPath property
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 routerPath?: string;

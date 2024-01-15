@@ -6,7 +6,7 @@
 
 Methods which should be supported by the router.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 methods?: string[];

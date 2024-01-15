@@ -6,7 +6,7 @@
 
 Routes HTTP GET requests to the specified path.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 GetMapping: (path?: string, routerOptions?: {

@@ -6,7 +6,7 @@
 
 Alias of 
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 Param: typeof RequestParam

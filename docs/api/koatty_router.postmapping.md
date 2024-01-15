@@ -6,7 +6,7 @@
 
 Routes HTTP POST requests to the specified path.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 PostMapping: (path?: string, routerOptions?: {

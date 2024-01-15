@@ -4,7 +4,7 @@
 
 ## ROUTER\_KEY variable
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 ROUTER_KEY = "ROUTER_KEY"

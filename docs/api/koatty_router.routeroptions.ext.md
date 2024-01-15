@@ -6,7 +6,7 @@
 
 Other extended configuration
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 ext?: any;

@@ -6,7 +6,7 @@
 
 Routes HTTP PATCH requests to the specified path.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 PatchMapping: (path?: string, routerOptions?: {

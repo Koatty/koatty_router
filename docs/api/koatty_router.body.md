@@ -6,7 +6,7 @@
 
 Alias of 
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 Body: typeof RequestBody

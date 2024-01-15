@@ -8,7 +8,7 @@ Koatty router options
 
   RouterOption
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface RouterOption 
@@ -16,10 +16,10 @@ export interface RouterOption
 
 ## Properties
 
-|  Property | Type | Description |
-|  --- | --- | --- |
-|  [method](./koatty_router.routeroption.method.md) | string |  |
-|  [path?](./koatty_router.routeroption.path.md) | string | <i>(Optional)</i> |
-|  [requestMethod](./koatty_router.routeroption.requestmethod.md) | string |  |
-|  [routerName?](./koatty_router.routeroption.routername.md) | string | <i>(Optional)</i> |
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [method](./koatty_router.routeroption.method.md) |  | string |  |
+|  [path?](./koatty_router.routeroption.path.md) |  | string | _(Optional)_ |
+|  [requestMethod](./koatty_router.routeroption.requestmethod.md) |  | string |  |
+|  [routerName?](./koatty_router.routeroption.routername.md) |  | string | _(Optional)_ |
 

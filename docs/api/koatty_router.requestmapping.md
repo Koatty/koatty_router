@@ -6,7 +6,7 @@
 
 Routes HTTP requests to the specified path.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 RequestMapping: (path?: string, reqMethod?: RequestMethod, routerOptions?: {

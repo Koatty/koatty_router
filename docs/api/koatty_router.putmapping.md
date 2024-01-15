@@ -6,7 +6,7 @@
 
 Routes HTTP PUT requests to the specified path.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 PutMapping: (path?: string, routerOptions?: {

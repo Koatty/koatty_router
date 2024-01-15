@@ -4,43 +4,31 @@
 
 ## koatty\_router package
 
-## Classes
-
-|  Class | Description |
-|  --- | --- |
-|  [GrpcRouter](./koatty_router.grpcrouter.md) |  |
-|  [HttpRouter](./koatty_router.httprouter.md) | HttpRouter class |
-|  [WebsocketRouter](./koatty_router.websocketrouter.md) |  |
-
 ## Enumerations
 
 |  Enumeration | Description |
 |  --- | --- |
-|  [RequestMethod](./koatty_router.requestmethod.md) | http request methods  RequestMethod |
+|  [RequestMethod](./koatty_router.requestmethod.md) | <p>http request methods</p><p>  RequestMethod</p> |
 
 ## Functions
 
 |  Function | Description |
 |  --- | --- |
-|  [File(name)](./koatty_router.file.md) | Get parsed upload file object. |
-|  [Get(name)](./koatty_router.get.md) | Get query-string parameters (take value from ctx.query). |
-|  [Header(name)](./koatty_router.header.md) | Get request header. |
-|  [NewRouter(app, options, protocol)](./koatty_router.newrouter.md) | get instance of Router |
-|  [PathVariable(name)](./koatty_router.pathvariable.md) | Get path variable (take value from ctx.params). |
-|  [Post(name)](./koatty_router.post.md) | Get parsed POST/PUT... body. |
-|  [RequestBody()](./koatty_router.requestbody.md) | Get request body (contains the values of  and @<!-- -->File). |
-|  [RequestParam(name)](./koatty_router.requestparam.md) | Get POST/GET parameters, POST priority |
+|  [File\_2(name)](./koatty_router.file_2.md) | <p>Get parsed upload file object.</p> |
+|  [Get(name)](./koatty_router.get.md) | <p>Get query-string parameters (take value from ctx.query).</p> |
+|  [Header(name)](./koatty_router.header.md) | <p>Get request header.</p> |
+|  [NewRouter(app, opt)](./koatty_router.newrouter.md) | <p>get instance of Router</p> |
+|  [PathVariable(name)](./koatty_router.pathvariable.md) | <p>Get path variable (take value from ctx.params).</p> |
+|  [Post(name)](./koatty_router.post.md) | <p>Get parsed POST/PUT... body.</p> |
+|  [RequestBody()](./koatty_router.requestbody.md) | <p>Get parsed body(form variable and file object).</p> |
+|  [RequestParam()](./koatty_router.requestparam.md) | <p>Get parsed query-string and path variable(koa ctx.query and ctx.params), and set as an object.</p> |
 
 ## Interfaces
 
 |  Interface | Description |
 |  --- | --- |
-|  [GrpcRouterOptions](./koatty_router.grpcrouteroptions.md) | GrpcRouter Options  GrpcRouterOptions |
-|  [Implementation](./koatty_router.implementation.md) | Implementation  Implementation |
-|  [RouterOption](./koatty_router.routeroption.md) | Koatty router options  RouterOption |
-|  [RouterOptions](./koatty_router.routeroptions.md) | RouterOptions  RouterOptions |
-|  [ServiceImplementation](./koatty_router.serviceimplementation.md) | ServiceImplementation  ServiceImplementation |
-|  [WebsocketRouterOptions](./koatty_router.websocketrouteroptions.md) | WebsocketRouter Options  WebsocketRouterOptions |
+|  [RouterOption](./koatty_router.routeroption.md) | <p>Koatty router options</p><p>  RouterOption</p> |
+|  [RouterOptions](./koatty_router.routeroptions.md) | <p>RouterOptions</p><p>  RouterOptions</p> |
 
 ## Variables
 
@@ -58,11 +46,4 @@
 |  [PutMapping](./koatty_router.putmapping.md) | Routes HTTP PUT requests to the specified path. |
 |  [RequestMapping](./koatty_router.requestmapping.md) | Routes HTTP requests to the specified path. |
 |  [ROUTER\_KEY](./koatty_router.router_key.md) |  |
-
-## Type Aliases
-
-|  Type Alias | Description |
-|  --- | --- |
-|  [HttpImplementation](./koatty_router.httpimplementation.md) |  |
-|  [WsImplementation](./koatty_router.wsimplementation.md) |  |
 

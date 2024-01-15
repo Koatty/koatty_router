@@ -4,7 +4,7 @@
 
 ## CONTROLLER\_ROUTER variable
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 CONTROLLER_ROUTER = "CONTROLLER_ROUTER"

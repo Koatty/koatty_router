@@ -8,7 +8,7 @@ http request methods
 
   RequestMethod
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare enum RequestMethod 

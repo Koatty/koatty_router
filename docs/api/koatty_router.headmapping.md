@@ -6,7 +6,7 @@
 
 Routes HTTP HEAD requests to the specified path.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 HeadMapping: (path?: string, routerOptions?: {

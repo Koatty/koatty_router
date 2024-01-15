@@ -6,7 +6,7 @@
 
 Routes HTTP OPTIONS requests to the specified path.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 OptionsMapping: (path?: string, routerOptions?: {

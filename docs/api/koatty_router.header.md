@@ -7,7 +7,7 @@
 Get request header.
 
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare function Header(name?: string): ParameterDecorator;
@@ -17,9 +17,9 @@ export declare function Header(name?: string): ParameterDecorator;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  name | string | <i>(Optional)</i> |
+|  name | string | _(Optional)_ |
 
-<b>Returns:</b>
+**Returns:**
 
 ParameterDecorator
 

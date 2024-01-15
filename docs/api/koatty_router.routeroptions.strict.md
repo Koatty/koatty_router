@@ -8,7 +8,7 @@ Whether or not routes should matched strictly.
 
 If strict matching is enabled, the trailing slash is taken into account when matching routes.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 strict?: boolean;

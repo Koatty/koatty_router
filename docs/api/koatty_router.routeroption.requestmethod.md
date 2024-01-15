@@ -4,7 +4,7 @@
 
 ## RouterOption.requestMethod property
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 requestMethod: string;

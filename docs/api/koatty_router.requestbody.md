@@ -4,16 +4,17 @@
 
 ## RequestBody() function
 
-Get request body (contains the values of  and @<!-- -->File).
+Get parsed body(form variable and file object).
 
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare function RequestBody(): ParameterDecorator;
 ```
-<b>Returns:</b>
+**Returns:**
 
 ParameterDecorator
 
+ex: {<!-- -->post: {<!-- -->...<!-- -->}<!-- -->, file: {<!-- -->...<!-- -->}<!-- -->}
 

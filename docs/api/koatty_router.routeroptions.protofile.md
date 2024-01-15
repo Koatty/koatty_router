@@ -6,7 +6,7 @@
 
 gRPC protocol file
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 protoFile?: string;

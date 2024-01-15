@@ -7,7 +7,7 @@
 Get path variable (take value from ctx.params).
 
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare function PathVariable(name?: string): ParameterDecorator;
@@ -17,9 +17,9 @@ export declare function PathVariable(name?: string): ParameterDecorator;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  name | string | <i>(Optional)</i> params name |
+|  name | string | _(Optional)_ params name |
 
-<b>Returns:</b>
+**Returns:**
 
 ParameterDecorator
 
