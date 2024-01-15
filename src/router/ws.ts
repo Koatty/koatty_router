@@ -2,38 +2,44 @@
  * @Description:
  * @Usage:
  * @Author: richen
- * @Date: 2021-06-28 19:02:06
- * @LastEditTime: 2024-01-16 00:30:32
+ * @Date: 2021-06-29 14:16:44
+ * @LastEditTime: 2024-01-16 00:30:36
  */
+
 import KoaRouter from "@koa/router";
-import * as Helper from "koatty_lib";
 import { RouterOptions } from "../router";
-import { parsePath } from "../utils/path";
+import { RequestMethod } from "../mapping";
 import { IOCContainer } from "koatty_container";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { Handler, injectParamMetaData, injectRouter } from "../inject";
-import { RequestMethod } from "../mapping";
 import {
   Koatty, KoattyContext, KoattyRouter,
   RouterImplementation
 } from "koatty_core";
+import { Helper } from "koatty_lib";
+import { parsePath } from "../utils/path";
 import { payload } from "../payload";
 
-
 /**
- * HttpRouter class
+ * WebsocketRouter Options
+ *
+ * @export
+ * @interface WebsocketRouterOptions
  */
-export class HttpRouter implements KoattyRouter {
+export interface WebsocketRouterOptions extends RouterOptions {
+  prefix: string;
+}
+
+export class WebsocketRouter implements KoattyRouter {
   readonly protocol: string;
-  options: RouterOptions;
+  options: WebsocketRouterOptions;
   router: KoaRouter;
   private routerMap: Map<string, RouterImplementation>;
 
   constructor(app: Koatty, options?: RouterOptions) {
-    this.options = {
-      ...options
-    };
-    // initialize
+    this.options = Object.assign({
+      prefix: options.prefix
+    }, options);
     this.router = new KoaRouter(this.options);
     this.routerMap = new Map();
     // payload middleware
@@ -109,15 +115,18 @@ export class HttpRouter implements KoattyRouter {
           const path = parsePath(router.path);
           const requestMethod = <RequestMethod>router.requestMethod;
           const params = ctlParams[method];
-          Logger.Debug(`Register request mapping: ["${path}" => ${n}.${method}]`);
-          this.SetRouter(path, {
-            path,
-            method: requestMethod,
-            implementation: (ctx: KoattyContext): Promise<any> => {
-              const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
-              return Handler(app, ctx, ctl, method, params);
-            },
-          });
+          // websocket only handler get request
+          if (requestMethod == RequestMethod.GET || requestMethod == RequestMethod.ALL) {
+            Logger.Debug(`Register request mapping: [${requestMethod}] : ["${path}" => ${n}.${method}]`);
+            this.SetRouter(path, {
+              path,
+              method: requestMethod,
+              implementation: (ctx: KoattyContext): Promise<any> => {
+                const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
+                return Handler(app, ctx, ctl, method, params);
+              },
+            });
+          }
         }
       }
       // exp: in middleware
@@ -128,4 +137,5 @@ export class HttpRouter implements KoattyRouter {
       Logger.Error(err);
     }
   }
+
 }

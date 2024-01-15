@@ -2,12 +2,16 @@
  * @Description: 
  * @Usage: 
  * @Author: richen
- * @Date: 2022-10-29 11:15:30
- * @LastEditTime: 2022-10-29 11:26:39
+ * @Date: 2023-12-09 12:02:29
+ * @LastEditTime: 2024-01-16 00:18:22
+ * @License: BSD (3-Clause)
+ * @Copyright (c): <richenlin(at)gmail.com>
  */
+
 import { GrpcRouter } from "./router/grpc";
 import { HttpRouter } from "./router/http";
-import { WebsocketRouter } from "./router/websocket";
+import { PayloadOptions } from "./payload";
+import { WebsocketRouter } from "./router/ws";
 import { Koatty, KoattyRouter } from "koatty_core";
 import { Helper } from "koatty_lib";
 
@@ -18,6 +22,7 @@ import { Helper } from "koatty_lib";
  * @interface RouterOptions
  */
 export interface RouterOptions {
+  protocol: string;
   prefix: string;
   /**
    * Methods which should be supported by the router.
@@ -39,6 +44,11 @@ export interface RouterOptions {
    * gRPC protocol file
    */
   protoFile?: string;
+
+  /**
+   * payload options
+   */
+  payload?: PayloadOptions;
   // 
   /**
    * Other extended configuration
@@ -55,7 +65,13 @@ export interface RouterOptions {
  * @param {string} [protocol]
  * @returns {*}  {KoattyRouter}
  */
-export function NewRouter(app: Koatty, options: RouterOptions, protocol?: string): KoattyRouter {
+export function NewRouter(app: Koatty, opt?: RouterOptions): KoattyRouter {
+  const protocol = app.config("protocol") || "http";
+  const opts: RouterOptions = app.config(undefined, 'router') ?? {};
+
+  const options: RouterOptions = {
+    ...{ protocol: protocol, prefix: "" }, ...opts, ...opt
+  }
   let router;
   switch (protocol) {
     case "grpc":
