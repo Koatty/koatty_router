@@ -3,15 +3,15 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2024-01-16 00:18:22
+ * @LastEditTime: 2024-01-16 08:21:57
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
 
-import { GrpcRouter } from "./router/grpc";
-import { HttpRouter } from "./router/http";
-import { PayloadOptions } from "./payload";
-import { WebsocketRouter } from "./router/ws";
+import { GrpcRouter } from "./grpc";
+import { HttpRouter } from "./http";
+import { PayloadOptions } from "../params/payload";
+import { WebsocketRouter } from "./ws";
 import { Koatty, KoattyRouter } from "koatty_core";
 import { Helper } from "koatty_lib";
 

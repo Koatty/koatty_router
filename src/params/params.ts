@@ -9,7 +9,7 @@
  */
 
 import { KoattyContext } from "koatty_core";
-import { injectParam } from "./inject";
+import { injectParam } from "../utils/inject";
 import { PayloadOptions, bodyParser, queryParser } from "./payload";
 
 /**

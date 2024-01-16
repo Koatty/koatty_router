@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2024-01-08 06:35:21
+ * @LastEditTime: 2024-01-16 08:22:51
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -21,8 +21,8 @@ import {
   PARAM_CHECK_KEY, PARAM_RULE_KEY, PARAM_TYPE_KEY,
   plainToClass, ValidRules, ValidOtpions, paramterTypes
 } from "koatty_validation";
-import { CONTROLLER_ROUTER, ROUTER_KEY } from "./mapping";
-import { PayloadOptions } from "./payload";
+import { CONTROLLER_ROUTER, ROUTER_KEY } from "../params/mapping";
+import { PayloadOptions } from "../params/payload";
 
 /**
  * controller handler

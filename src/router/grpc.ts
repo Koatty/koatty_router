@@ -6,18 +6,18 @@
  * @LastEditTime: 2024-01-16 00:30:29
  */
 import * as Helper from "koatty_lib";
-import { RouterOptions } from "../router";
+import { RouterOptions } from "./router";
 import { parsePath } from "../utils/path";
 import { IOCContainer } from "koatty_container";
 import { ListServices, LoadProto } from "koatty_proto";
 import { DefaultLogger as Logger } from "koatty_logger";
-import { Handler, injectParamMetaData, injectRouter, ParamMetadata } from "../inject";
+import { Handler, injectParamMetaData, injectRouter, ParamMetadata } from "../utils/inject";
 import { UntypedHandleCall } from "@grpc/grpc-js";
 import {
   Koatty, KoattyRouter, IRpcServerUnaryCall,
   IRpcServerCallback, RouterImplementation
 } from "koatty_core";
-import { payload } from "../payload";
+import { payload } from "../params/payload";
 
 /**
  * GrpcRouter Options

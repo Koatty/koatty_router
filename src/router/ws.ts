@@ -7,18 +7,18 @@
  */
 
 import KoaRouter from "@koa/router";
-import { RouterOptions } from "../router";
-import { RequestMethod } from "../mapping";
+import { RouterOptions } from "./router";
+import { RequestMethod } from "../params/mapping";
 import { IOCContainer } from "koatty_container";
 import { DefaultLogger as Logger } from "koatty_logger";
-import { Handler, injectParamMetaData, injectRouter } from "../inject";
+import { Handler, injectParamMetaData, injectRouter } from "../utils/inject";
 import {
   Koatty, KoattyContext, KoattyRouter,
   RouterImplementation
 } from "koatty_core";
 import { Helper } from "koatty_lib";
 import { parsePath } from "../utils/path";
-import { payload } from "../payload";
+import { payload } from "../params/payload";
 
 /**
  * WebsocketRouter Options
