@@ -72,7 +72,7 @@
     "formidable": "^3.5.1",
     "inflation": "^2.1.0",
     "koatty_container": "^1.x.x",
-    "koatty_core": "^1.9.0-3",
+    "koatty_core": "^1.x.x",
     "koatty_exception": "^1.x.x",
     "koatty_lib": "^1.x.x",
     "koatty_logger": "^2.x.x",
