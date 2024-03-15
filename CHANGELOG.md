@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.1](https://github.com/koatty/koatty_router/compare/v1.9.0...v1.9.1) (2024-03-15)
+
+
+### Bug Fixes
+
+* injectParamMetaData参数传递错误 ([c2f91c4](https://github.com/koatty/koatty_router/commit/c2f91c4d825c5ba573f56360f3113636d58a3dd3))
+
 ## [1.9.0](https://github.com/koatty/koatty_router/compare/v1.9.0-2...v1.9.0) (2024-01-16)
 
 ## [1.9.0-2](https://github.com/koatty/koatty_router/compare/v1.9.0-1...v1.9.0-2) (2024-01-15)
