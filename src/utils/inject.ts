@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2024-01-16 08:27:06
+ * @LastEditTime: 2024-03-15 10:21:27
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -143,57 +143,57 @@ interface ParamMetadataMap {
  *
  * @param {Koatty} app
  * @param {*} target
- * @param {*} [instance]
+ * @param {*} [options]
  * @returns {*} 
  */
-export function injectParamMetaData(app: Koatty, target: any, instance?: any,
+export function injectParamMetaData(app: Koatty, target: any,
   options?: PayloadOptions): ParamMetadataMap {
-  instance = instance || target.prototype;
+  // const instance = target.prototype;
   const metaDatas = RecursiveGetMetadata(TAGGED_PARAM, target);
   const validMetaDatas = RecursiveGetMetadata(PARAM_RULE_KEY, target);
   const validatedMetaDatas = RecursiveGetMetadata(PARAM_CHECK_KEY, target);
   const argsMetaObj: ParamMetadataMap = {};
   for (const meta in metaDatas) {
     // 实例方法带规则形参必须小于等于原型形参(如果不存在验证规则，则小于)
-    if (instance[meta] && instance[meta].length <= metaDatas[meta].length) {
-      Logger.Debug(`Register inject param key ${IOCContainer.getIdentifier(target)
-        }: ${Helper.toString(meta)} => value: ${JSON.stringify(metaDatas[meta])}`);
+    // if (instance[meta] && instance[meta].length <= metaDatas[meta].length) {
+    Logger.Debug(`Register inject param key ${IOCContainer.getIdentifier(target)
+      }: ${Helper.toString(meta)} => value: ${JSON.stringify(metaDatas[meta])}`);
 
-      // cover to obj
-      const data: ParamMetadata[] = (metaDatas[meta] ?? []).sort((a: ParamMetadata,
-        b: ParamMetadata) => a.index - b.index);
-      const validData = validMetaDatas[meta] ?? [];
-      data.forEach((v: ParamMetadata) => {
-        validData.forEach((it: any) => {
-          if (v.index === it.index && it.name === v.name) {
-            v.validRule = it.rule;
-            v.validOpt = it.options;
-          }
-        });
-        if (v.type) {
-          v.type = v.isDto ? v.type : (v.type).toLowerCase();
+    // cover to obj
+    const data: ParamMetadata[] = (metaDatas[meta] ?? []).sort((a: ParamMetadata,
+      b: ParamMetadata) => a.index - b.index);
+    const validData = validMetaDatas[meta] ?? [];
+    data.forEach((v: ParamMetadata) => {
+      validData.forEach((it: any) => {
+        if (v.index === it.index && it.name === v.name) {
+          v.validRule = it.rule;
+          v.validOpt = it.options;
         }
-        v.dtoCheck = !!((validatedMetaDatas[meta]?.dtoCheck));
-        if (v.isDto) {
-          v.clazz = IOCContainer.getClass(v.type, "COMPONENT");
-          if (!v.clazz) {
-            throw Error(`Failed to obtain the class ${v.type},
-            because the class is not registered in the container.`);
-          }
-          if (v.dtoCheck) {
-            v.dtoRule = getOriginMetadata(PARAM_TYPE_KEY, v.clazz);
-            Reflect.defineProperty(v.clazz.prototype, "_typeDef", {
-              enumerable: true,
-              configurable: false,
-              writable: false,
-              value: v.dtoRule,
-            });
-          }
-        }
-        v.options = options
       });
-      argsMetaObj[meta] = data;
-    }
+      if (v.type) {
+        v.type = v.isDto ? v.type : (v.type).toLowerCase();
+      }
+      v.dtoCheck = !!((validatedMetaDatas[meta]?.dtoCheck));
+      if (v.isDto) {
+        v.clazz = IOCContainer.getClass(v.type, "COMPONENT");
+        if (!v.clazz) {
+          throw Error(`Failed to obtain the class ${v.type},
+            because the class is not registered in the container.`);
+        }
+        if (v.dtoCheck) {
+          v.dtoRule = getOriginMetadata(PARAM_TYPE_KEY, v.clazz);
+          Reflect.defineProperty(v.clazz.prototype, "_typeDef", {
+            enumerable: true,
+            configurable: false,
+            writable: false,
+            value: v.dtoRule,
+          });
+        }
+      }
+      v.options = options
+    });
+    argsMetaObj[meta] = data;
+    // }
   }
   return argsMetaObj;
 }
