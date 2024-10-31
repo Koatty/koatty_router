@@ -3,22 +3,21 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:30:20
- * @LastEditTime: 2024-01-16 08:20:08
+ * @LastEditTime: 2024-10-31 14:29:15
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
+import { BufferEncoding, IncomingForm } from "formidable";
 import fs from "fs";
-import { parse } from "querystring";
-import util from "util";
-import getRawBody from "raw-body";
 import inflate from "inflation";
-import { parseStringPromise } from "xml2js";
-import { IncomingForm, BufferEncoding } from "formidable";
-import { DefaultLogger as Logger } from "koatty_logger";
-import onFinished from "on-finished";
 import { KoattyContext, KoattyNext } from "koatty_core";
 import { Helper } from "koatty_lib";
-import { DefaultLogger as logger } from "koatty_logger";
+import { DefaultLogger as Logger } from "koatty_logger";
+import onFinished from "on-finished";
+import { parse } from "querystring";
+import getRawBody from "raw-body";
+import util from "util";
+import { parseStringPromise } from "xml2js";
 const fsUnlink = util.promisify(fs.unlink);
 const fsAccess = util.promisify(fs.access);
 /**
@@ -63,12 +62,8 @@ const defaultOptions: PayloadOptions = {
  */
 export function payload(options?: PayloadOptions) {
   return (ctx: KoattyContext, next: KoattyNext) => {
-    Helper.define(ctx, "requestParam", () => {
-      return queryParser(ctx, options);
-    });
-    Helper.define(ctx, "requestBody", () => {
-      return bodyParser(ctx, options);
-    });
+    Helper.define(ctx, "requestParam", () => queryParser(ctx, options));
+    Helper.define(ctx, "requestBody", () => bodyParser(ctx, options));
     return next();
   }
 }
@@ -76,10 +71,10 @@ export function payload(options?: PayloadOptions) {
 /**
  * @description: 
  * @param {KoattyContext} ctx
- * @param {PayloadOptions} options
+ * @param {PayloadOptions} _options
  * @return {*}
  */
-export function queryParser(ctx: KoattyContext, options?: PayloadOptions): any {
+export function queryParser(ctx: KoattyContext, _options?: PayloadOptions): any {
   let query = ctx.getMetaData("_query")[0];
   if (!Helper.isEmpty(query)) {
     return query;
@@ -107,7 +102,7 @@ export async function bodyParser(ctx: KoattyContext, options?: PayloadOptions): 
     ctx.setMetaData("_body", body);
     return body;
   } catch (err) {
-    logger.Error(err);
+    Logger.Error(err);
     return {};
   }
 }
@@ -189,25 +184,22 @@ function parseMultipart(ctx: KoattyContext, opts: PayloadOptions) {
 
   let uploadFiles: any = null;
   onFinished(ctx.res, () => {
-    if (!uploadFiles) {
-      return;
+    if (uploadFiles) {
+      Object.keys(uploadFiles).forEach((key: string) => {
+        fsAccess(uploadFiles[key].path)
+          .then(() => fsUnlink(uploadFiles[key].path))
+          .catch(Logger.Error);
+      });
     }
-    Object.keys(uploadFiles).forEach((key: string) => {
-      fsAccess(uploadFiles[key].path).then(() => fsUnlink(uploadFiles[key].path)).catch((err) => Logger.Error(err));
-    });
   });
-  return new Promise((resolve, reject) => {
-    form.parse(ctx.req, function (err, fields, files) {
+  return new Promise((resolve, _reject) => {
+    form.parse(ctx.req, (err, fields, files) => {
       if (err) {
-        // return reject(err);
         Logger.Error(err);
         return resolve({ post: {}, file: {} });
       }
       uploadFiles = files;
-      return resolve({
-        post: fields,
-        file: files
-      });
+      return resolve({ post: fields, file: files });
     });
   });
 }
@@ -238,7 +230,7 @@ async function parseJson(ctx: KoattyContext, opts: PayloadOptions) {
  * @returns {*}  {Promise<string>}
  */
 function parseText(ctx: KoattyContext, opts: PayloadOptions): Promise<string> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _reject) => {
     getRawBody(inflate(ctx.req), opts, function (err: any, body: string) {
       if (err) {
         // reject(err);

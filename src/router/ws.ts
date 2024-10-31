@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:16:44
- * @LastEditTime: 2024-01-16 00:30:36
+ * @LastEditTime: 2024-10-31 14:57:55
  */
 
 import KoaRouter from "@koa/router";
@@ -37,9 +37,7 @@ export class WebsocketRouter implements KoattyRouter {
   private routerMap: Map<string, RouterImplementation>;
 
   constructor(app: Koatty, options?: RouterOptions) {
-    this.options = Object.assign({
-      prefix: options.prefix
-    }, options);
+    this.options = { ...options, prefix: options.prefix };
     this.router = new KoaRouter(this.options);
     this.routerMap = new Map();
     // payload middleware
@@ -53,36 +51,25 @@ export class WebsocketRouter implements KoattyRouter {
    * @returns 
    */
   SetRouter(name: string, impl?: RouterImplementation) {
-    if (Helper.isEmpty(impl.path)) {
-      return;
-    }
+    if (Helper.isEmpty(impl.path)) return;
+
     const method = (impl.method || "").toLowerCase();
-    switch (method) {
-      case "get":
-        this.router.get(impl.path, <any>impl.implementation);
-        break;
-      case "post":
-        this.router.post(impl.path, <any>impl.implementation);
-        break;
-      case "put":
-        this.router.put(impl.path, <any>impl.implementation);
-        break;
-      case "delete":
-        this.router.delete(impl.path, <any>impl.implementation);
-        break;
-      case "patch":
-        this.router.patch(impl.path, <any>impl.implementation);
-        break;
-      case "options":
-        this.router.options(impl.path, <any>impl.implementation);
-        break;
-      case "head":
-        this.router.head(impl.path, <any>impl.implementation);
-        break;
-      default:
-        this.router.all(impl.path, <any>impl.implementation);
-        break;
+    const routerMethod: any = {
+      get: () => this.router.get(impl.path, <any>impl.implementation),
+      post: () => this.router.post(impl.path, <any>impl.implementation),
+      put: () => this.router.put(impl.path, <any>impl.implementation),
+      delete: () => this.router.delete(impl.path, <any>impl.implementation),
+      patch: () => this.router.patch(impl.path, <any>impl.implementation),
+      options: () => this.router.options(impl.path, <any>impl.implementation),
+      head: () => this.router.head(impl.path, <any>impl.implementation),
+      all: () => this.router.all(impl.path, <any>impl.implementation)
+    };
+    if (routerMethod[method]) {
+      routerMethod[method]();
+    } else {
+      routerMethod.all();
     }
+
     this.routerMap.set(name, impl);
   }
 
@@ -108,15 +95,13 @@ export class WebsocketRouter implements KoattyRouter {
         const ctlRouters = injectRouter(app, ctlClass);
         // inject param
         const ctlParams = injectParamMetaData(app, ctlClass, this.options.payload);
-        // tslint:disable-next-line: forin
-        for (const it in ctlRouters) {
-          const router = ctlRouters[it];
+
+        for (const router of Object.values(ctlRouters)) {
           const method = router.method;
           const path = parsePath(router.path);
           const requestMethod = <RequestMethod>router.requestMethod;
           const params = ctlParams[method];
-          // websocket only handler get request
-          if (requestMethod == RequestMethod.GET || requestMethod == RequestMethod.ALL) {
+          if (requestMethod === RequestMethod.GET || requestMethod === RequestMethod.ALL) {
             Logger.Debug(`Register request mapping: [${requestMethod}] : ["${path}" => ${n}.${method}]`);
             this.SetRouter(path, {
               path,
@@ -131,8 +116,7 @@ export class WebsocketRouter implements KoattyRouter {
       }
       // exp: in middleware
       // app.Router.SetRouter('/xxx',  (ctx: Koa.KoattyContext): any => {...}, 'GET')
-      app.use(this.router.routes()).
-        use(this.router.allowedMethods());
+      app.use(this.router.routes()).use(this.router.allowedMethods());
     } catch (err) {
       Logger.Error(err);
     }

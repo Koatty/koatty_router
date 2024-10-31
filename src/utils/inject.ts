@@ -3,23 +3,28 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2024-03-15 11:12:12
+ * @LastEditTime: 2024-10-31 15:07:10
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
 
-import { Helper } from "koatty_lib";
-import { Exception } from "koatty_exception";
-import { Koatty, KoattyContext } from "koatty_core";
-import { DefaultLogger as Logger } from "koatty_logger";
 import {
   getOriginMetadata, IOCContainer, RecursiveGetMetadata,
   TAGGED_PARAM
 } from "koatty_container";
+import { Koatty, KoattyContext } from "koatty_core";
+import { Exception } from "koatty_exception";
+import { Helper } from "koatty_lib";
+import { DefaultLogger as Logger } from "koatty_logger";
 import {
-  ClassValidator, FunctionValidator, convertParamsType,
+  ClassValidator,
+  convertParamsType,
+  FunctionValidator,
   PARAM_CHECK_KEY, PARAM_RULE_KEY, PARAM_TYPE_KEY,
-  plainToClass, ValidRules, ValidOtpions, paramterTypes
+  paramterTypes,
+  plainToClass,
+  ValidOtpions,
+  ValidRules
 } from "koatty_validation";
 import { CONTROLLER_ROUTER, ROUTER_KEY } from "../params/mapping";
 import { PayloadOptions } from "../params/payload";
@@ -39,14 +44,9 @@ export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any,
   if (!ctx || !ctl) {
     return ctx.throw(404, `Controller not found.`);
   }
-  if (!ctl.ctx) {
-    ctl.ctx = ctx;
-  }
+  ctl.ctx ??= ctx;
   // inject param
-  let args = [];
-  if (ctlParams) {
-    args = await getParameter(app, ctx, ctlParams);
-  }
+  const args = ctlParams ? await getParameter(app, ctx, ctlParams) : [];
   // method
   const res = await ctl[method](...args);
   if (Helper.isError(res)) {
@@ -81,17 +81,13 @@ interface RouterMetadataObject {
  *
  * @param {Koatty} app
  * @param {*} target
- * @param {*} [instance]
+ * @param {*} [_instance]
  * @returns {*} 
  */
-export function injectRouter(app: Koatty, target: any, instance?: any): RouterMetadataObject {
+export function injectRouter(app: Koatty, target: any, _instance?: any): RouterMetadataObject {
   // Controller router path
   const metaDatas = IOCContainer.listPropertyData(CONTROLLER_ROUTER, target);
-  let path = "";
-  const identifier = IOCContainer.getIdentifier(target);
-  if (metaDatas) {
-    path = metaDatas[identifier] ?? "";
-  }
+  let path = (metaDatas && IOCContainer.getIdentifier(target) in metaDatas) ? metaDatas[IOCContainer.getIdentifier(target)] : "";
   path = path.startsWith("/") || path === "" ? path : `/${path}`;
 
   const rmetaData = RecursiveGetMetadata(ROUTER_KEY, target);
@@ -167,16 +163,13 @@ export function injectParamMetaData(app: Koatty, target: any,
       b: ParamMetadata) => a.index - b.index);
     const validData = validMetaDatas[meta] ?? [];
     data.forEach((v: ParamMetadata) => {
-      validData.forEach((it: any) => {
-        if (v.index === it.index && it.name === v.name) {
-          v.validRule = it.rule;
-          v.validOpt = it.options;
-        }
-      });
-      if (v.type) {
-        v.type = v.isDto ? v.type : (v.type).toLowerCase();
+      const validEntry = validData.find((it: any) => v.index === it.index && it.name === v.name);
+      if (validEntry) {
+        v.validRule = validEntry.rule;
+        v.validOpt = validEntry.options;
       }
-      v.dtoCheck = !!((validatedMetaDatas[meta]?.dtoCheck));
+      v.type = v.isDto ? v.type : (v.type).toLowerCase();
+      v.dtoCheck = !!(validatedMetaDatas[meta]?.dtoCheck);
       if (v.isDto) {
         v.clazz = IOCContainer.getClass(v.type, "COMPONENT");
         if (!v.clazz) {
@@ -210,7 +203,7 @@ export function injectParamMetaData(app: Koatty, target: any,
  * @returns {*}  {ParameterDecorator}
  */
 export const injectParam = (fn: Function, name: string): ParameterDecorator => {
-  return (target: Object, propertyKey: string, descriptor: number) => {
+  return (target: object, propertyKey: string, descriptor: number) => {
     const targetType = IOCContainer.getType(target);
     if (targetType !== "CONTROLLER") {
       throw Error(`${name} decorator is only used in controllers class.`);
@@ -223,7 +216,7 @@ export const injectParam = (fn: Function, name: string): ParameterDecorator => {
     // const returnType = Reflect.getMetadata("design:returntype", target, propertyKey);
     // 获取所有元数据 key (由 TypeScript 注入)
     // const keys = Reflect.getMetadataKeys(target, propertyKey);
-    let type = (paramTypes[descriptor]?.name) ? paramTypes[descriptor].name : 'object';
+    let type = paramTypes[descriptor]?.name || 'object';
     let isDto = false;
     //DTO class
     if (!(Helper.toString(type) in paramterTypes)) {
@@ -241,7 +234,6 @@ export const injectParam = (fn: Function, name: string): ParameterDecorator => {
       isDto
     }, target, propertyKey);
     return descriptor;
-
   };
 };
 
@@ -255,15 +247,11 @@ export const injectParam = (fn: Function, name: string): ParameterDecorator => {
  * @returns
  */
 async function getParameter(app: Koatty, ctx: KoattyContext, params?: ParamMetadata[]) {
-  //convert type
-  params = params || <ParamMetadata[]>[];
-  const props: any[] = params.map(async (v: ParamMetadata, k: number) => {
+  const props = await Promise.all((params || []).map(async (v: ParamMetadata, k: number) => {
     let value: any = null;
     if (v.fn && Helper.isFunction(v.fn)) {
       value = await v.fn(ctx, v.options);
     }
-
-    // check params
     return checkParams(app, value, {
       index: k,
       isDto: v.isDto,
@@ -274,8 +262,8 @@ async function getParameter(app: Koatty, ctx: KoattyContext, params?: ParamMetad
       dtoRule: v.dtoRule,
       clazz: v.clazz,
     });
-  });
-  return Promise.all(props);
+  }));
+  return props;
 }
 
 /**
@@ -312,11 +300,7 @@ async function checkParams(app: Koatty, value: any, opt: ParamOptions) {
       if (!opt.clazz) {
         opt.clazz = IOCContainer.getClass(opt.type, "COMPONENT");
       }
-      if (opt.dtoCheck) {
-        value = await ClassValidator.valid(opt.clazz, value, true);
-      } else {
-        value = plainToClass(opt.clazz, value, true);
-      }
+      value = opt.dtoCheck ? await ClassValidator.valid(opt.clazz, value, true) : plainToClass(opt.clazz, value, true);
     } else {
       // querystring default type is string, must be convert type
       value = convertParamsType(value, opt.type);
@@ -347,18 +331,11 @@ async function checkParams(app: Koatty, value: any, opt: ParamOptions) {
 function validatorFuncs(name: string, value: any, type: string,
   rule: ValidRules | ValidRules[] | Function, options?: ValidOtpions) {
   if (Helper.isFunction(rule)) {
-    // Function no return value
     rule(value);
   } else {
-    const funcs: any[] = [];
-    if (Helper.isString(rule)) {
-      funcs.push(rule);
-    } else if (Helper.isArray(rule)) {
-      funcs.push(...<any[]>rule);
-    }
+    const funcs: any[] = Array.isArray(rule) ? rule : [rule].filter(Boolean);
     for (const func of funcs) {
-      if (Object.hasOwnProperty.call(FunctionValidator, func)) {
-        // FunctionValidator just throws error, no return value
+      if (func in FunctionValidator) {
         FunctionValidator[<ValidRules>func](value, options);
       }
     }

@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2024-01-15 13:02:38
+ * @LastEditTime: 2024-10-31 14:31:42
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -20,12 +20,7 @@ import { PayloadOptions, bodyParser, queryParser } from "./payload";
  * @returns
  */
 export function Header(name?: string): ParameterDecorator {
-  return injectParam((ctx: KoattyContext) => {
-    if (name !== undefined) {
-      return ctx.get(name);
-    }
-    return ctx.headers;
-  }, "Header");
+  return injectParam((ctx: KoattyContext) => name ? ctx.get(name) : ctx.headers, "Header");
 }
 
 /**
@@ -37,11 +32,8 @@ export function Header(name?: string): ParameterDecorator {
  */
 export function PathVariable(name?: string): ParameterDecorator {
   return injectParam((ctx: KoattyContext) => {
-    const pathParams: any = ctx.params ?? {};
-    if (name === undefined) {
-      return pathParams;
-    }
-    return pathParams[name];
+    const pathParams = ctx.params ?? {};
+    return name ? pathParams[name] : pathParams;
   }, "PathVariable");
 }
 
@@ -54,11 +46,8 @@ export function PathVariable(name?: string): ParameterDecorator {
  */
 export function Get(name?: string): ParameterDecorator {
   return injectParam((ctx: KoattyContext) => {
-    const queryParams: any = ctx.query ?? {};
-    if (name === undefined) {
-      return queryParams;
-    }
-    return queryParams[name];
+    const queryParams = ctx.query ?? {};
+    return name ? queryParams[name] : queryParams;
   }, "Get");
 }
 
@@ -70,16 +59,10 @@ export function Get(name?: string): ParameterDecorator {
  * @returns
  */
 export function Post(name?: string): ParameterDecorator {
-  return injectParam((ctx: KoattyContext, opt?: PayloadOptions) => {
-    return bodyParser(ctx, opt).then((body: {
-      post: Object
-    }) => {
-      const params: any = body.post ? body.post : body;
-      if (name === undefined) {
-        return params;
-      }
-      return params[name];
-    });
+  return injectParam(async (ctx: KoattyContext, opt?: PayloadOptions) => {
+    const body = await bodyParser(ctx, opt);
+    const params = body.post ?? body;
+    return name ? params[name] : params;
   }, "Post");
 }
 
@@ -91,16 +74,10 @@ export function Post(name?: string): ParameterDecorator {
  * @returns
  */
 export function File(name?: string): ParameterDecorator {
-  return injectParam((ctx: KoattyContext, opt?: PayloadOptions) => {
-    return bodyParser(ctx, opt).then((body: {
-      file: Object
-    }) => {
-      const params: any = body.file ?? {};
-      if (name === undefined) {
-        return params;
-      }
-      return params[name];
-    });
+  return injectParam(async (ctx: KoattyContext, opt?: PayloadOptions) => {
+    const body = await bodyParser(ctx, opt);
+    const params = body.file ?? {};
+    return name ? params[name] : params;
   }, "File");
 }
 
@@ -112,9 +89,7 @@ export function File(name?: string): ParameterDecorator {
  * @returns ex: {post: {...}, file: {...}}
  */
 export function RequestBody(): ParameterDecorator {
-  return injectParam((ctx: KoattyContext, opt?: PayloadOptions) => {
-    return bodyParser(ctx, opt);
-  }, "RequestBody");
+  return injectParam((ctx: KoattyContext, opt?: PayloadOptions) => bodyParser(ctx, opt), "RequestBody");
 }
 
 /**
@@ -132,9 +107,7 @@ export const Body = RequestBody;
  * @returns {ParameterDecorator}
  */
 export function RequestParam(): ParameterDecorator {
-  return injectParam((ctx: KoattyContext, opt?: PayloadOptions) => {
-    return queryParser(ctx, opt)
-  }, "RequestParam");
+  return injectParam((ctx: KoattyContext, opt?: PayloadOptions) => queryParser(ctx, opt), "RequestParam");
 }
 
 /**

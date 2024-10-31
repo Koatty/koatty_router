@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2023-12-09 12:31:19
+ * @LastEditTime: 2024-10-31 14:36:59
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -81,127 +81,46 @@ export const RequestMapping = (
 };
 
 /**
- * Routes HTTP POST requests to the specified path.
- *
- * @param {string} path
- * @param {{
- *         routerName?: string;
- *     }} [routerOptions={}]
- * @returns {MethodDecorator}
+ * create mapping by method
+ * @param reqMethod 
+ * @returns 
  */
-export const PostMapping = (
-  path = "/",
-  routerOptions: {
-    routerName?: string;
-  } = {}
-): MethodDecorator => {
-  return RequestMapping(path, RequestMethod.POST, routerOptions);
+const createMapping = (reqMethod: RequestMethod) => {
+  return (path = "/", routerOptions: { routerName?: string } = {}): MethodDecorator => {
+    return RequestMapping(path, reqMethod, routerOptions);
+  };
 };
+/**
+ * Routes HTTP POST requests to the specified path.
+ */
+export const PostMapping = createMapping(RequestMethod.POST);
 
 /**
  * Routes HTTP GET requests to the specified path.
- *
- * @param {string} path
- * @param {{
- *         routerName?: string;
- *     }} [routerOptions={}]
- * @returns {MethodDecorator}
  */
-export const GetMapping = (
-  path = "/",
-  routerOptions: {
-    routerName?: string;
-  } = {}
-): MethodDecorator => {
-  return RequestMapping(path, RequestMethod.GET, routerOptions);
-};
+export const GetMapping = createMapping(RequestMethod.GET);
 
 /**
  * Routes HTTP DELETE requests to the specified path.
- *
- * @param {string} path
- * @param {{
- *         routerName?: string;
- *     }} [routerOptions={}]
- * @returns {MethodDecorator}
  */
-export const DeleteMapping = (
-  path = "/",
-  routerOptions: {
-    routerName?: string;
-  } = {}
-): MethodDecorator => {
-  return RequestMapping(path, RequestMethod.DELETE, routerOptions);
-};
+export const DeleteMapping = createMapping(RequestMethod.DELETE);
 
 /**
  * Routes HTTP PUT requests to the specified path.
- *
- * @param {string} path
- * @param {{
- *         routerName?: string;
- *     }} [routerOptions={}]
- * @returns {MethodDecorator}
  */
-export const PutMapping = (
-  path = "/",
-  routerOptions: {
-    routerName?: string;
-  } = {}
-): MethodDecorator => {
-  return RequestMapping(path, RequestMethod.PUT, routerOptions);
-};
+export const PutMapping = createMapping(RequestMethod.PUT);
 
 /**
  * Routes HTTP PATCH requests to the specified path.
- *
- * @param {string} path
- * @param {{
- *         routerName?: string;
- *     }} [routerOptions={}]
- * @returns {MethodDecorator}
  */
-export const PatchMapping = (
-  path = "/",
-  routerOptions: {
-    routerName?: string;
-  } = {}
-): MethodDecorator => {
-  return RequestMapping(path, RequestMethod.PATCH, routerOptions);
-};
+export const PatchMapping = createMapping(RequestMethod.PATCH);
 
 /**
  * Routes HTTP OPTIONS requests to the specified path.
- *
- * @param {string} path
- * @param {{
- *         routerName?: string;
- *     }} [routerOptions={}]
- * @returns {MethodDecorator}
  */
-export const OptionsMapping = (
-  path = "/",
-  routerOptions: {
-    routerName?: string;
-  } = {}
-): MethodDecorator => {
-  return RequestMapping(path, RequestMethod.OPTIONS, routerOptions);
-};
+export const OptionsMapping = createMapping(RequestMethod.OPTIONS);
 
 /**
  * Routes HTTP HEAD requests to the specified path.
- *
- * @param {string} path
- * @param {{
- *         routerName?: string;
- *     }} [routerOptions={}]
- * @returns {MethodDecorator}
  */
-export const HeadMapping = (
-  path = "/",
-  routerOptions: {
-    routerName?: string;
-  } = {}
-): MethodDecorator => {
-  return RequestMapping(path, RequestMethod.HEAD, routerOptions);
-};
+export const HeadMapping = createMapping(RequestMethod.HEAD);

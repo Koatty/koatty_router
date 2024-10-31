@@ -3,17 +3,17 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2024-01-16 08:21:57
+ * @LastEditTime: 2024-10-31 14:53:30
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
 
-import { GrpcRouter } from "./grpc";
-import { HttpRouter } from "./http";
-import { PayloadOptions } from "../params/payload";
-import { WebsocketRouter } from "./ws";
 import { Koatty, KoattyRouter } from "koatty_core";
 import { Helper } from "koatty_lib";
+import { PayloadOptions } from "../params/payload";
+import { GrpcRouter } from "./grpc";
+import { HttpRouter } from "./http";
+import { WebsocketRouter } from "./ws";
 
 /**
  * RouterOptions
@@ -69,23 +69,16 @@ export function NewRouter(app: Koatty, opt?: RouterOptions): KoattyRouter {
   const protocol = app.config("protocol") || "http";
   const opts: RouterOptions = app.config(undefined, 'router') ?? {};
 
-  const options: RouterOptions = {
-    ...{ protocol: protocol, prefix: "" }, ...opts, ...opt
-  }
+  const options: RouterOptions = { protocol, prefix: "", ...opts, ...opt };
   let router;
-  switch (protocol) {
-    case "grpc":
-      router = new GrpcRouter(app, options);
-      Helper.define(router, "protocol", protocol);
-      break;
-    case "ws":
-    case "wss":
-      router = new WebsocketRouter(app, options);
-      Helper.define(router, "protocol", protocol);
-      break;
-    default:
-      router = new HttpRouter(app, options);
-      Helper.define(router, "protocol", protocol);
+  if (protocol === "grpc") {
+    router = new GrpcRouter(app, options);
+  } else if (protocol === "ws" || protocol === "wss") {
+    router = new WebsocketRouter(app, options);
+  } else {
+    router = new HttpRouter(app, options);
   }
+
+  Helper.define(router, "protocol", protocol);
   return router;
 }
