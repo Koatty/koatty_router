@@ -2,18 +2,18 @@
  * @Description: 
  * @Usage: 
  * @Author: richen
- * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2024-10-31 14:36:59
+ * @Date: 2024-10-31 14:16:50
+ * @LastEditTime: 2024-11-07 10:47:18
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
 
 // tslint:disable-next-line: no-import-side-effect
-import "reflect-metadata";
 import { IOCContainer } from 'koatty_container';
+import "reflect-metadata";
 
-export const CONTROLLER_ROUTER = 'CONTROLLER_ROUTER';
-export const ROUTER_KEY = 'ROUTER_KEY';
+// used for request mapping metadata
+export const MAPPING_KEY = 'MAPPING_KEY';
 
 /**
  * Koatty router options
@@ -69,7 +69,7 @@ export const RequestMapping = (
       throw Error("RequestMapping decorator is only used in controllers class.");
     }
     // tslint:disable-next-line: no-object-literal-type-assertion
-    IOCContainer.attachPropertyData(ROUTER_KEY, {
+    IOCContainer.attachPropertyData(MAPPING_KEY, {
       path,
       requestMethod: reqMethod,
       routerName,
@@ -81,46 +81,49 @@ export const RequestMapping = (
 };
 
 /**
- * create mapping by method
- * @param reqMethod 
- * @returns 
- */
-const createMapping = (reqMethod: RequestMethod) => {
-  return (path = "/", routerOptions: { routerName?: string } = {}): MethodDecorator => {
-    return RequestMapping(path, reqMethod, routerOptions);
-  };
-};
-/**
  * Routes HTTP POST requests to the specified path.
  */
-export const PostMapping = createMapping(RequestMethod.POST);
+export const PostMapping = (path = "/", routerOptions?: RouterOption) => {
+  return RequestMapping(path, RequestMethod.POST, routerOptions);
+};
 
 /**
  * Routes HTTP GET requests to the specified path.
  */
-export const GetMapping = createMapping(RequestMethod.GET);
+export const GetMapping = (path = "/", routerOptions?: RouterOption) => {
+  return RequestMapping(path, RequestMethod.GET, routerOptions);
+};
 
 /**
  * Routes HTTP DELETE requests to the specified path.
  */
-export const DeleteMapping = createMapping(RequestMethod.DELETE);
-
+export const DeleteMapping = (path = "/", routerOptions?: RouterOption) => {
+  return RequestMapping(path, RequestMethod.DELETE, routerOptions);
+};
 /**
  * Routes HTTP PUT requests to the specified path.
  */
-export const PutMapping = createMapping(RequestMethod.PUT);
+export const PutMapping = (path = "/", routerOptions?: RouterOption) => {
+  return RequestMapping(path, RequestMethod.PUT, routerOptions);
+};
 
 /**
  * Routes HTTP PATCH requests to the specified path.
  */
-export const PatchMapping = createMapping(RequestMethod.PATCH);
+export const PatchMapping = (path = "/", routerOptions?: RouterOption) => {
+  return RequestMapping(path, RequestMethod.PATCH, routerOptions);
+};
 
 /**
  * Routes HTTP OPTIONS requests to the specified path.
  */
-export const OptionsMapping = createMapping(RequestMethod.OPTIONS);
+export const OptionsMapping = (path = "/", routerOptions?: RouterOption) => {
+  return RequestMapping(path, RequestMethod.OPTIONS, routerOptions);
+};
 
 /**
  * Routes HTTP HEAD requests to the specified path.
  */
-export const HeadMapping = createMapping(RequestMethod.HEAD);
+export const HeadMapping = (path = "/", routerOptions?: RouterOption) => {
+  return RequestMapping(path, RequestMethod.HEAD, routerOptions);
+};

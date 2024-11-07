@@ -9,7 +9,5 @@ Routes HTTP POST requests to the specified path.
 **Signature:**
 
 ```typescript
-PostMapping: (path?: string, routerOptions?: {
-    routerName?: string;
-}) => MethodDecorator
+PostMapping: (path?: string, routerOptions?: RouterOption) => MethodDecorator
 ```

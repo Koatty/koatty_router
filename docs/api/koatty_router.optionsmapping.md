@@ -9,7 +9,5 @@ Routes HTTP OPTIONS requests to the specified path.
 **Signature:**
 
 ```typescript
-OptionsMapping: (path?: string, routerOptions?: {
-    routerName?: string;
-}) => MethodDecorator
+OptionsMapping: (path?: string, routerOptions?: RouterOption) => MethodDecorator
 ```

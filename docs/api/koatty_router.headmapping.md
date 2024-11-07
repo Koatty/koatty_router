@@ -9,7 +9,5 @@ Routes HTTP HEAD requests to the specified path.
 **Signature:**
 
 ```typescript
-HeadMapping: (path?: string, routerOptions?: {
-    routerName?: string;
-}) => MethodDecorator
+HeadMapping: (path?: string, routerOptions?: RouterOption) => MethodDecorator
 ```

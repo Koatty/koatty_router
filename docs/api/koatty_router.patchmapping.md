@@ -9,7 +9,5 @@ Routes HTTP PATCH requests to the specified path.
 **Signature:**
 
 ```typescript
-PatchMapping: (path?: string, routerOptions?: {
-    routerName?: string;
-}) => MethodDecorator
+PatchMapping: (path?: string, routerOptions?: RouterOption) => MethodDecorator
 ```

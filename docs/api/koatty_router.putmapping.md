@@ -9,7 +9,5 @@ Routes HTTP PUT requests to the specified path.
 **Signature:**
 
 ```typescript
-PutMapping: (path?: string, routerOptions?: {
-    routerName?: string;
-}) => MethodDecorator
+PutMapping: (path?: string, routerOptions?: RouterOption) => MethodDecorator
 ```

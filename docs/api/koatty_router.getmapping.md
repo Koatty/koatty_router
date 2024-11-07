@@ -9,7 +9,5 @@ Routes HTTP GET requests to the specified path.
 **Signature:**
 
 ```typescript
-GetMapping: (path?: string, routerOptions?: {
-    routerName?: string;
-}) => MethodDecorator
+GetMapping: (path?: string, routerOptions?: RouterOption) => MethodDecorator
 ```

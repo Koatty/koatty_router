@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2024-10-31 15:07:10
+ * @LastEditTime: 2024-11-07 11:02:09
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -12,7 +12,7 @@ import {
   getOriginMetadata, IOCContainer, RecursiveGetMetadata,
   TAGGED_PARAM
 } from "koatty_container";
-import { Koatty, KoattyContext } from "koatty_core";
+import { CONTROLLER_ROUTER, Koatty, KoattyContext, KoattyServer } from "koatty_core";
 import { Exception } from "koatty_exception";
 import { Helper } from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
@@ -26,7 +26,7 @@ import {
   ValidOtpions,
   ValidRules
 } from "koatty_validation";
-import { CONTROLLER_ROUTER, ROUTER_KEY } from "../params/mapping";
+import { MAPPING_KEY } from "../params/mapping";
 import { PayloadOptions } from "../params/payload";
 
 /**
@@ -90,7 +90,7 @@ export function injectRouter(app: Koatty, target: any, _instance?: any): RouterM
   let path = (metaDatas && IOCContainer.getIdentifier(target) in metaDatas) ? metaDatas[IOCContainer.getIdentifier(target)] : "";
   path = path.startsWith("/") || path === "" ? path : `/${path}`;
 
-  const rmetaData = RecursiveGetMetadata(ROUTER_KEY, target);
+  const rmetaData = RecursiveGetMetadata(MAPPING_KEY, target);
   const router: RouterMetadataObject = {};
   // tslint:disable-next-line: forin
   for (const metaKey in rmetaData) {
@@ -340,4 +340,17 @@ function validatorFuncs(name: string, value: any, type: string,
       }
     }
   }
+}
+
+/**
+ * @description: Function to detect and return a server based on the specified protocol.
+ * @param {KoattyServer} servers A single server instance or an array of server instances.
+ * @param {string} protocol The protocol to match against the server(s).
+ * @return {*}
+ */
+export function detectServer(servers: KoattyServer | KoattyServer[], protocol: string) {
+  if (!Helper.isArray(servers)) {
+    return servers;
+  }
+  return servers.find((server) => server.options.protocol === protocol) || null;
 }

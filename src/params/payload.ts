@@ -3,12 +3,11 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:30:20
- * @LastEditTime: 2024-10-31 14:29:15
+ * @LastEditTime: 2024-11-07 10:32:53
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
 import { BufferEncoding, IncomingForm } from "formidable";
-import fs from "fs";
 import inflate from "inflation";
 import { KoattyContext, KoattyNext } from "koatty_core";
 import { Helper } from "koatty_lib";
@@ -16,10 +15,9 @@ import { DefaultLogger as Logger } from "koatty_logger";
 import onFinished from "on-finished";
 import { parse } from "querystring";
 import getRawBody from "raw-body";
-import util from "util";
 import { parseStringPromise } from "xml2js";
-const fsUnlink = util.promisify(fs.unlink);
-const fsAccess = util.promisify(fs.access);
+import { deleteFiles } from "../utils/path";
+
 /**
  *
  *
@@ -97,8 +95,7 @@ export async function bodyParser(ctx: KoattyContext, options?: PayloadOptions): 
   }
   try {
     options = { ...defaultOptions, ...options };
-    const res = await parseBody(ctx, options);
-    body = res || {};
+    body = await parseBody(ctx, options);
     ctx.setMetaData("_body", body);
     return body;
   } catch (err) {
@@ -117,7 +114,7 @@ export async function bodyParser(ctx: KoattyContext, options?: PayloadOptions): 
  */
 function parseBody(ctx: KoattyContext, options: PayloadOptions): Promise<unknown> {
   const methods = ['POST', 'PUT', 'DELETE', 'PATCH', 'LINK', 'UNLINK'];
-  if (methods.every((method: string) => ctx.method !== method)) {
+  if (!methods.includes(ctx.method)) {
     return Promise.resolve({});
   }
   // defaults
@@ -129,20 +126,17 @@ function parseBody(ctx: KoattyContext, options: PayloadOptions): Promise<unknown
   options.encoding = options.encoding || 'utf8';
   options.limit = options.limit || '1mb';
 
-  if (ctx.request.is(options.extTypes.form)) {
-    return parseForm(ctx, options);
-  }
-  if (ctx.request.is(options.extTypes.multipart)) {
-    return parseMultipart(ctx, options);
-  }
-  if (ctx.request.is(options.extTypes.json)) {
-    return parseJson(ctx, options);
-  }
-  if (ctx.request.is(options.extTypes.text)) {
-    return parseText(ctx, options);
-  }
-  if (ctx.request.is(options.extTypes.xml)) {
-    return parseXml(ctx, options);
+  const typeCheck = [
+    { type: options.extTypes.form, parser: parseForm },
+    { type: options.extTypes.multipart, parser: parseMultipart },
+    { type: options.extTypes.json, parser: parseJson },
+    { type: options.extTypes.text, parser: parseText },
+    { type: options.extTypes.xml, parser: parseXml },
+  ];
+  for (const { type, parser } of typeCheck) {
+    if (ctx.request.is(type)) {
+      return parser(ctx, options);
+    }
   }
 
   return Promise.resolve({});
@@ -175,7 +169,6 @@ async function parseForm(ctx: KoattyContext, opts: PayloadOptions) {
  * @returns {*}  
  */
 function parseMultipart(ctx: KoattyContext, opts: PayloadOptions) {
-
   const form = new IncomingForm({
     encoding: <BufferEncoding>opts.encoding,
     multiples: opts.multiples,
@@ -185,11 +178,7 @@ function parseMultipart(ctx: KoattyContext, opts: PayloadOptions) {
   let uploadFiles: any = null;
   onFinished(ctx.res, () => {
     if (uploadFiles) {
-      Object.keys(uploadFiles).forEach((key: string) => {
-        fsAccess(uploadFiles[key].path)
-          .then(() => fsUnlink(uploadFiles[key].path))
-          .catch(Logger.Error);
-      });
+      deleteFiles(uploadFiles);
     }
   });
   return new Promise((resolve, _reject) => {
@@ -214,8 +203,7 @@ function parseMultipart(ctx: KoattyContext, opts: PayloadOptions) {
 async function parseJson(ctx: KoattyContext, opts: PayloadOptions) {
   try {
     const str = await parseText(ctx, opts);
-    const data = JSON.parse(str);
-    return { post: data };
+    return { post: JSON.parse(str) };
   } catch (error) {
     Logger.Error(error);
     return { post: {} };
@@ -230,15 +218,9 @@ async function parseJson(ctx: KoattyContext, opts: PayloadOptions) {
  * @returns {*}  {Promise<string>}
  */
 function parseText(ctx: KoattyContext, opts: PayloadOptions): Promise<string> {
-  return new Promise((resolve, _reject) => {
-    getRawBody(inflate(ctx.req), opts, function (err: any, body: string) {
-      if (err) {
-        // reject(err);
-        Logger.Error(err);
-        return resolve("");
-      }
-      resolve(body);
-    });
+  return getRawBody(inflate(ctx.req), opts).catch(err => {
+    Logger.Error(err);
+    return "";
   });
 }
 
@@ -252,8 +234,7 @@ function parseText(ctx: KoattyContext, opts: PayloadOptions): Promise<string> {
 async function parseXml(ctx: KoattyContext, opts: PayloadOptions) {
   try {
     const str = await parseText(ctx, opts);
-    const data = await parseStringPromise(str);
-    return { post: data };
+    return { post: await parseStringPromise(str) };
   } catch (error) {
     Logger.Error(error);
     return { post: {} };

@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2024-10-31 14:39:36
+ * @LastEditTime: 2024-11-07 09:58:43
  */
 import { UntypedHandleCall } from "@grpc/grpc-js";
 import { IOCContainer } from "koatty_container";
@@ -17,7 +17,7 @@ import * as Helper from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { ListServices, LoadProto } from "koatty_proto";
 import { payload } from "../params/payload";
-import { Handler, injectParamMetaData, injectRouter, ParamMetadata } from "../utils/inject";
+import { detectServer, Handler, injectParamMetaData, injectRouter, ParamMetadata } from "../utils/inject";
 import { parsePath } from "../utils/path";
 import { RouterOptions } from "./router";
 
@@ -149,7 +149,9 @@ export class GrpcRouter implements KoattyRouter {
         }
         // set router
         this.SetRouter(serviceName, { service: si.service, implementation: impl });
-        app?.server?.RegisterService({ service: si.service, implementation: impl });
+        // RegisterService
+        const server = detectServer(app.server, "grpc");
+        server?.RegisterService({ service: si.service, implementation: impl });
       }
     } catch (err) {
       Logger.Error(err);

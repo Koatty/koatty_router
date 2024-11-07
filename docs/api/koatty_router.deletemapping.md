@@ -9,7 +9,5 @@ Routes HTTP DELETE requests to the specified path.
 **Signature:**
 
 ```typescript
-DeleteMapping: (path?: string, routerOptions?: {
-    routerName?: string;
-}) => MethodDecorator
+DeleteMapping: (path?: string, routerOptions?: RouterOption) => MethodDecorator
 ```
