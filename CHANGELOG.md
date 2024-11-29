@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.10.1](https://github.com/koatty/koatty_router/compare/v1.10.0...v1.10.1) (2024-11-29)
+
+
+### Bug Fixes
+
+* mix router binding ([b4cfa9c](https://github.com/koatty/koatty_router/commit/b4cfa9c10dcbfb77aed4be262b84f875f61d9568))
+
 ## [1.10.0](https://github.com/koatty/koatty_router/compare/v1.10.0-0...v1.10.0) (2024-11-07)
 
 ## [1.10.0-0](https://github.com/koatty/koatty_router/compare/v1.9.2...v1.10.0-0) (2024-10-31)
