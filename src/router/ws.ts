@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:16:44
- * @LastEditTime: 2024-11-29 17:07:53
+ * @LastEditTime: 2024-11-29 17:10:11
  */
 
 import KoaRouter from "@koa/router";
@@ -53,13 +53,8 @@ export class WebsocketRouter implements KoattyRouter {
   SetRouter(name: string, impl?: RouterImplementation) {
     if (Helper.isEmpty(impl.path)) return;
 
-    const method = (impl.method || "").toLowerCase();
     const routeHandler = <any>impl.implementation;
-    if (method === "get") {
-      (<any>this.router)[method](impl.path, routeHandler);
-    } else {
-      this.router.all(impl.path, routeHandler);
-    }
+    this.router.get(impl.path, routeHandler);
     this.routerMap.set(name, impl);
   }
 
