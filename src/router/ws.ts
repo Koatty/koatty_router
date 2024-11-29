@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:16:44
- * @LastEditTime: 2024-11-28 14:07:47
+ * @LastEditTime: 2024-11-29 17:07:53
  */
 
 import KoaRouter from "@koa/router";
@@ -54,22 +54,12 @@ export class WebsocketRouter implements KoattyRouter {
     if (Helper.isEmpty(impl.path)) return;
 
     const method = (impl.method || "").toLowerCase();
-    const routerMethod: any = {
-      get: () => this.router.get(impl.path, <any>impl.implementation),
-      post: () => this.router.post(impl.path, <any>impl.implementation),
-      put: () => this.router.put(impl.path, <any>impl.implementation),
-      delete: () => this.router.delete(impl.path, <any>impl.implementation),
-      patch: () => this.router.patch(impl.path, <any>impl.implementation),
-      options: () => this.router.options(impl.path, <any>impl.implementation),
-      head: () => this.router.head(impl.path, <any>impl.implementation),
-      all: () => this.router.all(impl.path, <any>impl.implementation)
-    };
-    if (routerMethod[method]) {
-      routerMethod[method]();
+    const routeHandler = <any>impl.implementation;
+    if (method === "get") {
+      (<any>this.router)[method](impl.path, routeHandler);
     } else {
-      routerMethod.all();
+      this.router.all(impl.path, routeHandler);
     }
-
     this.routerMap.set(name, impl);
   }
 
