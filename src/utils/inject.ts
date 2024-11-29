@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2024-11-07 11:02:09
+ * @LastEditTime: 2024-11-28 14:10:58
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -81,28 +81,33 @@ interface RouterMetadataObject {
  *
  * @param {Koatty} app
  * @param {*} target
- * @param {*} [_instance]
+ * @param {string} [protocol]
  * @returns {*} 
  */
-export function injectRouter(app: Koatty, target: any, _instance?: any): RouterMetadataObject {
+export function injectRouter(app: Koatty, target: any, protocol = 'http'): RouterMetadataObject {
   // Controller router path
   const metaDatas = IOCContainer.listPropertyData(CONTROLLER_ROUTER, target);
-  let path = (metaDatas && IOCContainer.getIdentifier(target) in metaDatas) ? metaDatas[IOCContainer.getIdentifier(target)] : "";
-  path = path.startsWith("/") || path === "" ? path : `/${path}`;
+  const options = (metaDatas && IOCContainer.getIdentifier(target) in metaDatas) ?
+    metaDatas[IOCContainer.getIdentifier(target)] : { path: "", protocol: 'http' };
+  options.path = options.path.startsWith("/") || options.path === "" ? options.path : `/${options.path}`;
+  options.protocol = options.protocol || 'http';
 
   const rmetaData = RecursiveGetMetadata(MAPPING_KEY, target);
   const router: RouterMetadataObject = {};
-  // tslint:disable-next-line: forin
-  for (const metaKey in rmetaData) {
-    // Logger.Debug(`Register inject method Router key: ${metaKey} => 
-    // value: ${ JSON.stringify(rmetaData[metaKey]) }`);
-    //.sort((a, b) => b.priority - a.priority) 
-    for (const val of rmetaData[metaKey]) {
-      const tmp = {
-        ...val,
-        path: `${path}${val.path}`.replace("//", "/")
-      };
-      router[`${tmp.path}||${tmp.requestMethod}`] = tmp;
+  // protocol check
+  if (options.protocol.includes(protocol)) {
+    // tslint:disable-next-line: forin
+    for (const metaKey in rmetaData) {
+      // Logger.Debug(`Register inject method Router key: ${metaKey} => 
+      // value: ${ JSON.stringify(rmetaData[metaKey]) }`);
+      //.sort((a, b) => b.priority - a.priority) 
+      for (const val of rmetaData[metaKey]) {
+        const tmp = {
+          ...val,
+          path: `${options.path}${val.path}`.replace("//", "/")
+        };
+        router[`${tmp.path}||${tmp.requestMethod}`] = tmp;
+      }
     }
   }
 

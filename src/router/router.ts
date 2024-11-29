@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2024-10-31 14:53:30
+ * @LastEditTime: 2024-11-28 14:44:53
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -66,19 +66,18 @@ export interface RouterOptions {
  * @returns {*}  {KoattyRouter}
  */
 export function NewRouter(app: Koatty, opt?: RouterOptions): KoattyRouter {
-  const protocol = app.config("protocol") || "http";
-  const opts: RouterOptions = app.config(undefined, 'router') ?? {};
-
-  const options: RouterOptions = { protocol, prefix: "", ...opts, ...opt };
+  // const protocol = app.config("protocol") || "http";
+  // const opts: RouterOptions = app.config(undefined, 'router') ?? {};
+  const options: RouterOptions = { protocol: "http", prefix: "", ...opt };
   let router;
-  if (protocol === "grpc") {
+  if (options.protocol === "grpc") {
     router = new GrpcRouter(app, options);
-  } else if (protocol === "ws" || protocol === "wss") {
+  } else if (options.protocol === "ws" || options.protocol === "wss") {
     router = new WebsocketRouter(app, options);
   } else {
     router = new HttpRouter(app, options);
   }
 
-  Helper.define(router, "protocol", protocol);
+  Helper.define(router, "protocol", options.protocol);
   return router;
 }
