@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2024-11-28 14:10:58
+ * @LastEditTime: 2025-01-26 15:11:40
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -26,6 +26,7 @@ import {
   ValidOtpions,
   ValidRules
 } from "koatty_validation";
+import { Project } from "ts-morph";
 import { MAPPING_KEY } from "../params/mapping";
 import { PayloadOptions } from "../params/payload";
 
@@ -87,20 +88,31 @@ interface RouterMetadataObject {
 export function injectRouter(app: Koatty, target: any, protocol = 'http'): RouterMetadataObject {
   // Controller router path
   const metaDatas = IOCContainer.listPropertyData(CONTROLLER_ROUTER, target);
-  const options = (metaDatas && IOCContainer.getIdentifier(target) in metaDatas) ?
+  const ctlName = IOCContainer.getIdentifier(target);
+  const options = (metaDatas && ctlName in metaDatas) ?
     metaDatas[IOCContainer.getIdentifier(target)] : { path: "", protocol: 'http' };
   options.path = options.path.startsWith("/") || options.path === "" ? options.path : `/${options.path}`;
   options.protocol = options.protocol || 'http';
 
   const rmetaData = RecursiveGetMetadata(MAPPING_KEY, target);
   const router: RouterMetadataObject = {};
+  const methods: string[] = [];
+  if (app.appDebug) {
+    const ctlPath = getControllerPath(ctlName);
+    methods.push(...getPublicMethods(ctlPath, ctlName));
+  }
+
   // protocol check
   if (options.protocol.includes(protocol)) {
     // tslint:disable-next-line: forin
     for (const metaKey in rmetaData) {
-      // Logger.Debug(`Register inject method Router key: ${metaKey} => 
+      // Logger.Debug(`Register inject method Router key: ${metaKey} =>
       // value: ${ JSON.stringify(rmetaData[metaKey]) }`);
       //.sort((a, b) => b.priority - a.priority) 
+      if (app.appDebug && !methods.includes(metaKey)) {
+        Logger.Debug(`The method ${metaKey} is bound to the route, but the scope of this method is not public.`);
+        continue;
+      }
       for (const val of rmetaData[metaKey]) {
         const tmp = {
           ...val,
@@ -358,4 +370,40 @@ export function detectServer(servers: KoattyServer | KoattyServer[], protocol: s
     return servers;
   }
   return servers.find((server) => server.options.protocol === protocol) || null;
+}
+
+/**
+ * 获取class中所有public方法
+ * @param classFilePath 
+ * @param className 
+ * @returns 
+ */
+export function getPublicMethods(classFilePath: string, className: string): string[] {
+  const project = new Project();
+  const sourceFile = project.addSourceFileAtPath(classFilePath);
+
+  // 查找类
+  const classDeclaration = sourceFile.getClass(className);
+  const publicMethods: string[] = [];
+
+  if (classDeclaration) {
+    // 遍历所有方法
+    for (const method of classDeclaration.getMethods()) {
+      const modifiers = method.getModifiers().map(mod => mod.getText());
+      if (!modifiers.includes("private") && !modifiers.includes("protected")) {
+        publicMethods.push(method.getName());
+      }
+    }
+  }
+
+  return publicMethods;
+}
+
+/**
+ * get koatty controller paths
+ * @param className 
+ * @returns 
+ */
+function getControllerPath(className: string): string {
+  return process.env.APP_PATH + "/controller/" + className + ".ts";
 }
