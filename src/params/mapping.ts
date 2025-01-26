@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2024-10-31 14:16:50
- * @LastEditTime: 2024-11-07 10:47:18
+ * @LastEditTime: 2025-01-26 12:04:42
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -63,11 +63,12 @@ export const RequestMapping = (
   } = {}
 ): MethodDecorator => {
   const routerName = routerOptions.routerName ?? "";
-  return (target, key: string, descriptor: PropertyDescriptor) => {
+  return (target: any, key: string, descriptor: PropertyDescriptor) => {
     const targetType = IOCContainer.getType(target);
     if (targetType !== "CONTROLLER") {
       throw Error("RequestMapping decorator is only used in controllers class.");
     }
+
     // tslint:disable-next-line: no-object-literal-type-assertion
     IOCContainer.attachPropertyData(MAPPING_KEY, {
       path,
