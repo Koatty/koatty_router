@@ -16,14 +16,132 @@ export declare enum RequestMethod
 
 ## Enumeration Members
 
-|  Member | Value | Description |
-|  --- | --- | --- |
-|  ALL | <code>&quot;all&quot;</code> |  |
-|  DELETE | <code>&quot;delete&quot;</code> |  |
-|  GET | <code>&quot;get&quot;</code> |  |
-|  HEAD | <code>&quot;head&quot;</code> |  |
-|  OPTIONS | <code>&quot;options&quot;</code> |  |
-|  PATCH | <code>&quot;patch&quot;</code> |  |
-|  POST | <code>&quot;post&quot;</code> |  |
-|  PUT | <code>&quot;put&quot;</code> |  |
+<table><thead><tr><th>
 
+Member
+
+
+</th><th>
+
+Value
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+ALL
+
+
+</td><td>
+
+`"all"`
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+DELETE
+
+
+</td><td>
+
+`"delete"`
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+GET
+
+
+</td><td>
+
+`"get"`
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+HEAD
+
+
+</td><td>
+
+`"head"`
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+OPTIONS
+
+
+</td><td>
+
+`"options"`
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+PATCH
+
+
+</td><td>
+
+`"patch"`
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+POST
+
+
+</td><td>
+
+`"post"`
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+PUT
+
+
+</td><td>
+
+`"put"`
+
+
+</td><td>
+
+
+</td></tr>
+</tbody></table>

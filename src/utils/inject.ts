@@ -3,13 +3,13 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2025-01-26 15:11:40
+ * @LastEditTime: 2025-02-26 18:34:18
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
 
 import {
-  getOriginMetadata, IOCContainer, RecursiveGetMetadata,
+  getOriginMetadata, IOC, IOCContainer, recursiveGetMetadata,
   TAGGED_PARAM
 } from "koatty_container";
 import { CONTROLLER_ROUTER, Koatty, KoattyContext, KoattyServer } from "koatty_core";
@@ -94,7 +94,7 @@ export function injectRouter(app: Koatty, target: any, protocol = 'http'): Route
   options.path = options.path.startsWith("/") || options.path === "" ? options.path : `/${options.path}`;
   options.protocol = options.protocol || 'http';
 
-  const rmetaData = RecursiveGetMetadata(MAPPING_KEY, target);
+  const rmetaData = recursiveGetMetadata(IOC, MAPPING_KEY, target);
   const router: RouterMetadataObject = {};
   const methods: string[] = [];
   if (app.appDebug) {
@@ -165,9 +165,9 @@ interface ParamMetadataMap {
 export function injectParamMetaData(app: Koatty, target: any,
   options?: PayloadOptions): ParamMetadataMap {
   // const instance = target.prototype;
-  const metaDatas = RecursiveGetMetadata(TAGGED_PARAM, target);
-  const validMetaDatas = RecursiveGetMetadata(PARAM_RULE_KEY, target);
-  const validatedMetaDatas = RecursiveGetMetadata(PARAM_CHECK_KEY, target);
+  const metaDatas = recursiveGetMetadata(IOC, TAGGED_PARAM, target);
+  const validMetaDatas = recursiveGetMetadata(IOC, PARAM_RULE_KEY, target);
+  const validatedMetaDatas = recursiveGetMetadata(IOC, PARAM_CHECK_KEY, target);
   const argsMetaObj: ParamMetadataMap = {};
   for (const meta in metaDatas) {
     // 实例方法带规则形参必须小于等于原型形参(如果不存在验证规则，则小于)

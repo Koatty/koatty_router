@@ -6,43 +6,314 @@
 
 ## Enumerations
 
-|  Enumeration | Description |
-|  --- | --- |
-|  [RequestMethod](./koatty_router.requestmethod.md) | <p>http request methods</p><p>  RequestMethod</p> |
+<table><thead><tr><th>
+
+Enumeration
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[RequestMethod](./koatty_router.requestmethod.md)
+
+
+</td><td>
+
+http request methods
+
+  RequestMethod
+
+
+</td></tr>
+</tbody></table>
 
 ## Functions
 
-|  Function | Description |
-|  --- | --- |
-|  [File\_2(name)](./koatty_router.file_2.md) | <p>Get parsed upload file object.</p> |
-|  [Get(name)](./koatty_router.get.md) | <p>Get query-string parameters (take value from ctx.query).</p> |
-|  [Header(name)](./koatty_router.header.md) | <p>Get request header.</p> |
-|  [NewRouter(app, opt)](./koatty_router.newrouter.md) | <p>get instance of Router</p> |
-|  [PathVariable(name)](./koatty_router.pathvariable.md) | <p>Get path variable (take value from ctx.params).</p> |
-|  [Post(name)](./koatty_router.post.md) | <p>Get parsed POST/PUT... body.</p> |
-|  [RequestBody()](./koatty_router.requestbody.md) | <p>Get parsed body(form variable and file object).</p> |
-|  [RequestParam()](./koatty_router.requestparam.md) | <p>Get parsed query-string and path variable(koa ctx.query and ctx.params), and set as an object.</p> |
+<table><thead><tr><th>
+
+Function
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[DeleteMapping(path, routerOptions)](./koatty_router.deletemapping.md)
+
+
+</td><td>
+
+Routes HTTP DELETE requests to the specified path.
+
+
+</td></tr>
+<tr><td>
+
+[File\_2(name)](./koatty_router.file_2.md)
+
+
+</td><td>
+
+Get parsed upload file object.
+
+
+
+</td></tr>
+<tr><td>
+
+[Get(name)](./koatty_router.get.md)
+
+
+</td><td>
+
+Get query-string parameters (take value from ctx.query).
+
+
+
+</td></tr>
+<tr><td>
+
+[GetMapping(path, routerOptions)](./koatty_router.getmapping.md)
+
+
+</td><td>
+
+Routes HTTP GET requests to the specified path.
+
+
+</td></tr>
+<tr><td>
+
+[Header(name)](./koatty_router.header.md)
+
+
+</td><td>
+
+Get request header.
+
+
+
+</td></tr>
+<tr><td>
+
+[HeadMapping(path, routerOptions)](./koatty_router.headmapping.md)
+
+
+</td><td>
+
+Routes HTTP HEAD requests to the specified path.
+
+
+</td></tr>
+<tr><td>
+
+[NewRouter(app, opt)](./koatty_router.newrouter.md)
+
+
+</td><td>
+
+get instance of Router
+
+
+
+</td></tr>
+<tr><td>
+
+[OptionsMapping(path, routerOptions)](./koatty_router.optionsmapping.md)
+
+
+</td><td>
+
+Routes HTTP OPTIONS requests to the specified path.
+
+
+</td></tr>
+<tr><td>
+
+[PatchMapping(path, routerOptions)](./koatty_router.patchmapping.md)
+
+
+</td><td>
+
+Routes HTTP PATCH requests to the specified path.
+
+
+</td></tr>
+<tr><td>
+
+[PathVariable(name)](./koatty_router.pathvariable.md)
+
+
+</td><td>
+
+Get path variable (take value from ctx.params).
+
+
+
+</td></tr>
+<tr><td>
+
+[Post(name)](./koatty_router.post.md)
+
+
+</td><td>
+
+Get parsed POST/PUT... body.
+
+
+
+</td></tr>
+<tr><td>
+
+[PostMapping(path, routerOptions)](./koatty_router.postmapping.md)
+
+
+</td><td>
+
+Routes HTTP POST requests to the specified path.
+
+
+</td></tr>
+<tr><td>
+
+[PutMapping(path, routerOptions)](./koatty_router.putmapping.md)
+
+
+</td><td>
+
+Routes HTTP PUT requests to the specified path.
+
+
+</td></tr>
+<tr><td>
+
+[RequestBody()](./koatty_router.requestbody.md)
+
+
+</td><td>
+
+Get parsed body(form variable and file object).
+
+
+
+</td></tr>
+<tr><td>
+
+[RequestMapping(path, reqMethod, routerOptions)](./koatty_router.requestmapping.md)
+
+
+</td><td>
+
+Routes HTTP requests to the specified path.
+
+
+</td></tr>
+<tr><td>
+
+[RequestParam()](./koatty_router.requestparam.md)
+
+
+</td><td>
+
+Get parsed query-string and path variable(koa ctx.query and ctx.params), and set as an object.
+
+
+
+</td></tr>
+</tbody></table>
 
 ## Interfaces
 
-|  Interface | Description |
-|  --- | --- |
-|  [RouterOption](./koatty_router.routeroption.md) | <p>Koatty router options</p><p>  RouterOption</p> |
-|  [RouterOptions](./koatty_router.routeroptions.md) | <p>RouterOptions</p><p>  RouterOptions</p> |
+<table><thead><tr><th>
+
+Interface
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[RouterOption](./koatty_router.routeroption.md)
+
+
+</td><td>
+
+Koatty router options
+
+  RouterOption
+
+
+</td></tr>
+<tr><td>
+
+[RouterOptions](./koatty_router.routeroptions.md)
+
+
+</td><td>
+
+RouterOptions
+
+  RouterOptions
+
+
+</td></tr>
+</tbody></table>
 
 ## Variables
 
-|  Variable | Description |
-|  --- | --- |
-|  [Body](./koatty_router.body.md) | Alias of  |
-|  [DeleteMapping](./koatty_router.deletemapping.md) | Routes HTTP DELETE requests to the specified path. |
-|  [GetMapping](./koatty_router.getmapping.md) | Routes HTTP GET requests to the specified path. |
-|  [HeadMapping](./koatty_router.headmapping.md) | Routes HTTP HEAD requests to the specified path. |
-|  [MAPPING\_KEY](./koatty_router.mapping_key.md) |  |
-|  [OptionsMapping](./koatty_router.optionsmapping.md) | Routes HTTP OPTIONS requests to the specified path. |
-|  [Param](./koatty_router.param.md) | Alias of  |
-|  [PatchMapping](./koatty_router.patchmapping.md) | Routes HTTP PATCH requests to the specified path. |
-|  [PostMapping](./koatty_router.postmapping.md) | Routes HTTP POST requests to the specified path. |
-|  [PutMapping](./koatty_router.putmapping.md) | Routes HTTP PUT requests to the specified path. |
-|  [RequestMapping](./koatty_router.requestmapping.md) | Routes HTTP requests to the specified path. |
+<table><thead><tr><th>
 
+Variable
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[Body](./koatty_router.body.md)
+
+
+</td><td>
+
+Alias of 
+
+
+</td></tr>
+<tr><td>
+
+[MAPPING\_KEY](./koatty_router.mapping_key.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[Param](./koatty_router.param.md)
+
+
+</td><td>
+
+Alias of 
+
+
+</td></tr>
+</tbody></table>
