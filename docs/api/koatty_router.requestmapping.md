@@ -2,7 +2,7 @@
 
 [Home](./index.md) &gt; [koatty\_router](./koatty_router.md) &gt; [RequestMapping](./koatty_router.requestmapping.md)
 
-## RequestMapping variable
+## RequestMapping() function
 
 Routes HTTP requests to the specified path.
 
@@ -13,3 +13,77 @@ RequestMapping: (path?: string, reqMethod?: RequestMethod, routerOptions?: {
     routerName?: string;
 }) => MethodDecorator
 ```
+
+## Parameters
+
+<table><thead><tr><th>
+
+Parameter
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+path
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+<tr><td>
+
+reqMethod
+
+
+</td><td>
+
+[RequestMethod](./koatty_router.requestmethod.md)
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+<tr><td>
+
+routerOptions
+
+
+</td><td>
+
+{ routerName?: string; }
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+</tbody></table>
+**Returns:**
+
+MethodDecorator
+
+{<!-- -->\*<!-- -->} {<!-- -->MethodDecorator<!-- -->}
+

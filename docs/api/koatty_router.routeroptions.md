@@ -16,15 +16,194 @@ export interface RouterOptions
 
 ## Properties
 
-|  Property | Modifiers | Type | Description |
-|  --- | --- | --- | --- |
-|  [ext?](./koatty_router.routeroptions.ext.md) |  | any | _(Optional)_ Other extended configuration |
-|  [methods?](./koatty_router.routeroptions.methods.md) |  | string\[\] | _(Optional)_ Methods which should be supported by the router. |
-|  [payload?](./koatty_router.routeroptions.payload.md) |  | PayloadOptions | _(Optional)_ payload options |
-|  [prefix](./koatty_router.routeroptions.prefix.md) |  | string |  |
-|  [protocol](./koatty_router.routeroptions.protocol.md) |  | string |  |
-|  [protoFile?](./koatty_router.routeroptions.protofile.md) |  | string | _(Optional)_ gRPC protocol file |
-|  [routerPath?](./koatty_router.routeroptions.routerpath.md) |  | string | _(Optional)_ |
-|  [sensitive?](./koatty_router.routeroptions.sensitive.md) |  | boolean | _(Optional)_ Whether or not routing should be case-sensitive. |
-|  [strict?](./koatty_router.routeroptions.strict.md) |  | boolean | <p>_(Optional)_ Whether or not routes should matched strictly.</p><p>If strict matching is enabled, the trailing slash is taken into account when matching routes.</p> |
+<table><thead><tr><th>
 
+Property
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[ext?](./koatty_router.routeroptions.ext.md)
+
+
+</td><td>
+
+
+</td><td>
+
+any
+
+
+</td><td>
+
+_(Optional)_ Other extended configuration
+
+
+</td></tr>
+<tr><td>
+
+[methods?](./koatty_router.routeroptions.methods.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string\[\]
+
+
+</td><td>
+
+_(Optional)_ Methods which should be supported by the router.
+
+
+</td></tr>
+<tr><td>
+
+[payload?](./koatty_router.routeroptions.payload.md)
+
+
+</td><td>
+
+
+</td><td>
+
+PayloadOptions
+
+
+</td><td>
+
+_(Optional)_ payload options
+
+
+</td></tr>
+<tr><td>
+
+[prefix](./koatty_router.routeroptions.prefix.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[protocol](./koatty_router.routeroptions.protocol.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[protoFile?](./koatty_router.routeroptions.protofile.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_ gRPC protocol file
+
+
+</td></tr>
+<tr><td>
+
+[routerPath?](./koatty_router.routeroptions.routerpath.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+<tr><td>
+
+[sensitive?](./koatty_router.routeroptions.sensitive.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_ Whether or not routing should be case-sensitive.
+
+
+</td></tr>
+<tr><td>
+
+[strict?](./koatty_router.routeroptions.strict.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_ Whether or not routes should matched strictly.
+
+If strict matching is enabled, the trailing slash is taken into account when matching routes.
+
+
+</td></tr>
+</tbody></table>

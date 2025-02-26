@@ -2,7 +2,7 @@
 
 [Home](./index.md) &gt; [koatty\_router](./koatty_router.md) &gt; [OptionsMapping](./koatty_router.optionsmapping.md)
 
-## OptionsMapping variable
+## OptionsMapping() function
 
 Routes HTTP OPTIONS requests to the specified path.
 
@@ -11,3 +11,59 @@ Routes HTTP OPTIONS requests to the specified path.
 ```typescript
 OptionsMapping: (path?: string, routerOptions?: RouterOption) => MethodDecorator
 ```
+
+## Parameters
+
+<table><thead><tr><th>
+
+Parameter
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+path
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+<tr><td>
+
+routerOptions
+
+
+</td><td>
+
+[RouterOption](./koatty_router.routeroption.md)
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+</tbody></table>
+**Returns:**
+
+MethodDecorator
+

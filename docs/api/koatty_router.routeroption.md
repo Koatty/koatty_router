@@ -16,10 +16,97 @@ export interface RouterOption
 
 ## Properties
 
-|  Property | Modifiers | Type | Description |
-|  --- | --- | --- | --- |
-|  [method](./koatty_router.routeroption.method.md) |  | string |  |
-|  [path?](./koatty_router.routeroption.path.md) |  | string | _(Optional)_ |
-|  [requestMethod](./koatty_router.routeroption.requestmethod.md) |  | string |  |
-|  [routerName?](./koatty_router.routeroption.routername.md) |  | string | _(Optional)_ |
+<table><thead><tr><th>
 
+Property
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[method](./koatty_router.routeroption.method.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[path?](./koatty_router.routeroption.path.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+<tr><td>
+
+[requestMethod](./koatty_router.routeroption.requestmethod.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[routerName?](./koatty_router.routeroption.routername.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+</tbody></table>

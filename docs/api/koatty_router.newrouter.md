@@ -15,11 +15,53 @@ export declare function NewRouter(app: Koatty, opt?: RouterOptions): KoattyRoute
 
 ## Parameters
 
-|  Parameter | Type | Description |
-|  --- | --- | --- |
-|  app | Koatty |  |
-|  opt | [RouterOptions](./koatty_router.routeroptions.md) | _(Optional)_ |
+<table><thead><tr><th>
 
+Parameter
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+app
+
+
+</td><td>
+
+Koatty
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+opt
+
+
+</td><td>
+
+[RouterOptions](./koatty_router.routeroptions.md)
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+</tbody></table>
 **Returns:**
 
 KoattyRouter

@@ -6,7 +6,24 @@
 
 ## Packages
 
-|  Package | Description |
-|  --- | --- |
-|  [koatty\_router](./koatty_router.md) |  |
+<table><thead><tr><th>
 
+Package
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[koatty\_router](./koatty_router.md)
+
+
+</td><td>
+
+
+</td></tr>
+</tbody></table>

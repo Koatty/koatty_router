@@ -15,10 +15,39 @@ export declare function PathVariable(name?: string): ParameterDecorator;
 
 ## Parameters
 
-|  Parameter | Type | Description |
-|  --- | --- | --- |
-|  name | string | _(Optional)_ params name |
+<table><thead><tr><th>
 
+Parameter
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+name
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_ params name
+
+
+</td></tr>
+</tbody></table>
 **Returns:**
 
 ParameterDecorator
