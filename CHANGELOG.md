@@ -2,7 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [1.10.2-0](https://github.com/koatty/koatty_router/compare/v1.10.1...v1.10.2-0) (2025-10-07)
+## [1.11.0](https://github.com/koatty/koatty_router/compare/v1.10.1...v1.11.0) (2025-02-26)
+
+
+### Features
+
+* Non-public methods cannot be bound to routes ([3cc5142](https://github.com/koatty/koatty_router/commit/3cc5142620e3ff5024a9993a1aecd07c9208a446))
 
 
 ### Bug Fixes
