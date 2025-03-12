@@ -3,16 +3,22 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2025-03-12 14:54:42
- * @LastEditTime: 2025-03-12 15:02:43
+ * @LastEditTime: 2025-03-12 16:42:19
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
 import KoaRouter from "@koa/router";
-import { Koatty, KoattyRouter, RouterImplementation } from "koatty_core";
+import { buildSchema } from "graphql";
+import { graphqlHTTP } from "koa-graphql";
+import { IOCContainer } from "koatty_container";
+import {
+  IGraphQLImplementation, Koatty, KoattyContext,
+  KoattyRouter, RouterImplementation
+} from "koatty_core";
 import { Helper } from "koatty_lib";
-import { buildSchema } from "module";
+import { DefaultLogger as Logger } from "koatty_logger";
 import { payload } from "../params/payload";
-import { ParamMetadata } from "../utils/inject";
+import { Handler, injectParamMetaData, injectRouter } from "../utils/inject";
 import { RouterOptions } from "./router";
 
 /**
@@ -23,26 +29,6 @@ import { RouterOptions } from "./router";
  */
 export interface GraphQLRouterOptions extends RouterOptions {
   schemaFile: string;
-}
-
-/**
- * CtlInterface
- *
- * @interface CtlInterface
- */
-interface CtlInterface {
-  [path: string]: CtlProperty
-}
-/**
- * CtlProperty
- *
- * @interface CtlProperty
- */
-interface CtlProperty {
-  name: string;
-  ctl: Function;
-  method: string;
-  params: ParamMetadata[];
 }
 
 export class GraphQLRouter implements KoattyRouter {
@@ -71,15 +57,18 @@ export class GraphQLRouter implements KoattyRouter {
    * @returns 
    */
   SetRouter(name: string, impl?: RouterImplementation) {
-    if (Helper.isEmpty(impl.path)) return;
-
-    const method = (impl.method || "").toLowerCase();
     const routeHandler = <any>impl.implementation;
-    if (["get", "post", "put", "delete", "patch"].includes(method)) {
-      (<any>this.router)[method](impl.path, routeHandler);
-    } else {
-      this.router.all(impl.path, routeHandler);
-    }
+    if (Helper.isEmpty(routeHandler)) return;
+    this.router.all(
+      name,
+      graphqlHTTP({
+        schema: impl.schema,
+        rootValue: routeHandler,
+        graphiql: {
+          headerEditorEnabled: true, // 启用请求头编辑器
+        }
+      }),
+    );
     this.routerMap.set(name, impl);
   }
 
@@ -101,6 +90,7 @@ export class GraphQLRouter implements KoattyRouter {
     try {
       // load schema files
       const schema = buildSchema(this.options.schemaFile);
+      const rootValue: IGraphQLImplementation = {};
 
       for (const n of list) {
         const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
@@ -111,21 +101,21 @@ export class GraphQLRouter implements KoattyRouter {
         // tslint:disable-next-line: forin
         for (const router of Object.values(ctlRouters)) {
           const method = router.method;
-          const path = parsePath(router.path);
-          const requestMethod = <RequestMethod>router.requestMethod;
+          // const path = parsePath(router.path);
+          // const requestMethod = <RequestMethod>router.requestMethod;
           const params = ctlParams[method];
 
-          Logger.Debug(`Register request mapping: ["${path}" => ${n}.${method}]`);
-          this.SetRouter(path, {
-            path,
-            method: requestMethod,
-            implementation: (ctx: KoattyContext): Promise<any> => {
-              const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
-              return Handler(app, ctx, ctl, method, params);
-            },
-          });
+          Logger.Debug(`Register request mapping: ${n}.${method}`);
+          rootValue[method] = (ctx: KoattyContext): Promise<any> => {
+            const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
+            return Handler(app, ctx, ctl, method, params);
+          }
         }
       }
+      this.SetRouter("/graphql", {
+        schema,
+        implementation: rootValue
+      });
       // exp: in middleware
       // app.Router.SetRouter('/xxx',  (ctx: Koa.KoattyContext): any => {...}, 'GET')
       app.use(this.router.routes()).use(this.router.allowedMethods());
