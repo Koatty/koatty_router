@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2024-11-28 14:44:53
+ * @LastEditTime: 2025-03-12 14:53:05
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -40,10 +40,6 @@ export interface RouterOptions {
    * account when matching routes.
    */
   strict?: boolean;
-  /**
-   * gRPC protocol file
-   */
-  protoFile?: string;
 
   /**
    * payload options
@@ -54,6 +50,12 @@ export interface RouterOptions {
    * Other extended configuration
    */
   ext?: any;
+  // {
+  //  // gRPC protocol file
+  //  protoFile ?: string;
+  //  // graphql schema file
+  //  schemaFile ?: string;
+  //}
 }
 
 /**
@@ -72,6 +74,8 @@ export function NewRouter(app: Koatty, opt?: RouterOptions): KoattyRouter {
   let router;
   if (options.protocol === "grpc") {
     router = new GrpcRouter(app, options);
+  } else if (options.protocol === "graphql") {
+    router = new HttpRouter(app, options);
   } else if (options.protocol === "ws" || options.protocol === "wss") {
     router = new WebsocketRouter(app, options);
   } else {
