@@ -1,7 +1,7 @@
 import KoaRouter from "@koa/router";
-import { buildSchema } from "graphql";
 import Koa from "koa";
 import { graphqlHTTP } from "koa-graphql";
+import { buildSchema } from "koatty_graphql";
 import request from 'supertest';
 describe("Test", () => {
 

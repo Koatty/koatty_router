@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2025-03-12 14:53:05
+ * @LastEditTime: 2025-03-12 18:16:36
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -11,6 +11,7 @@
 import { Koatty, KoattyRouter } from "koatty_core";
 import { Helper } from "koatty_lib";
 import { PayloadOptions } from "../params/payload";
+import { GraphQLRouter } from "./graphql";
 import { GrpcRouter } from "./grpc";
 import { HttpRouter } from "./http";
 import { WebsocketRouter } from "./ws";
@@ -75,7 +76,7 @@ export function NewRouter(app: Koatty, opt?: RouterOptions): KoattyRouter {
   if (options.protocol === "grpc") {
     router = new GrpcRouter(app, options);
   } else if (options.protocol === "graphql") {
-    router = new HttpRouter(app, options);
+    router = new GraphQLRouter(app, options);
   } else if (options.protocol === "ws" || options.protocol === "wss") {
     router = new WebsocketRouter(app, options);
   } else {

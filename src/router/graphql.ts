@@ -8,7 +8,7 @@
  * @Copyright (c): <richenlin(at)gmail.com>
  */
 import KoaRouter from "@koa/router";
-import { buildSchema } from "graphql";
+import { buildSchema } from "koatty_graphql";
 import { graphqlHTTP } from "koa-graphql";
 import { IOCContainer } from "koatty_container";
 import {
