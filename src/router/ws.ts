@@ -9,6 +9,7 @@
 import KoaRouter from "@koa/router";
 import { IOCContainer } from "koatty_container";
 import {
+  CONTROLLER_ROUTER,
   Koatty, KoattyContext, KoattyRouter,
   RouterImplementation
 } from "koatty_core";
@@ -73,6 +74,10 @@ export class WebsocketRouter implements KoattyRouter {
     try {
       for (const n of list) {
         const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
+        const routerOpt = IOCContainer.getPropertyData(CONTROLLER_ROUTER, ctlClass, n);
+        if (this.options.protocol !== routerOpt.protocol) {
+          continue;
+        }
         // inject router
         const ctlRouters = injectRouter(app, ctlClass);
         // inject param
