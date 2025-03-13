@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.12.1](https://github.com/koatty/koatty_router/compare/v1.12.0...v1.12.1) (2025-03-13)
+
+
+### Bug Fixes
+
+*  buildSchema 参数错误 ([d7fffd6](https://github.com/koatty/koatty_router/commit/d7fffd6c3fcad286a6662ee94a2743ca6966295a))
+
 ## [1.12.0](https://github.com/koatty/koatty_router/compare/v1.11.0...v1.12.0) (2025-03-13)
 
 
