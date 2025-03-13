@@ -3,18 +3,19 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2025-03-12 14:54:42
- * @LastEditTime: 2025-03-12 16:42:19
+ * @LastEditTime: 2025-03-13 14:52:07
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
 import KoaRouter from "@koa/router";
-import { buildSchema } from "koatty_graphql";
+import fs from "fs";
 import { graphqlHTTP } from "koa-graphql";
 import { IOCContainer } from "koatty_container";
 import {
   IGraphQLImplementation, Koatty, KoattyContext,
   KoattyRouter, RouterImplementation
 } from "koatty_core";
+import { buildSchema } from "koatty_graphql";
 import { Helper } from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { payload } from "../params/payload";
@@ -89,7 +90,8 @@ export class GraphQLRouter implements KoattyRouter {
   async LoadRouter(app: Koatty, list: any[]) {
     try {
       // load schema files
-      const schema = buildSchema(this.options.schemaFile);
+      const schemaFile = fs.readFileSync(this.options.schemaFile, 'utf-8');
+      const schema = buildSchema(schemaFile);
       const rootValue: IGraphQLImplementation = {};
 
       for (const n of list) {
