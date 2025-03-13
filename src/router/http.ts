@@ -3,11 +3,12 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-28 19:02:06
- * @LastEditTime: 2024-11-28 14:05:32
+ * @LastEditTime: 2025-03-13 17:01:52
  */
 import KoaRouter from "@koa/router";
 import { IOCContainer } from "koatty_container";
 import {
+  CONTROLLER_ROUTER,
   Koatty, KoattyContext, KoattyRouter,
   RouterImplementation
 } from "koatty_core";
@@ -75,6 +76,10 @@ export class HttpRouter implements KoattyRouter {
     try {
       for (const n of list) {
         const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
+        const routerOpt = IOCContainer.getPropertyData(CONTROLLER_ROUTER, ctlClass, n);
+        if (this.options.protocol !== routerOpt.protocol) {
+          continue;
+        }
         // inject router
         const ctlRouters = injectRouter(app, ctlClass);
         // inject param

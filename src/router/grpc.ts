@@ -3,11 +3,12 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:10:30
- * @LastEditTime: 2024-11-07 09:58:43
+ * @LastEditTime: 2025-03-13 17:49:42
  */
 import { UntypedHandleCall } from "@grpc/grpc-js";
 import { IOCContainer } from "koatty_container";
 import {
+  CONTROLLER_ROUTER,
   IRpcServerCall,
   IRpcServerCallback,
   Koatty, KoattyRouter,
@@ -107,6 +108,10 @@ export class GrpcRouter implements KoattyRouter {
       const ctls: CtlInterface = {};
       for (const n of list) {
         const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
+        const routerOpt = IOCContainer.getPropertyData(CONTROLLER_ROUTER, ctlClass, n);
+        if (this.options.protocol !== routerOpt.protocol) {
+          continue;
+        }
         // inject router
         const ctlRouters = injectRouter(app, ctlClass);
         // inject param

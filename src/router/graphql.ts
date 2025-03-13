@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2025-03-12 14:54:42
- * @LastEditTime: 2025-03-13 14:52:07
+ * @LastEditTime: 2025-03-13 18:21:32
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -12,10 +12,11 @@ import fs from "fs";
 import { graphqlHTTP } from "koa-graphql";
 import { IOCContainer } from "koatty_container";
 import {
+  CONTROLLER_ROUTER,
   IGraphQLImplementation, Koatty, KoattyContext,
   KoattyRouter, RouterImplementation
 } from "koatty_core";
-import { buildSchema } from "koatty_graphql";
+import { buildSchema, parseGraphqlDocument, parseOperations } from "koatty_graphql";
 import { Helper } from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { payload } from "../params/payload";
@@ -90,12 +91,18 @@ export class GraphQLRouter implements KoattyRouter {
   async LoadRouter(app: Koatty, list: any[]) {
     try {
       // load schema files
-      const schemaFile = fs.readFileSync(this.options.schemaFile, 'utf-8');
-      const schema = buildSchema(schemaFile);
+      const schemaContent = fs.readFileSync(this.options.schemaFile, 'utf-8');
+      const schema = buildSchema(schemaContent);
+      const document = parseGraphqlDocument(this.options.schemaFile);
+      const { Query, Mutation, Subscription } = parseOperations(document);
       const rootValue: IGraphQLImplementation = {};
 
       for (const n of list) {
         const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
+        const routerOpt = IOCContainer.getPropertyData(CONTROLLER_ROUTER, ctlClass, n);
+        if (this.options.protocol !== routerOpt.protocol) {
+          continue;
+        }
         // inject router
         const ctlRouters = injectRouter(app, ctlClass);
         // inject param
@@ -103,6 +110,9 @@ export class GraphQLRouter implements KoattyRouter {
         // tslint:disable-next-line: forin
         for (const router of Object.values(ctlRouters)) {
           const method = router.method;
+          if (!Query.includes(method) && !Mutation.includes(method) && !Subscription.includes(method)) {
+            continue;
+          }
           // const path = parsePath(router.path);
           // const requestMethod = <RequestMethod>router.requestMethod;
           const params = ctlParams[method];
