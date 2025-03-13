@@ -130,25 +130,6 @@ string
 </td></tr>
 <tr><td>
 
-[protoFile?](./koatty_router.routeroptions.protofile.md)
-
-
-</td><td>
-
-
-</td><td>
-
-string
-
-
-</td><td>
-
-_(Optional)_ gRPC protocol file
-
-
-</td></tr>
-<tr><td>
-
 [routerPath?](./koatty_router.routeroptions.routerpath.md)
 
 
