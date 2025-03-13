@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.12.0](https://github.com/koatty/koatty_router/compare/v1.11.0...v1.12.0) (2025-03-13)
+
+
+### Features
+
+* 替换 graphql 依赖为 koatty_graphql 并优化路由处理 ([2f859a2](https://github.com/koatty/koatty_router/commit/2f859a2df229c8130609ef67be6782db5ff0b05d))
+* add graphql support ([20cd5d2](https://github.com/koatty/koatty_router/commit/20cd5d20bfe02c8303953ba33f7bc15aafd74c55))
+* enhance GraphQL router with improved schema handling ([c502e42](https://github.com/koatty/koatty_router/commit/c502e42f695278e415a62874dc91fefc62f9d1c8))
+
+
+### Bug Fixes
+
+* new version ([0fabc62](https://github.com/koatty/koatty_router/commit/0fabc62e65bdc17458839f5d3e319dded65ec79b))
+
 ## [1.11.0](https://github.com/koatty/koatty_router/compare/v1.10.1...v1.11.0) (2025-02-26)
 
 
