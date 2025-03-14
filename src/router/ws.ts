@@ -3,13 +3,12 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:16:44
- * @LastEditTime: 2024-11-29 17:10:11
+ * @LastEditTime: 2025-03-14 15:10:06
  */
 
 import KoaRouter from "@koa/router";
 import { IOCContainer } from "koatty_container";
 import {
-  CONTROLLER_ROUTER,
   Koatty, KoattyContext, KoattyRouter,
   RouterImplementation
 } from "koatty_core";
@@ -74,12 +73,11 @@ export class WebsocketRouter implements KoattyRouter {
     try {
       for (const n of list) {
         const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
-        const routerOpt = IOCContainer.getPropertyData(CONTROLLER_ROUTER, ctlClass, n);
-        if (this.options.protocol !== routerOpt.protocol) {
-          continue;
-        }
         // inject router
         const ctlRouters = injectRouter(app, ctlClass);
+        if (!ctlRouters) {
+          continue;
+        }
         // inject param
         const ctlParams = injectParamMetaData(app, ctlClass, this.options.payload);
 
@@ -88,7 +86,7 @@ export class WebsocketRouter implements KoattyRouter {
           const path = parsePath(router.path);
           const requestMethod = <RequestMethod>router.requestMethod;
           const params = ctlParams[method];
-          if (requestMethod === RequestMethod.GET || requestMethod === RequestMethod.ALL) {
+          // if (requestMethod === RequestMethod.GET || requestMethod === RequestMethod.ALL) {
             Logger.Debug(`Register request mapping: [${requestMethod}] : ["${path}" => ${n}.${method}]`);
             this.SetRouter(path, {
               path,
@@ -98,7 +96,7 @@ export class WebsocketRouter implements KoattyRouter {
                 return Handler(app, ctx, ctl, method, params);
               },
             });
-          }
+          // }
         }
       }
       // exp: in middleware

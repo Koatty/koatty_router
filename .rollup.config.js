@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2021-12-17 10:20:44
- * @LastEditTime: 2025-03-13 19:09:25
+ * @LastEditTime: 2025-03-14 11:57:19
  */
 import commonjs from '@rollup/plugin-commonjs';
 import json from "@rollup/plugin-json";
@@ -51,11 +51,16 @@ export default [
           }
         }
       }),
-      terser()  // 压缩代码
+      // terser({
+      //   format: { comments: false },
+      //   compress: false,
+      //   mangle: false
+      // }),
     ],
     external: [
       ...builtinModules, // 排除 Node.js 内置模块
       ...Object.keys(pkg.dependencies || {}), // 排除 package.json 中的外部依赖
+      ...Object.keys(pkg.devDependencies || {}),
     ],
   },
 
