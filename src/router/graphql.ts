@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2025-03-12 14:54:42
- * @LastEditTime: 2025-03-13 18:21:32
+ * @LastEditTime: 2025-03-14 18:15:15
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -12,11 +12,10 @@ import fs from "fs";
 import { graphqlHTTP } from "koa-graphql";
 import { IOCContainer } from "koatty_container";
 import {
-  CONTROLLER_ROUTER,
   IGraphQLImplementation, Koatty, KoattyContext,
   KoattyRouter, RouterImplementation
 } from "koatty_core";
-import { buildSchema, parseGraphqlDocument, parseOperations } from "koatty_graphql";
+import { buildSchema } from "koatty_graphql";
 import { Helper } from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { payload } from "../params/payload";
@@ -59,7 +58,7 @@ export class GraphQLRouter implements KoattyRouter {
    * @returns 
    */
   SetRouter(name: string, impl?: RouterImplementation) {
-    const routeHandler = <any>impl.implementation;
+    const routeHandler = <IGraphQLImplementation>impl.implementation;
     if (Helper.isEmpty(routeHandler)) return;
     this.router.all(
       name,
@@ -93,34 +92,29 @@ export class GraphQLRouter implements KoattyRouter {
       // load schema files
       const schemaContent = fs.readFileSync(this.options.schemaFile, 'utf-8');
       const schema = buildSchema(schemaContent);
-      const document = parseGraphqlDocument(this.options.schemaFile);
-      const { Query, Mutation, Subscription } = parseOperations(document);
+
       const rootValue: IGraphQLImplementation = {};
 
       for (const n of list) {
         const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
-        const routerOpt = IOCContainer.getPropertyData(CONTROLLER_ROUTER, ctlClass, n);
-        if (this.options.protocol !== routerOpt.protocol) {
-          continue;
-        }
         // inject router
         const ctlRouters = injectRouter(app, ctlClass);
+        if (!ctlRouters) {
+          continue;
+        }
         // inject param
         const ctlParams = injectParamMetaData(app, ctlClass, this.options.payload);
         // tslint:disable-next-line: forin
         for (const router of Object.values(ctlRouters)) {
           const method = router.method;
-          if (!Query.includes(method) && !Mutation.includes(method) && !Subscription.includes(method)) {
-            continue;
-          }
           // const path = parsePath(router.path);
           // const requestMethod = <RequestMethod>router.requestMethod;
           const params = ctlParams[method];
 
           Logger.Debug(`Register request mapping: ${n}.${method}`);
-          rootValue[method] = (ctx: KoattyContext): Promise<any> => {
+          rootValue[method] = (args: any, ctx: KoattyContext): Promise<any> => {
             const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
-            return Handler(app, ctx, ctl, method, params);
+            return Handler(app, ctx, ctl, method, params, Object.values(args));
           }
         }
       }

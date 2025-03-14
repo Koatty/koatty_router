@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2025-02-26 18:34:18
+ * @LastEditTime: 2025-03-14 18:14:32
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -38,16 +38,17 @@ import { PayloadOptions } from "../params/payload";
  * @param {*} ctl
  * @param {*} method
  * @param {*} ctlParams
+ * @param {*} ctlParamsValue
  * @returns
  */
 export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any,
-  method: string, ctlParams?: ParamMetadata[]) {
+  method: string, ctlParams?: ParamMetadata[], ctlParamsValue?: any) {
   if (!ctx || !ctl) {
     return ctx.throw(404, `Controller not found.`);
   }
   ctl.ctx ??= ctx;
   // inject param
-  const args = ctlParams ? await getParameter(app, ctx, ctlParams) : [];
+  const args = ctlParams ? await getParameter(app, ctx, ctlParams, ctlParamsValue) : [];
   // method
   const res = await ctl[method](...args);
   if (Helper.isError(res)) {
@@ -83,16 +84,15 @@ interface RouterMetadataObject {
  * @param {Koatty} app
  * @param {*} target
  * @param {string} [protocol]
- * @returns {*} 
+ * @returns {*}
  */
 export function injectRouter(app: Koatty, target: any, protocol = 'http'): RouterMetadataObject {
   // Controller router path
-  const metaDatas = IOCContainer.listPropertyData(CONTROLLER_ROUTER, target);
   const ctlName = IOCContainer.getIdentifier(target);
-  const options = (metaDatas && ctlName in metaDatas) ?
-    metaDatas[IOCContainer.getIdentifier(target)] : { path: "", protocol: 'http' };
+  const options = IOCContainer.getPropertyData(CONTROLLER_ROUTER, target, ctlName) ||
+    { path: "", protocol: 'http' };
   options.path = options.path.startsWith("/") || options.path === "" ? options.path : `/${options.path}`;
-  options.protocol = options.protocol || 'http';
+  if (options.protocol !== protocol) return null;
 
   const rmetaData = recursiveGetMetadata(IOC, MAPPING_KEY, target);
   const router: RouterMetadataObject = {};
@@ -102,26 +102,24 @@ export function injectRouter(app: Koatty, target: any, protocol = 'http'): Route
     methods.push(...getPublicMethods(ctlPath, ctlName));
   }
 
-  // protocol check
-  if (options.protocol.includes(protocol)) {
-    // tslint:disable-next-line: forin
-    for (const metaKey in rmetaData) {
-      // Logger.Debug(`Register inject method Router key: ${metaKey} =>
-      // value: ${ JSON.stringify(rmetaData[metaKey]) }`);
-      //.sort((a, b) => b.priority - a.priority) 
-      if (app.appDebug && !methods.includes(metaKey)) {
-        Logger.Debug(`The method ${metaKey} is bound to the route, but the scope of this method is not public.`);
-        continue;
-      }
-      for (const val of rmetaData[metaKey]) {
-        const tmp = {
-          ...val,
-          path: `${options.path}${val.path}`.replace("//", "/")
-        };
-        router[`${tmp.path}||${tmp.requestMethod}`] = tmp;
-      }
+  // tslint:disable-next-line: forin
+  for (const metaKey in rmetaData) {
+    // Logger.Debug(`Register inject method Router key: ${metaKey} =>
+    // value: ${ JSON.stringify(rmetaData[metaKey]) }`);
+    //.sort((a, b) => b.priority - a.priority) 
+    if (app.appDebug && !methods.includes(metaKey)) {
+      Logger.Debug(`The method ${metaKey} is bound to the route, but the scope of this method is not public.`);
+      continue;
+    }
+    for (const val of rmetaData[metaKey]) {
+      const tmp = {
+        ...val,
+        path: `${options.path}${val.path}`.replace("//", "/")
+      };
+      router[`${tmp.path}||${tmp.requestMethod}`] = tmp;
     }
   }
+
 
   return router;
 }
@@ -261,12 +259,15 @@ export const injectParam = (fn: Function, name: string): ParameterDecorator => {
  * @param {Koatty} app
  * @param {KoattyContext} ctx
  * @param {any[]} params
+ * @param {any[]} ctlParamsValue
  * @returns
  */
-async function getParameter(app: Koatty, ctx: KoattyContext, params?: ParamMetadata[]) {
+async function getParameter(app: Koatty, ctx: KoattyContext, params?: ParamMetadata[], ctlParamsValue?: any) {
   const props = await Promise.all((params || []).map(async (v: ParamMetadata, k: number) => {
     let value: any = null;
-    if (v.fn && Helper.isFunction(v.fn)) {
+    if (ctlParamsValue[k]) {
+      value = ctlParamsValue[k];
+    } else if (v.fn && Helper.isFunction(v.fn)) {
       value = await v.fn(ctx, v.options);
     }
     return checkParams(app, value, {
