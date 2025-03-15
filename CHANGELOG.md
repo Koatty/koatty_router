@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.14.1](https://github.com/koatty/koatty_router/compare/v1.14.0...v1.14.1) (2025-03-15)
+
+
+### Bug Fixes
+
+* update optional chaining syntax in injectParam function ([ba133f7](https://github.com/koatty/koatty_router/commit/ba133f7aad4725c47ebee553038c12c6ef79d885))
+
 ## [1.14.0](https://github.com/koatty/koatty_router/compare/v1.13.2...v1.14.0) (2025-03-15)
 
 
