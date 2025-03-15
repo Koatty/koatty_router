@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.13.2](https://github.com/koatty/koatty_router/compare/v1.13.1...v1.13.2) (2025-03-15)
+
+
+### Bug Fixes
+
+* 修正 Handler 函数中缺少返回值的问题 ([3f37db5](https://github.com/koatty/koatty_router/commit/3f37db54018b4ce8022575977a5ff782794a4df2))
+
 ### [1.13.1](https://github.com/koatty/koatty_router/compare/v1.13.0...v1.13.1) (2025-03-15)
 
 
