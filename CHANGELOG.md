@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.13.0](https://github.com/koatty/koatty_router/compare/v1.12.1...v1.13.0) (2025-03-15)
+
+
+### Features
+
+* 增强路由处理，基于协议过滤控制器路由 ([1c783ef](https://github.com/koatty/koatty_router/commit/1c783ef31963ef38f9bbeeb372a2fb1d018de710))
+
 ### [1.12.1](https://github.com/koatty/koatty_router/compare/v1.12.0...v1.12.1) (2025-03-13)
 
 
