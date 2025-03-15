@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2025-03-15 17:07:30
+ * @LastEditTime: 2025-03-15 22:21:29
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -268,7 +268,7 @@ export const injectParam = (fn: Function, name: string): ParameterDecorator => {
 async function getParameter(app: Koatty, ctx: KoattyContext, params?: ParamMetadata[], ctlParamsValue?: any) {
   const props = await Promise.all((params || []).map(async (v: ParamMetadata, k: number) => {
     let value: any = null;
-    if (ctlParamsValue[k]) {
+    if (ctlParamsValue?.[k]) {
       value = ctlParamsValue[k];
     } else if (v.fn && Helper.isFunction(v.fn)) {
       value = await v.fn(ctx, v.options);
