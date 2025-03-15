@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.13.1](https://github.com/koatty/koatty_router/compare/v1.13.0...v1.13.1) (2025-03-15)
+
+
+### Bug Fixes
+
+* 统一在路由注入时传递协议选项 ([9873667](https://github.com/koatty/koatty_router/commit/9873667dcc41afada473b2a19b457926e9d20a35))
+
 ## [1.13.0](https://github.com/koatty/koatty_router/compare/v1.12.1...v1.13.0) (2025-03-15)
 
 
