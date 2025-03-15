@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2025-03-15 16:41:41
+ * @LastEditTime: 2025-03-15 17:07:30
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -66,6 +66,7 @@ export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any,
 interface RouterMetadata {
   method: string;
   path: string;
+  ctlPath: string;
   requestMethod: string;
   routerName: string;
 }
@@ -115,7 +116,8 @@ export function injectRouter(app: Koatty, target: any, protocol = 'http'): Route
     for (const val of rmetaData[metaKey]) {
       const tmp = {
         ...val,
-        path: `${options.path}${val.path}`.replace("//", "/")
+        path: `${options.path}${val.path}`.replace("//", "/"),
+        ctlPath: options.path,
       };
       router[`${tmp.path}||${tmp.requestMethod}`] = tmp;
     }

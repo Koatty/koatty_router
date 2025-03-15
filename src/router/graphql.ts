@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2025-03-12 14:54:42
- * @LastEditTime: 2025-03-14 18:15:15
+ * @LastEditTime: 2025-03-15 17:06:54
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -116,12 +116,13 @@ export class GraphQLRouter implements KoattyRouter {
             const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
             return Handler(app, ctx, ctl, method, params, Object.values(args));
           }
+          this.SetRouter(router.ctlPath || "/graphql", {
+            schema,
+            implementation: rootValue
+          });
         }
       }
-      this.SetRouter("/graphql", {
-        schema,
-        implementation: rootValue
-      });
+      
       // exp: in middleware
       // app.Router.SetRouter('/xxx',  (ctx: Koa.KoattyContext): any => {...}, 'GET')
       app.use(this.router.routes()).use(this.router.allowedMethods());
