@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2025-03-14 18:14:32
+ * @LastEditTime: 2025-03-15 16:41:41
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -55,6 +55,7 @@ export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any,
     throw res;
   }
   ctx.body = ctx.body || res;
+  return ctx.body;
 }
 
 /**
