@@ -105,7 +105,7 @@ export class GrpcRouter implements KoattyRouter {
       for (const n of list) {
         const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
         // inject router
-        const ctlRouters = injectRouter(app, ctlClass);
+        const ctlRouters = injectRouter(app, ctlClass, this.options.protocol);
         if (!ctlRouters) {
           continue;
         }

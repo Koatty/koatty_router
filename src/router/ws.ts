@@ -3,7 +3,7 @@
  * @Usage:
  * @Author: richen
  * @Date: 2021-06-29 14:16:44
- * @LastEditTime: 2025-03-14 15:10:06
+ * @LastEditTime: 2025-03-15 16:35:45
  */
 
 import KoaRouter from "@koa/router";
@@ -74,7 +74,7 @@ export class WebsocketRouter implements KoattyRouter {
       for (const n of list) {
         const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
         // inject router
-        const ctlRouters = injectRouter(app, ctlClass);
+        const ctlRouters = injectRouter(app, ctlClass, this.options.protocol);
         if (!ctlRouters) {
           continue;
         }
