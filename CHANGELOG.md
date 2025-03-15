@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.14.0](https://github.com/koatty/koatty_router/compare/v1.13.2...v1.14.0) (2025-03-15)
+
+
+### Features
+
+* enhance GraphQL router configuration and add ctlPath to RouterMetadata ([71c96a9](https://github.com/koatty/koatty_router/commit/71c96a930ca492811400f8d6e974abcc81eb2d18))
+
 ### [1.13.2](https://github.com/koatty/koatty_router/compare/v1.13.1...v1.13.2) (2025-03-15)
 
 
