@@ -7,12 +7,12 @@
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
-
+import "reflect-metadata";
 import {
   getOriginMetadata, IOC, IOCContainer, recursiveGetMetadata,
   TAGGED_PARAM
 } from "koatty_container";
-import { CONTROLLER_ROUTER, Koatty, KoattyContext, KoattyServer } from "koatty_core";
+import { CONTROLLER_ROUTER, Koatty, KoattyContext } from "koatty_core";
 import { Exception } from "koatty_exception";
 import { Helper } from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
@@ -31,15 +31,16 @@ import { MAPPING_KEY } from "../params/mapping";
 import { PayloadOptions } from "../params/payload";
 
 /**
- * controller handler
- *
- * @param {Koatty} app
- * @param {KoattyContext} ctx
- * @param {*} ctl
- * @param {*} method
- * @param {*} ctlParams
- * @param {*} ctlParamsValue
- * @returns
+ * Execute controller method with dependency injection and parameter handling.
+ * 
+ * @param app - Koatty application instance
+ * @param ctx - Koatty context object
+ * @param ctl - Controller instance
+ * @param method - Method name to be executed
+ * @param ctlParams - Parameter metadata for dependency injection
+ * @param ctlParamsValue - Parameter values for injection
+ * @returns The response body
+ * @throws {Error} 404 if controller not found
  */
 export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any,
   method: string, ctlParams?: ParamMetadata[], ctlParamsValue?: any) {
@@ -81,15 +82,20 @@ interface RouterMetadataObject {
 }
 
 /**
- *
- *
- * @param {Koatty} app
- * @param {*} target
- * @param {string} [protocol]
- * @returns {*}
+ * Inject router metadata for a controller class.
+ * 
+ * @param app - The Koatty application instance
+ * @param target - The controller class target
+ * @param protocol - The protocol type, defaults to 'http'
+ * @returns RouterMetadataObject containing route mappings, or null if protocol doesn't match
+ * 
+ * @description
+ * This function processes controller class metadata to generate router mappings.
+ * It extracts the controller path, validates method scopes in debug mode,
+ * and combines controller and method level route configurations.
  */
-export function injectRouter(app: Koatty, target: any, protocol = 'http'): RouterMetadataObject {
-  // Controller router path
+export function injectRouter(app: Koatty, target: any, protocol = 'http'): RouterMetadataObject | null {
+// Controller router path
   const ctlName = IOCContainer.getIdentifier(target);
   const options = IOCContainer.getPropertyData(CONTROLLER_ROUTER, target, ctlName) ||
     { path: "", protocol: 'http' };
@@ -156,12 +162,21 @@ interface ParamMetadataMap {
 }
 
 /**
- * injectParamMetaData
- *
- * @param {Koatty} app
- * @param {*} target
- * @param {*} [options]
- * @returns {*} 
+ * Inject parameter metadata for dependency injection.
+ * 
+ * @param app - The Koatty application instance
+ * @param target - The target class to inject parameters
+ * @param options - Optional payload options for parameter injection
+ * @returns A map of parameter metadata for each method
+ * 
+ * @description
+ * This function processes and combines various metadata including injection data,
+ * validation rules, and DTO checks. It sorts parameters by index, applies validation
+ * rules, and handles DTO class registration. For DTO parameters, it ensures the class
+ * is registered in the IOC container and sets up type definitions if DTO validation
+ * is enabled.
+ * 
+ * @throws Error when a DTO class is not registered in the container
  */
 export function injectParamMetaData(app: Koatty, target: any,
   options?: PayloadOptions): ParamMetadataMap {
@@ -204,7 +219,9 @@ export function injectParamMetaData(app: Koatty, target: any,
           });
         }
       }
-      v.options = options
+      if (options) {
+        v.options = options;
+      }
     });
     argsMetaObj[meta] = data;
     // }
@@ -212,16 +229,25 @@ export function injectParamMetaData(app: Koatty, target: any,
   return argsMetaObj;
 }
 
-
 /**
- * inject ParameterDecorator
- *
- * @param {Function} fn
- * @param {string} name
- * @returns {*}  {ParameterDecorator}
+ * Creates a parameter decorator for dependency injection.
+ * 
+ * @param fn The function to be injected
+ * @param name The name of the decorator
+ * @returns A ParameterDecorator that handles the injection
+ * @throws Error if decorator is used outside of a controller class
+ * 
+ * @example
+ * ```typescript
+ * @Controller()
+ * class UserController {
+ *   @Get("/user")
+ *   getUser(@Get() query: QueryDTO) {}
+ * }
+ * ```
  */
 export const injectParam = (fn: Function, name: string): ParameterDecorator => {
-  return (target: object, propertyKey: string, descriptor: number) => {
+  return (target: object, propertyKey: string | symbol | undefined, descriptor: number) => {
     const targetType = IOCContainer.getType(target);
     if (targetType !== "CONTROLLER") {
       throw Error(`${name} decorator is only used in controllers class.`);
@@ -255,25 +281,29 @@ export const injectParam = (fn: Function, name: string): ParameterDecorator => {
   };
 };
 
-
 /**
- * Parameter binding assignment.
- *
- * @param {Koatty} app
- * @param {KoattyContext} ctx
- * @param {any[]} params
- * @param {any[]} ctlParamsValue
- * @returns
+ * Get and validate parameters for controller method.
+ * 
+ * @param {Koatty} app - The Koatty application instance
+ * @param {KoattyContext} ctx - The Koatty context object
+ * @param {ParamMetadata[]} [params] - Array of parameter metadata
+ * @param {any} [ctlParamsValue] - Pre-defined parameter values
+ * @returns {Promise<any[]>} Array of validated parameter values
+ * 
+ * @description
+ * Processes parameters in parallel, including:
+ * - Parameter value extraction from context or custom function
+ * - Parameter validation based on rules and DTOs
+ * - Type checking and transformation
  */
 async function getParameter(app: Koatty, ctx: KoattyContext, params?: ParamMetadata[], ctlParamsValue?: any) {
-  const props = await Promise.all((params || []).map(async (v: ParamMetadata, k: number) => {
-    let value: any = null;
-    if (ctlParamsValue?.[k]) {
-      value = ctlParamsValue[k];
-    } else if (v.fn && Helper.isFunction(v.fn)) {
-      value = await v.fn(ctx, v.options);
-    }
-    return checkParams(app, value, {
+// 并行处理参数获取和验证
+  const paramPromises = (params || []).map(async (v: ParamMetadata, k: number) => {
+    const rawValue = ctlParamsValue?.[k] ??
+      (v.fn && Helper.isFunction(v.fn) ? await v.fn(ctx, v.options) : null);
+
+    // 并行执行参数验证
+    return validateParam(app, ctx, rawValue, {
       index: k,
       isDto: v.isDto,
       type: v.type,
@@ -283,8 +313,25 @@ async function getParameter(app: Koatty, ctx: KoattyContext, params?: ParamMetad
       dtoRule: v.dtoRule,
       clazz: v.clazz,
     });
-  }));
-  return props;
+  });
+
+  return Promise.all(paramPromises);
+}
+
+/**
+ * Validates and transforms parameter values based on provided options
+ * 
+ * @param app - The Koatty application instance
+ * @param ctx - The Koatty context object
+ * @param value - The parameter value to validate
+ * @param opt - Parameter validation options
+ * @returns Promise resolving to the validated/transformed value
+ */
+async function validateParam(app: Koatty, ctx: KoattyContext, value: any, opt: ParamOptions) {
+  if (opt.isDto && !opt.clazz) {
+    opt.clazz = IOCContainer.getClass(opt.type, "COMPONENT");
+  }
+  return checkParams(app, ctx, value, opt);
 }
 
 /**
@@ -309,19 +356,24 @@ interface ParamOptions {
  * it will cause the parameter type conversion
  *
  * @param {Koatty} app
+ * @param {KoattyContext} ctx
  * @param {*} value
  * @param {ParamOptions} opt
  * @returns {*}  
  */
-async function checkParams(app: Koatty, value: any, opt: ParamOptions) {
+async function checkParams(app: Koatty, ctx: KoattyContext, value: any, opt: ParamOptions) {
   try {
     //@Validated
     if (opt.isDto) {
-      // DTO class
-      if (!opt.clazz) {
-        opt.clazz = IOCContainer.getClass(opt.type, "COMPONENT");
+
+      let validatedValue;
+      if (opt.dtoCheck) {
+        validatedValue = await ClassValidator.valid(opt.clazz, value, true);
+      } else {
+        validatedValue = plainToClass(opt.clazz, value, true);
       }
-      value = opt.dtoCheck ? await ClassValidator.valid(opt.clazz, value, true) : plainToClass(opt.clazz, value, true);
+
+      return validatedValue;
     } else {
       // querystring default type is string, must be convert type
       value = convertParamsType(value, opt.type);
@@ -336,44 +388,43 @@ async function checkParams(app: Koatty, value: any, opt: ParamOptions) {
   }
 }
 
-
 /**
- * Validated by funcs.
- *
- * @export
- * @param {string} name
- * @param {*} value
- * @param {string} type
- * @param {(ValidRules | ValidRules[] | Function)} rule
- * @param {ValidOtpions} [options]
- * @param {boolean} [checkType=true]
- * @returns
+ * Validate value with specified rules.
+ * 
+ * @param name The parameter name to validate
+ * @param value The value to validate
+ * @param type The type of value
+ * @param rule Validation rule(s). Can be a function, a single rule string, or an array of rule strings
+ * @param options Optional validation options
+ * @throws {Error} Throws error if validation fails
  */
 function validatorFuncs(name: string, value: any, type: string,
   rule: ValidRules | ValidRules[] | Function, options?: ValidOtpions) {
   if (Helper.isFunction(rule)) {
+    // 自定义验证函数
     rule(value);
-  } else {
-    const funcs: any[] = Array.isArray(rule) ? rule : [rule].filter(Boolean);
-    for (const func of funcs) {
-      if (func in FunctionValidator) {
-        FunctionValidator[<ValidRules>func](value, options);
-      }
+    return;
+  }
+
+  const funcs: ValidRules[] = Helper.isString(rule) ? [rule as ValidRules] : 
+                            Helper.isArray(rule) ? rule as ValidRules[] : [];
+
+  for (const func of funcs) {
+    if (!Object.hasOwnProperty.call(FunctionValidator, func)) {
+      continue;
+    }
+    
+    try {
+      // 任一验证失败立即抛出异常
+      FunctionValidator[func](value, options);
+    } catch (err) {
+      throw new Exception(
+        `Validation failed for param ${name}: ${err.message}`,
+        1,
+        400
+      );
     }
   }
-}
-
-/**
- * @description: Function to detect and return a server based on the specified protocol.
- * @param {KoattyServer} servers A single server instance or an array of server instances.
- * @param {string} protocol The protocol to match against the server(s).
- * @return {*}
- */
-export function detectServer(servers: KoattyServer | KoattyServer[], protocol: string) {
-  if (!Helper.isArray(servers)) {
-    return servers;
-  }
-  return servers.find((server) => server.options.protocol === protocol) || null;
 }
 
 /**
