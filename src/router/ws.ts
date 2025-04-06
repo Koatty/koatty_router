@@ -44,8 +44,8 @@ export class WebsocketRouter implements KoattyRouter {
   private frameBuffers: Map<string, Buffer[]>;
 
   constructor(app: Koatty, options?: WebsocketRouterOptions) {
-    this.options = { 
-      ...options, 
+    this.options = {
+      ...options,
       prefix: options?.prefix || '',
       maxFrameSize: options?.maxFrameSize || 1024 * 1024,
       frameTimeout: options?.frameTimeout || 30000,
@@ -108,15 +108,15 @@ export class WebsocketRouter implements KoattyRouter {
           const requestMethod = <RequestMethod>router.requestMethod;
           const params = ctlParams[method];
           // if (requestMethod === RequestMethod.GET || requestMethod === RequestMethod.ALL) {
-            Logger.Debug(`Register request mapping: [${requestMethod}] : ["${path}" => ${n}.${method}]`);
-            this.SetRouter(path, {
-              path,
-              method: requestMethod,
-              implementation: (ctx: KoattyContext): Promise<any> => {
-                const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
-                return this.websocketHandler(app, ctx, ctl, method, params);
-              },
-            });
+          Logger.Debug(`Register request mapping: [${requestMethod}] : ["${path}" => ${n}.${method}]`);
+          this.SetRouter(path, {
+            path,
+            method: requestMethod,
+            implementation: (ctx: KoattyContext): Promise<any> => {
+              const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
+              return this.websocketHandler(app, ctx, ctl, method, params, undefined, router.middleware);
+            },
+          });
           // }
         }
       }
@@ -128,11 +128,11 @@ export class WebsocketRouter implements KoattyRouter {
     }
   }
 
-  private websocketHandler(app: Koatty, ctx: KoattyContext, ctl: Function, method: string, params?: any): Promise<any> {
+  private websocketHandler(app: Koatty, ctx: KoattyContext, ctl: Function, method: string, params?: any, ctlParamsValue?: any, middlewares?: Function[]): Promise<any> {
     return new Promise((resolve) => {
       const socketId = ctx.socketId || ctx.requestId;
       this.frameBuffers.set(socketId, []);
-      
+
       // 设置分片处理超时
       let frameTimeout: NodeJS.Timeout;
       const resetFrameTimeout = () => {
@@ -146,7 +146,7 @@ export class WebsocketRouter implements KoattyRouter {
       // 设置基于ping/pong的心跳检测
       let heartbeatTimeout: NodeJS.Timeout;
       let isAlive = true; // 连接活跃状态
-      
+
       // 收到pong响应时标记为活跃
       const onPong = () => {
         isAlive = true;
@@ -174,8 +174,8 @@ export class WebsocketRouter implements KoattyRouter {
       ctx.websocket.on('pong', onPong);
       // 启动首次心跳检测
       heartbeatTimeout = setTimeout(checkAlive, this.options.heartbeatInterval);
-      
-      
+
+
       ctx.websocket.on('message', (data: Buffer | string) => {
         // 收到消息时重置连接状态
         isAlive = true;
@@ -183,7 +183,7 @@ export class WebsocketRouter implements KoattyRouter {
 
         const chunkSize = this.options.maxFrameSize;
         const buffers = this.frameBuffers.get(socketId) || [];
-        
+
         // 处理不同类型的数据
         let bufferData: Buffer;
         if (typeof data === 'string') {
@@ -217,7 +217,7 @@ export class WebsocketRouter implements KoattyRouter {
         if (bufferData.length <= chunkSize || bufferData.length % chunkSize !== 0) {
           const fullMessage = Buffer.concat(buffers).toString('utf8');
           ctx.message = fullMessage;
-          const result = Handler(app, ctx, ctl, method, params);
+          const result = Handler(app, ctx, ctl, method, params, ctlParamsValue, middlewares);
           this.frameBuffers.delete(socketId);
           resolve(result);
         }

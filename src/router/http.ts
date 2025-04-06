@@ -96,7 +96,7 @@ export class HttpRouter implements KoattyRouter {
             method: requestMethod,
             implementation: (ctx: KoattyContext): Promise<any> => {
               const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
-              return Handler(app, ctx, ctl, method, params);
+              return Handler(app, ctx, ctl, method, params, undefined, router.middleware);
             },
           });
         }

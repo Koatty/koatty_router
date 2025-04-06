@@ -9,8 +9,8 @@
  */
 
 // tslint:disable-next-line: no-import-side-effect
-import { IOCContainer } from 'koatty_container';
 import "reflect-metadata";
+import { IOCContainer } from 'koatty_container';
 
 // used for request mapping metadata
 export const MAPPING_KEY = 'MAPPING_KEY';
@@ -26,6 +26,7 @@ export interface RouterOption {
   requestMethod: string;
   routerName?: string;
   method: string;
+  middleware?: Function[];
 }
 
 /**
@@ -60,6 +61,7 @@ export const RequestMapping = (
   reqMethod: RequestMethod = RequestMethod.GET,
   routerOptions: {
     routerName?: string;
+    middleware?: Function[];
   } = {}
 ): MethodDecorator => {
   const routerName = routerOptions.routerName ?? "";
@@ -69,13 +71,26 @@ export const RequestMapping = (
       throw Error("RequestMapping decorator is only used in controllers class.");
     }
 
+    // 检查middleware是否实现IMiddleware接口
+    if (routerOptions.middleware) {
+      for (const m of routerOptions.middleware) {
+        if (typeof m !== 'function' || !('run' in m.prototype)) {
+          throw new Error(`Middleware must be a class implementing IMiddleware`);
+        }
+      }
+    }
+
+    // 获取中间件类名数组
+    const middlewareNames = routerOptions.middleware?.map(m => m.name) || [];
+
     // tslint:disable-next-line: no-object-literal-type-assertion
     IOCContainer.attachPropertyData(MAPPING_KEY, {
       path,
       requestMethod: reqMethod,
       routerName,
-      method: key
-    } as RouterOption, target, key);
+      method: key,
+      middleware: middlewareNames
+    }, target, key);
 
     return descriptor;
   };
