@@ -14,9 +14,10 @@ import {
 import * as Helper from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { RequestMethod } from "../params/mapping";
-import { Handler, injectParamMetaData, injectRouter } from "../utils/inject";
+import { injectParamMetaData, injectRouter } from "../utils/inject";
 import { parsePath } from "../utils/path";
 import { RouterOptions } from "./router";
+import { Handler } from "../utils/handler";
 
 
 /**
