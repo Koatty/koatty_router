@@ -34,6 +34,7 @@ interface RouterMetadata {
   ctlPath: string;
   requestMethod: string;
   routerName: string;
+  middleware?: Function[];
 }
 
 /**
@@ -82,10 +83,17 @@ export function injectRouter(app: Koatty, target: any, protocol = 'http'): Route
       continue;
     }
     for (const val of rmetaData[metaKey]) {
+      // 合并控制器类级别的中间件和路由方法级别的中间件
+      const middleware = [
+        ...(options.middleware || []),
+        ...(val.middleware || [])
+      ];
+      
       const tmp = {
         ...val,
         path: `${options.path}${val.path}`.replace("//", "/"),
         ctlPath: options.path,
+        middleware: middleware.length ? middleware : [],
       };
       router[`${tmp.path}||${tmp.requestMethod}`] = tmp;
     }

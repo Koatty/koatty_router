@@ -138,6 +138,7 @@ interface CtlInterface {
     ctl: Function;
     method: string;
     params: ParamMetadata[];
+    middleware: Function[];
   }
 }
 
@@ -225,6 +226,7 @@ export class GrpcRouter implements KoattyRouter {
             ctl: ctlClass,
             method: router.method,
             params: ctlParams[router.method],
+            middleware: router.middleware
           };
         }
       }
@@ -247,14 +249,14 @@ export class GrpcRouter implements KoattyRouter {
               return this.handleStream(call, callback, (data: any) => {
                 app.callback("grpc", (ctx) => {
                   const ctl = IOCContainer.getInsByClass(ctlItem.ctl, [ctx]);
-                  return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params);
+                  return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.middleware);
                 })(data, callback);
               });
             }
 
             return app.callback("grpc", (ctx) => {
               const ctl = IOCContainer.getInsByClass(ctlItem.ctl, [ctx]);
-              return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params);
+              return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.middleware);
             })(call, callback);
           };
         }

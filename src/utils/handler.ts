@@ -1,4 +1,6 @@
 import { Koatty, KoattyContext } from "koatty_core";
+import { DefaultLogger as Logger } from "koatty_logger";
+import compose, { Middleware } from "koa-compose";
 import { Helper } from "koatty_lib";
 import { Exception } from "koatty_exception";
 import { ParamMetadata } from "./inject";
@@ -36,20 +38,46 @@ interface ParamOptions {
  * @throws {Error} When controller not found or execution fails
  */
 export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any,
-  method: string, ctlParams?: ParamMetadata[], ctlParamsValue?: any) {
+  method: string, ctlParams?: ParamMetadata[], ctlParamsValue?: any, middlewares?: Function[]) {
     
   if (!ctx || !ctl) {
     return ctx.throw(404, `Controller not found.`);
   }
   ctl.ctx ??= ctx;
-  // 注入参数
-  const args = ctlParams ? await getParameter(app, ctx, ctlParams, ctlParamsValue) : [];
-  // 执行方法
-  const res = await ctl[method](...args);
-  if (Helper.isError(res)) {
-    throw res;
+  
+  // 创建中间件链
+  const middlewareFns: Middleware<KoattyContext>[] = [];
+  
+  // 添加路由中间件
+  if (middlewares?.length) {
+    for (const m of middlewares) {
+      const middleware = app.getMetaData(`routerMiddleware_${m}`)[0];
+      if (!middleware) {
+        Logger.Warn(`Middleware ${m} not found`);
+        continue;
+      }
+      middlewareFns.push(middleware);
+    }
   }
-  ctx.body = ctx.body || res;
+
+  // 添加Handler作为最后一个中间件
+  middlewareFns.push(async (ctx: KoattyContext, next: Function) => {
+    // 注入参数
+    const args = ctlParams ? await getParameter(app, ctx, ctlParams, ctlParamsValue) : [];
+    // 执行方法
+    const res = await ctl[method](...args);
+    if (Helper.isError(res)) {
+      throw res;
+    }
+    ctx.body = ctx.body || res;
+    return next();
+  });
+
+  // 执行中间件链
+  if (middlewareFns.length > 0) {
+    await compose(middlewareFns)(ctx);
+  }
+  
   return ctx.body;
 }
 
