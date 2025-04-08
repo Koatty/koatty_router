@@ -41,7 +41,7 @@ class GrpcConnectionPool {
     this.pool = new Map();
     this.maxSize = maxSize;
   }
-  
+
   /**
    * Get connection from pool
    */
@@ -195,7 +195,7 @@ export class GrpcRouter implements KoattyRouter {
       stream.on('data', (data: any) => handler(data));
       stream.on('end', () => callback(null, {}));
       stream.on('error', (err: Error) => callback(err));
-      
+
       // 如果是可写流，处理初始请求
       if (stream.request) {
         handler(stream.request);
@@ -260,7 +260,14 @@ export class GrpcRouter implements KoattyRouter {
             })(call, callback);
           };
         }
-
+        // exp: in middleware
+        // app.Router.SetRouter('/xxx',  { service: si.service, implementation: {
+        //   "SayHello": (call: IRpcServerCall<any, any>, callback: IRpcServerCallback<any>) => {
+        //     return app.callback("grpc", (ctx) => {
+        //       ...
+        //     })(call, callback);
+        //   }
+        // }})
         this.SetRouter(si.name, { service: si.service, implementation: impl });
         app.server?.RegisterService({ service: si.service, implementation: impl });
       }
