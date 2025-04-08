@@ -24,13 +24,7 @@ interface XMLParserOptions {
 }
 
 export interface PayloadOptions {
-  extTypes: {
-    json: string[],
-    form: string[],
-    text: string[],
-    multipart: string[],
-    xml: string[],
-  };
+  extTypes: Record<string, string[]>;
   limit: string;
   encoding: BufferEncoding;
   multiples: boolean;
@@ -44,8 +38,11 @@ const defaultOptions: PayloadOptions = {
     form: ['application/x-www-form-urlencoded'],
     text: ['text/plain'],
     multipart: ['multipart/form-data'],
-    xml: ['text/xml']
-  },
+    xml: ['text/xml'],
+    grpc: ['application/grpc'],
+    graphql: ['application/graphql+json'],
+    websocket: ['application/websocket']
+  } as Record<string, string[]>,
   limit: '20mb',
   encoding: 'utf-8',
   multiples: true,
@@ -157,16 +154,20 @@ function parseBody(ctx: KoattyContext, options: PayloadOptions): Promise<unknown
     return Promise.resolve({});
   }
 
-  const typeMap: ParserMap = {
-    'application/json': parseJson,
-    'application/x-www-form-urlencoded': parseForm,
-    'text/plain': parseText,
-    'multipart/form-data': parseMultipart,
-    'text/xml': parseXml,
-    'application/grpc': parseGrpc,
-    'application/graphql+json': parseGraphQL,
-    'application/websocket': parseWebSocket
-  };
+  const typeMap: ParserMap = {};
+  // 使用extTypes配置初始化typeMap
+  for (const [type, mimes] of Object.entries(options.extTypes)) {
+    for (const mime of mimes) {
+      typeMap[mime] = (type === 'json') ? parseJson :
+                     (type === 'form') ? parseForm :
+                     (type === 'text') ? parseText :
+                     (type === 'multipart') ? parseMultipart :
+                     (type === 'xml') ? parseXml :
+                     (type === 'grpc') ? parseGrpc :
+                     (type === 'graphql') ? parseGraphQL :
+                     (type === 'websocket') ? parseWebSocket : parseText;
+    }
+  }
 
   const parser = typeMap[match[1]];
   return parser ? parser(ctx, options) : Promise.resolve({});
