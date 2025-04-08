@@ -19,8 +19,9 @@ import { buildSchema } from "koatty_graphql";
 import { Helper } from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { payload } from "../params/payload";
-import { Handler, injectParamMetaData, injectRouter } from "../utils/inject";
+import { injectParamMetaData, injectRouter } from "../utils/inject";
 import { RouterOptions } from "./router";
+import { Handler } from "../utils/handler";
 
 /**
  * GrpcRouter Options
@@ -122,9 +123,9 @@ export class GraphQLRouter implements KoattyRouter {
           });
         }
       }
-      
+
       // exp: in middleware
-      // app.Router.SetRouter('/xxx',  (ctx: Koa.KoattyContext): any => {...}, 'GET')
+      // app.Router.SetRouter('/xxx',  { schema, implementation: rootValue})
       app.use(this.router.routes()).use(this.router.allowedMethods());
     } catch (err) {
       Logger.Error(err);

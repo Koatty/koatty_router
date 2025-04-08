@@ -121,7 +121,9 @@ export class WebsocketRouter implements KoattyRouter {
         }
       }
       // exp: in middleware
-      // app.Router.SetRouter('/xxx',  (ctx: Koa.KoattyContext): any => {...}, 'GET')
+      // app.Router.SetRouter('/xxx',  {path, method, implementation: (ctx: KoattyContext): Promise<any> => {
+      //   ...
+      // })
       app.use(this.router.routes()).use(this.router.allowedMethods());
     } catch (err) {
       Logger.Error(err);
