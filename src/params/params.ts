@@ -60,8 +60,8 @@ export function Get(name?: string): ParameterDecorator {
  */
 export function Post(name?: string): ParameterDecorator {
   return injectParam(async (ctx: KoattyContext, opt?: PayloadOptions) => {
-    const body = await bodyParser(ctx, opt);
-    const params = body.post ?? body;
+    const data = await bodyParser(ctx, opt);
+    const params = data.body ?? data;
     return name ? params[name] : params;
   }, "Post");
 }
@@ -86,7 +86,7 @@ export function File(name?: string): ParameterDecorator {
  * Get parsed body(form variable and file object).
  *
  * @export
- * @returns ex: {post: {...}, file: {...}}
+ * @returns ex: {body: {...}, file: {...}}
  */
 export function RequestBody(): ParameterDecorator {
   return injectParam((ctx: KoattyContext, opt?: PayloadOptions) => bodyParser(ctx, opt), "RequestBody");

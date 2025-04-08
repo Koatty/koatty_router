@@ -80,6 +80,8 @@
   },
   "dependencies": {
     "@koa/router": "^13.1.0",
+    "fast-querystring": "^1.1.2",
+    "fast-xml-parser": "^5.2.0",
     "formidable": "^3.5.2",
     "inflation": "^2.1.0",
     "koa-compose": "^4.1.0",
@@ -93,8 +95,7 @@
     "koatty_proto": "^1.x.x",
     "koatty_validation": "^1.x.x",
     "on-finished": "^2.4.1",
-    "raw-body": "^3.0.0",
-    "xml2js": "^0.6.2"
+    "raw-body": "^3.0.0"
   },
   "peerDependencies": {
     "koatty_container": "^1.x.x",
