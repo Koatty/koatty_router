@@ -23,7 +23,6 @@ import { WebsocketRouter } from "./ws";
  * @interface RouterOptions
  */
 export interface RouterOptions {
-  protocol: string;
   prefix: string;
   /**
    * Methods which should be supported by the router.
@@ -41,16 +40,17 @@ export interface RouterOptions {
    * account when matching routes.
    */
   strict?: boolean;
+  // server protocol
+  protocol?: string;
 
   /**
    * payload options
    */
   payload?: PayloadOptions;
-  // 
   /**
    * Other extended configuration
    */
-  ext?: any;
+  ext?: Record<string, any>;
   // {
   //  // gRPC protocol file
   //  protoFile ?: string;
