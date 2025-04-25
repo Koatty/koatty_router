@@ -47,7 +47,7 @@ Description
 
 </td><td>
 
-any
+Record&lt;string, any&gt;
 
 
 </td><td>
@@ -113,7 +113,7 @@ string
 </td></tr>
 <tr><td>
 
-[protocol](./koatty_router.routeroptions.protocol.md)
+[protocol?](./koatty_router.routeroptions.protocol.md)
 
 
 </td><td>
@@ -125,6 +125,8 @@ string
 
 
 </td><td>
+
+_(Optional)_
 
 
 </td></tr>

@@ -56,6 +56,25 @@ string
 </td></tr>
 <tr><td>
 
+[middleware?](./koatty_router.routeroption.middleware.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Function\[\]
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+<tr><td>
+
 [path?](./koatty_router.routeroption.path.md)
 
 

@@ -11,6 +11,7 @@ Routes HTTP requests to the specified path.
 ```typescript
 RequestMapping: (path?: string, reqMethod?: RequestMethod, routerOptions?: {
     routerName?: string;
+    middleware?: Function[];
 }) => MethodDecorator
 ```
 
@@ -71,7 +72,7 @@ routerOptions
 
 </td><td>
 
-{ routerName?: string; }
+{ routerName?: string; middleware?: Function\[\]; }
 
 
 </td><td>

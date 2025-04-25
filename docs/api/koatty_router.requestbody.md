@@ -16,5 +16,5 @@ export declare function RequestBody(): ParameterDecorator;
 
 ParameterDecorator
 
-ex: {<!-- -->post: {<!-- -->...<!-- -->}<!-- -->, file: {<!-- -->...<!-- -->}<!-- -->}
+ex: {<!-- -->body: {<!-- -->...<!-- -->}<!-- -->, file: {<!-- -->...<!-- -->}<!-- -->}
 
