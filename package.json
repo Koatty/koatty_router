@@ -1,6 +1,6 @@
 {
   "name": "koatty_router",
-  "version": "1.14.1",
+  "version": "1.15.0",
   "description": "Koatty routing component, adapt to http1/2, websocket, gRPC.",
   "scripts": {
     "build": "npm run build:js && npm run build:dts && npm run build:doc && npm run build:cp",
@@ -43,7 +43,7 @@
     "@microsoft/api-extractor": "^7.x.x",
     "@rollup/plugin-commonjs": "^28.x.x",
     "@rollup/plugin-json": "^6.x.x",
-    "@rollup/plugin-node-resolve": "^15.x.x",
+    "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.x.x",
     "@types/formidable": "^3.x.x",
     "@types/inflation": "^2.x.x",
@@ -81,8 +81,8 @@
   "dependencies": {
     "@koa/router": "^13.1.0",
     "fast-querystring": "^1.1.2",
-    "fast-xml-parser": "^5.2.0",
-    "formidable": "^3.5.2",
+    "fast-xml-parser": "^5.2.1",
+    "formidable": "^3.5.4",
     "inflation": "^2.1.0",
     "koa-compose": "^4.1.0",
     "koa-graphql": "^0.12.0",

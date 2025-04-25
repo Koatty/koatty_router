@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.15.0](https://github.com/koatty/koatty_router/compare/v1.14.1...v1.15.0) (2025-04-25)
+
+
+### Features
+
+* add connection pooling and batch processing to gRPC router with stream handling support ([3648155](https://github.com/koatty/koatty_router/commit/3648155aa301d5724fbc2811506f87853140337e))
+* add middleware support for routers with validation and composition handling ([a50b86b](https://github.com/koatty/koatty_router/commit/a50b86bc03c39a16eb142bcf41047849a5e9c73e))
+* add WebSocket frame handling with heartbeat, timeout and chunked message support ([e42c055](https://github.com/koatty/koatty_router/commit/e42c05510655c785dc63b9f3b2719771734b232c))
+* replace lib for improved payload parsing performance ([3fa4a77](https://github.com/koatty/koatty_router/commit/3fa4a77354492a471403dfda279ef1a75596ed2c))
+
 ### [1.14.1](https://github.com/koatty/koatty_router/compare/v1.14.0...v1.14.1) (2025-03-15)
 
 
