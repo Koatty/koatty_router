@@ -22,6 +22,7 @@ import {
   PARAM_CHECK_KEY, PARAM_RULE_KEY, PARAM_TYPE_KEY,
   paramterTypes, ValidOtpions, ValidRules
 } from "koatty_validation";
+import { MiddlewareManager } from "../middleware/manager";
 
 /**
  *
@@ -34,7 +35,7 @@ interface RouterMetadata {
   ctlPath: string;
   requestMethod: string;
   routerName: string;
-  middleware?: Function[];
+  middleware?: string[];
 }
 
 /**
@@ -58,6 +59,7 @@ interface RouterMetadataObject {
  * This function processes controller class metadata to generate router mappings.
  * It extracts the controller path, validates method scopes in debug mode,
  * and combines controller and method level route configurations.
+ * Additionally, it registers middleware classes to MiddlewareManager for unified management.
  */
 export function injectRouter(app: Koatty, target: any, protocol = 'http'): RouterMetadataObject | null {
   const ctlName = IOCContainer.getIdentifier(target);
@@ -69,6 +71,10 @@ export function injectRouter(app: Koatty, target: any, protocol = 'http'): Route
   const rmetaData = recursiveGetMetadata(IOC, MAPPING_KEY, target);
   const router: RouterMetadataObject = {};
   const methods: string[] = [];
+  const middlewareManager = MiddlewareManager.getInstance();
+  
+  Logger.Debug(`injectRouter: MiddlewareManager instance ID: ${(middlewareManager as any)._instanceId}`);
+  
   if (app.appDebug) {
     const ctlPath = getControllerPath(ctlName);
     methods.push(...getPublicMethods(ctlPath, ctlName));
@@ -89,11 +95,69 @@ export function injectRouter(app: Koatty, target: any, protocol = 'http'): Route
         ...(val.middleware || [])
       ];
       
+      // 将装饰器声明的中间件类注册到MiddlewareManager
+      const middlewareNames: string[] = [];
+      for (const middlewareClass of middleware) {
+        if (typeof middlewareClass === 'function') {
+          const middlewareName = middlewareClass.name;
+          Logger.Debug(`injectRouter: Processing middleware class: ${middlewareName}`);
+          
+          // 检查是否已经注册过
+          if (!middlewareManager.getMiddleware(middlewareName)) {
+            Logger.Debug(`injectRouter: Registering new middleware: ${middlewareName}`);
+            
+            // 创建中间件函数包装器
+            const middlewareFunction = async (ctx: any, next: any) => {
+              try {
+                // 尝试从IOC容器获取实例
+                let middlewareInstance = app.getMetaData(`routerMiddleware_${middlewareName}`)[0];
+                if (!middlewareInstance) {
+                  // 如果IOC容器中没有，则直接实例化
+                  middlewareInstance = new middlewareClass();
+                }
+                
+                if (middlewareInstance.run && typeof middlewareInstance.run === 'function') {
+                  await middlewareInstance.run(ctx, next);
+                } else {
+                  console.warn(`Middleware ${middlewareName} does not have a run method`);
+                  await next();
+                }
+              } catch (error) {
+                console.error(`Error executing middleware ${middlewareName}:`, error);
+                throw error;
+              }
+            };
+            
+            // 注册到MiddlewareManager
+            middlewareManager.register({
+              name: middlewareName,
+              middleware: middlewareFunction,
+              priority: 50, // 默认优先级
+              enabled: true,
+              conditions: [], // 无条件限制
+              metadata: {
+                type: 'route',
+                description: `Auto-registered middleware from decorator: ${middlewareName}`,
+                source: 'decorator'
+              }
+            });
+            
+            Logger.Debug(`injectRouter: Successfully registered middleware: ${middlewareName}`);
+          } else {
+            Logger.Debug(`injectRouter: Middleware already registered: ${middlewareName}`);
+          }
+          
+          middlewareNames.push(middlewareName);
+        }
+      }
+      
+      Logger.Debug(`injectRouter: Final middleware names for route ${val.path}: [${middlewareNames.join(', ')}]`);
+      
       const tmp = {
         ...val,
         path: `${options.path}${val.path}`.replace("//", "/"),
         ctlPath: options.path,
-        middleware: middleware.length ? middleware : [],
+        middleware: middlewareNames, // 存储中间件名称而不是类
       };
       router[`${tmp.path}||${tmp.requestMethod}`] = tmp;
     }
