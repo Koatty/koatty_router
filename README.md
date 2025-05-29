@@ -298,6 +298,7 @@ export class UserDTO {
 @Controller("/user")
 export class UserController {
   @Post("/create")
+  @Validated()
   async create(@Post() user: UserDTO) {
     // user已自动验证和转换
     return user;
