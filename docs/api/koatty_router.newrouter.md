@@ -4,7 +4,7 @@
 
 ## NewRouter() function
 
-get instance of Router
+get instance of Router using Factory Pattern
 
 
 **Signature:**

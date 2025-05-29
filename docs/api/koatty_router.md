@@ -4,6 +4,43 @@
 
 ## koatty\_router package
 
+## Classes
+
+<table><thead><tr><th>
+
+Class
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[MiddlewareBuilder](./koatty_router.middlewarebuilder.md)
+
+
+</td><td>
+
+Middleware builder for fluent API
+
+
+</td></tr>
+<tr><td>
+
+[MiddlewareManager](./koatty_router.middlewaremanager.md)
+
+
+</td><td>
+
+Middleware manager implementation with memory leak prevention
+
+
+</td></tr>
+</tbody></table>
+
 ## Enumerations
 
 <table><thead><tr><th>
@@ -121,7 +158,7 @@ Routes HTTP HEAD requests to the specified path.
 
 </td><td>
 
-get instance of Router
+get instance of Router using Factory Pattern
 
 
 
@@ -196,6 +233,17 @@ Routes HTTP PUT requests to the specified path.
 </td></tr>
 <tr><td>
 
+[RegisterMiddleware(config)](./koatty_router.registermiddleware.md)
+
+
+</td><td>
+
+Decorator for auto-registering middlewares
+
+
+</td></tr>
+<tr><td>
+
 [RequestBody()](./koatty_router.requestbody.md)
 
 
@@ -245,6 +293,50 @@ Description
 
 </th></tr></thead>
 <tbody><tr><td>
+
+[IMiddlewareManager](./koatty_router.imiddlewaremanager.md)
+
+
+</td><td>
+
+Middleware manager interface
+
+
+</td></tr>
+<tr><td>
+
+[MiddlewareCondition](./koatty_router.middlewarecondition.md)
+
+
+</td><td>
+
+Middleware condition
+
+
+</td></tr>
+<tr><td>
+
+[MiddlewareConfig](./koatty_router.middlewareconfig.md)
+
+
+</td><td>
+
+Middleware configuration
+
+
+</td></tr>
+<tr><td>
+
+[MiddlewareExecutionContext](./koatty_router.middlewareexecutioncontext.md)
+
+
+</td><td>
+
+Middleware execution context
+
+
+</td></tr>
+<tr><td>
 
 [RouterOption](./koatty_router.routeroption.md)
 
@@ -313,6 +405,32 @@ Alias of
 </td><td>
 
 Alias of 
+
+
+</td></tr>
+</tbody></table>
+
+## Type Aliases
+
+<table><thead><tr><th>
+
+Type Alias
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[MiddlewareFunction](./koatty_router.middlewarefunction.md)
+
+
+</td><td>
+
+Middleware function type
 
 
 </td></tr>
