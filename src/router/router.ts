@@ -3,7 +3,7 @@
  * @Usage: 
  * @Author: richen
  * @Date: 2023-12-09 12:02:29
- * @LastEditTime: 2025-03-12 18:16:36
+ * @LastEditTime: 2025-01-20 10:00:00
  * @License: BSD (3-Clause)
  * @Copyright (c): <richenlin(at)gmail.com>
  */
@@ -11,10 +11,7 @@
 import { Koatty, KoattyRouter } from "koatty_core";
 import { Helper } from "koatty_lib";
 import { payload, PayloadOptions } from "../params/payload";
-import { GraphQLRouter } from "./graphql";
-import { GrpcRouter } from "./grpc";
-import { HttpRouter } from "./http";
-import { WebsocketRouter } from "./ws";
+import { RouterFactory } from "./factory";
 
 /**
  * RouterOptions
@@ -60,28 +57,19 @@ export interface RouterOptions {
 }
 
 /**
- * get instance of Router
+ * get instance of Router using Factory Pattern
  *
  * @export
  * @param {Koatty} app
  * @param {RouterOptions} options
- * @param {string} [protocol]
  * @returns {*}  {KoattyRouter}
  */
 export function NewRouter(app: Koatty, opt?: RouterOptions): KoattyRouter {
-  // const protocol = app.config("protocol") || "http";
-  // const opts: RouterOptions = app.config(undefined, 'router') ?? {};
   const options: RouterOptions = { protocol: "http", prefix: "", ...opt };
-  let router;
-  if (options.protocol === "grpc") {
-    router = new GrpcRouter(app, options);
-  } else if (options.protocol === "graphql") {
-    router = new GraphQLRouter(app, options);
-  } else if (options.protocol === "ws" || options.protocol === "wss") {
-    router = new WebsocketRouter(app, options);
-  } else {
-    router = new HttpRouter(app, options);
-  }
+  
+  // Use RouterFactory to create router instance
+  const factory = RouterFactory.getInstance();
+  const router = factory.create(options.protocol!, app, options);
 
   // payload middleware
   app.once("ready", () => {
