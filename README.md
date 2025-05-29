@@ -173,13 +173,13 @@ const customFactory = new RouterFactoryBuilder()
 
 ## 中间件管理
 
-`MiddlewareManager` 专注于路由级别的中间件注册、组合和条件执行，全局中间件由 Koatty 框架层面管理。
+`RouterMiddlewareManager` 专注于路由级别的中间件注册、组合和条件执行，全局中间件由 Koatty 框架层面管理。
 
 ### 中间件注册方式
 
 #### 1. 装饰器自动注册
 
-通过路由装饰器声明的中间件类会自动注册到 `MiddlewareManager`：
+通过路由装饰器声明的中间件类会自动注册到 `RouterMiddlewareManager`：
 
 ```typescript
 // 中间件类
@@ -204,7 +204,7 @@ export class UserController {
 #### 2. 手动注册
 
 ```typescript
-const middlewareManager = MiddlewareManager.getInstance();
+const middlewareManager = RouterMiddlewareManager.getInstance();
 
 // 注册路由级别中间件
 middlewareManager.register({
@@ -248,7 +248,7 @@ middlewareManager.register({
 });
 ```
 
-**注意**: `MiddlewareManager` 主要用于路由级别的中间件管理，全局中间件（如错误处理、请求日志、CORS）应通过 Koatty 框架的中间件系统管理。
+**注意**: `RouterMiddlewareManager` 主要用于路由级别的中间件管理，全局中间件（如错误处理、请求日志、CORS）应通过 Koatty 框架的中间件系统管理。
 
 ## 参数验证和注入
 
@@ -349,7 +349,7 @@ const graphqlRouter = NewRouter(app, {
 ### 中间件统计
 
 ```typescript
-const manager = MiddlewareManager.getInstance();
+const manager = RouterMiddlewareManager.getInstance();
 
 // 获取执行统计
 const stats = manager.getStats();
@@ -417,7 +417,7 @@ interface PayloadOptions {
 // - CORS处理 (cors)
 // - 安全头设置 (security)
 
-// 路由级别的中间件（由MiddlewareManager管理）
+// 路由级别的中间件（由RouterMiddlewareManager管理）
 const routeMiddlewareOrder = [
   "paramValidation", // 100 - 参数验证
   "routeAuth",       // 90  - 路由认证
@@ -447,7 +447,7 @@ app.use(requestLogger);   // 全局请求日志
 app.use(corsHandler);     // 全局CORS处理
 
 // 路由级别 - 特定路由处理
-const manager = MiddlewareManager.getInstance();
+const manager = RouterMiddlewareManager.getInstance();
 manager.register({
   name: "apiAuth",
   middleware: authHandler,

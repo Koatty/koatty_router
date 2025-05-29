@@ -30,12 +30,12 @@ Middleware builder for fluent API
 </td></tr>
 <tr><td>
 
-[MiddlewareManager](./koatty_router.middlewaremanager.md)
+[RouterMiddlewareManager](./koatty_router.routermiddlewaremanager.md)
 
 
 </td><td>
 
-Middleware manager implementation with memory leak prevention
+Router middleware manager implementation Manages router-level middleware registration, composition, and conditional execution
 
 
 </td></tr>
@@ -294,12 +294,12 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[IMiddlewareManager](./koatty_router.imiddlewaremanager.md)
+[IRouterMiddlewareManager](./koatty_router.iroutermiddlewaremanager.md)
 
 
 </td><td>
 
-Middleware manager interface
+Router middleware manager interface Defines the contract for managing router-level middleware
 
 
 </td></tr>
