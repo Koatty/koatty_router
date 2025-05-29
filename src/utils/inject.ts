@@ -21,7 +21,7 @@ import {
   PARAM_CHECK_KEY, PARAM_RULE_KEY, PARAM_TYPE_KEY,
   paramterTypes, ValidOtpions, ValidRules
 } from "koatty_validation";
-import { MiddlewareManager } from "../middleware/manager";
+import { RouterMiddlewareManager } from "../middleware/manager";
 import { PayloadOptions } from "../payload/interface";
 
 /**
@@ -59,7 +59,7 @@ interface RouterMetadataObject {
  * This function processes controller class metadata to generate router mappings.
  * It extracts the controller path, validates method scopes in debug mode,
  * and combines controller and method level route configurations.
- * Additionally, it registers middleware classes to MiddlewareManager for unified management.
+ * Additionally, it registers middleware classes to RouterMiddlewareManager for unified management.
  */
 export function injectRouter(app: Koatty, target: any, protocol = 'http'): RouterMetadataObject | null {
   const ctlName = IOCContainer.getIdentifier(target);
@@ -71,9 +71,9 @@ export function injectRouter(app: Koatty, target: any, protocol = 'http'): Route
   const rmetaData = recursiveGetMetadata(IOC, MAPPING_KEY, target);
   const router: RouterMetadataObject = {};
   const methods: string[] = [];
-  const middlewareManager = MiddlewareManager.getInstance();
+  const middlewareManager = RouterMiddlewareManager.getInstance();
   
-  Logger.Debug(`injectRouter: MiddlewareManager instance ID: ${(middlewareManager as any)._instanceId}`);
+  Logger.Debug(`injectRouter: RouterMiddlewareManager instance ID: ${(middlewareManager as any)._instanceId}`);
   
   if (app.appDebug) {
     const ctlPath = getControllerPath(ctlName);
@@ -95,7 +95,7 @@ export function injectRouter(app: Koatty, target: any, protocol = 'http'): Route
         ...(val.middleware || [])
       ];
       
-      // 将装饰器声明的中间件类注册到MiddlewareManager
+      // 将装饰器声明的中间件类注册到RouterMiddlewareManager
       const middlewareNames: string[] = [];
       for (const middlewareClass of middleware) {
         if (typeof middlewareClass === 'function') {
@@ -128,7 +128,7 @@ export function injectRouter(app: Koatty, target: any, protocol = 'http'): Route
               }
             };
             
-            // 注册到MiddlewareManager
+            // 注册到RouterMiddlewareManager
             middlewareManager.register({
               name: middlewareName,
               middleware: middlewareFunction,

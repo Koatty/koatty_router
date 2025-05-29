@@ -7,7 +7,7 @@
  */
 
 import { LRUCache } from "../src/utils/lru";
-import { MiddlewareManager } from "../src/middleware/manager";
+import { RouterMiddlewareManager } from "../src/middleware/manager";
 
 describe('Memory Leak Prevention', () => {
   
@@ -57,17 +57,16 @@ describe('Memory Leak Prevention', () => {
     });
   });
 
-  describe('MiddlewareManager Memory Management', () => {
-    let manager: MiddlewareManager;
+  describe('RouterMiddlewareManager Memory Management', () => {
+    let manager: RouterMiddlewareManager;
 
     beforeEach(() => {
-      MiddlewareManager.resetInstance();
-      manager = MiddlewareManager.getInstance();
+      RouterMiddlewareManager.resetInstance();
+      manager = RouterMiddlewareManager.getInstance();
     });
 
     afterEach(() => {
-      manager.destroy();
-      MiddlewareManager.resetInstance();
+      RouterMiddlewareManager.resetInstance();
     });
 
     it('should limit cache sizes and prevent memory leaks', () => {

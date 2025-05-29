@@ -1,35 +1,36 @@
-import { MiddlewareManager, MiddlewareBuilder } from "../src/middleware/manager";
+import { RouterMiddlewareManager, MiddlewareBuilder } from "../src/middleware/manager";
 import { injectRouter } from "../src/utils/inject";
 import { Handler } from "../src/utils/handler";
 import { App } from "./app";
 import { TestMiddlewareController } from "./controller/TestMiddlewareController";
 import { KoattyContext } from "koatty_core";
 
-describe("MiddlewareManager", () => {
-  let middlewareManager: MiddlewareManager;
+describe("RouterMiddlewareManager", () => {
+  let middlewareManager: RouterMiddlewareManager;
   let app: any;
 
   beforeEach(() => {
     // 重置单例实例
-    MiddlewareManager.resetInstance();
-    middlewareManager = MiddlewareManager.getInstance();
+    RouterMiddlewareManager.resetInstance();
+    middlewareManager = RouterMiddlewareManager.getInstance();
     process.env.APP_PATH = "./test";
     app = new App("");
   });
 
   afterEach(() => {
-    MiddlewareManager.resetInstance();
+    // 清理
+    RouterMiddlewareManager.resetInstance();
   });
 
   describe("单例模式", () => {
-    test("应该返回相同的实例", () => {
-      const instance1 = MiddlewareManager.getInstance();
-      const instance2 = MiddlewareManager.getInstance();
+    it("应该返回相同的实例", () => {
+      const instance1 = RouterMiddlewareManager.getInstance();
+      const instance2 = RouterMiddlewareManager.getInstance();
       expect(instance1).toBe(instance2);
     });
 
-    test("不应该允许直接实例化", () => {
-      expect(() => new (MiddlewareManager as any)()).toThrow();
+    it("应该阻止直接实例化", () => {
+      expect(() => new (RouterMiddlewareManager as any)()).toThrow();
     });
   });
 
@@ -280,13 +281,13 @@ describe("集成测试", () => {
   let app: any;
 
   beforeEach(() => {
-    MiddlewareManager.resetInstance();
+    RouterMiddlewareManager.resetInstance();
     process.env.APP_PATH = "./test";
     app = new App("");
   });
 
   afterEach(() => {
-    MiddlewareManager.resetInstance();
+    RouterMiddlewareManager.resetInstance();
   });
 
   test("应该正确注入路由和中间件", () => {
@@ -304,7 +305,7 @@ describe("集成测试", () => {
 
   test("应该正确执行Handler与中间件", async () => {
     // 注册测试中间件
-    const middlewareManager = MiddlewareManager.getInstance();
+    const middlewareManager = RouterMiddlewareManager.getInstance();
     let middlewareExecuted = false;
 
     middlewareManager.register({
@@ -339,7 +340,7 @@ describe("集成测试", () => {
   });
 
   test("应该正确处理内置中间件", () => {
-    const middlewareManager = MiddlewareManager.getInstance();
+    const middlewareManager = RouterMiddlewareManager.getInstance();
     
     // 检查内置中间件是否已注册
     const paramValidation = middlewareManager.getMiddleware("paramValidation");
@@ -357,7 +358,7 @@ describe("集成测试", () => {
   });
 
   test("应该正确处理条件中间件", async () => {
-    const middlewareManager = MiddlewareManager.getInstance();
+    const middlewareManager = RouterMiddlewareManager.getInstance();
     
     // 获取内置的路由缓存中间件（仅对GET请求生效）
     const routeCache = middlewareManager.getMiddleware("routeCache");

@@ -28,7 +28,7 @@ interface CacheStats {
   utilizationRate: number;
 }
 
-interface CompleteCacheStats {
+export interface CompleteCacheStats {
   typeMap: CacheStats;
   contentType: CacheStats;
   options: CacheStats;

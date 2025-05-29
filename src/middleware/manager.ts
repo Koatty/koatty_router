@@ -60,21 +60,23 @@ interface PathPattern {
 }
 
 /**
- * Middleware manager interface
+ * Router middleware manager interface
+ * Defines the contract for managing router-level middleware
  */
-export interface IMiddlewareManager {
+export interface IRouterMiddlewareManager {
   register(config: MiddlewareConfig): void;
   unregister(name: string): boolean;
+  getMiddleware(name: string): MiddlewareConfig | null;
+  listMiddlewares(): string[];
   compose(names: string[], context?: MiddlewareExecutionContext): MiddlewareFunction;
-  getMiddleware(name: string): MiddlewareConfig | undefined;
-  listMiddlewares(): MiddlewareConfig[];
 }
 
 /**
- * Middleware manager implementation with memory leak prevention
+ * Router middleware manager implementation
+ * Manages router-level middleware registration, composition, and conditional execution
  */
-export class MiddlewareManager implements IMiddlewareManager {
-  private static instance: MiddlewareManager | null = null;
+export class RouterMiddlewareManager implements IRouterMiddlewareManager {
+  private static instance: RouterMiddlewareManager | null = null;
   private static isCreating = false;
   private readonly _instanceId: string;
   private middlewares = new Map<string, MiddlewareConfig>();
@@ -102,49 +104,53 @@ export class MiddlewareManager implements IMiddlewareManager {
   private cacheCleanupTimer?: NodeJS.Timeout;
   private readonly CACHE_CLEANUP_INTERVAL = 5 * 60 * 1000; // 5分钟
 
+  /**
+   * Private constructor to enforce singleton pattern
+   */
   private constructor() {
-    if (MiddlewareManager.instance) {
-      throw new Error('MiddlewareManager is a singleton. Use getInstance() instead.');
+    if (RouterMiddlewareManager.instance) {
+      throw new Error('RouterMiddlewareManager is a singleton. Use getInstance() instead.');
     }
     this._instanceId = Math.random().toString(36).substr(2, 9);
-    Logger.Debug(`MiddlewareManager instance created with ID: ${this._instanceId}`);
+    Logger.Debug(`RouterMiddlewareManager instance created with ID: ${this._instanceId}`);
     this.initializeBuiltinMiddlewares();
     this.startCacheCleanup();
   }
 
   /**
    * Get singleton instance
+   * @returns RouterMiddlewareManager instance
    */
-  public static getInstance(): MiddlewareManager {
-    if (MiddlewareManager.instance) {
-      return MiddlewareManager.instance;
+  public static getInstance(): RouterMiddlewareManager {
+    if (RouterMiddlewareManager.instance) {
+      return RouterMiddlewareManager.instance;
     }
 
-    if (MiddlewareManager.isCreating) {
-      throw new Error('MiddlewareManager is already being created');
+    if (RouterMiddlewareManager.isCreating) {
+      throw new Error('RouterMiddlewareManager is already being created');
     }
 
-    MiddlewareManager.isCreating = true;
+    RouterMiddlewareManager.isCreating = true;
     try {
-      MiddlewareManager.instance = new MiddlewareManager();
-      Logger.Debug('MiddlewareManager singleton instance initialized');
+      RouterMiddlewareManager.instance = new RouterMiddlewareManager();
+      Logger.Debug('RouterMiddlewareManager singleton instance initialized');
     } finally {
-      MiddlewareManager.isCreating = false;
+      RouterMiddlewareManager.isCreating = false;
     }
 
-    return MiddlewareManager.instance;
+    return RouterMiddlewareManager.instance;
   }
 
   /**
-   * Reset singleton instance (for testing purposes only)
+   * Reset singleton instance (for testing)
    */
   public static resetInstance(): void {
-    if (MiddlewareManager.instance) {
-      MiddlewareManager.instance.destroy();
+    if (RouterMiddlewareManager.instance) {
+      RouterMiddlewareManager.instance.destroy();
     }
-    MiddlewareManager.instance = null;
-    MiddlewareManager.isCreating = false;
-    Logger.Debug('MiddlewareManager singleton instance reset');
+    RouterMiddlewareManager.instance = null;
+    RouterMiddlewareManager.isCreating = false;
+    Logger.Debug('RouterMiddlewareManager singleton instance reset');
   }
 
   /**
@@ -212,7 +218,7 @@ export class MiddlewareManager implements IMiddlewareManager {
     this.middlewares.clear();
     this.executionStats.clear();
     
-    Logger.Debug(`MiddlewareManager instance ${this._instanceId} destroyed`);
+    Logger.Debug(`RouterMiddlewareManager instance ${this._instanceId} destroyed`);
   }
 
   /**
@@ -404,16 +410,15 @@ export class MiddlewareManager implements IMiddlewareManager {
   /**
    * Get middleware configuration
    */
-  public getMiddleware(name: string): MiddlewareConfig | undefined {
-    return this.middlewares.get(name);
+  public getMiddleware(name: string): MiddlewareConfig | null {
+    return this.middlewares.get(name) || null;
   }
 
   /**
    * List all middlewares
    */
-  public listMiddlewares(): MiddlewareConfig[] {
-    return Array.from(this.middlewares.values())
-      .sort((a, b) => (b.priority || 0) - (a.priority || 0));
+  public listMiddlewares(): string[] {
+    return Array.from(this.middlewares.keys());
   }
 
   /**
@@ -435,22 +440,17 @@ export class MiddlewareManager implements IMiddlewareManager {
   public compose(names: string[], context?: MiddlewareExecutionContext): MiddlewareFunction {
     // 获取有效的中间件配置并按优先级排序
     const validConfigs = names
-      .map(name => ({ name, config: this.middlewares.get(name) }))
-      .filter(({ name, config }) => {
-        if (!config) {
-          Logger.Warn(`Middleware not found: ${name}`);
-          return false;
-        }
-        
-        if (!config.enabled) {
-          Logger.Debug(`Skipping disabled middleware: ${config.name}`);
-          return false;
-        }
-        
-        return true;
-      })
-      .map(({ config }) => config!)
+      .map(name => this.middlewares.get(name))
+      .filter((config): config is MiddlewareConfig => 
+        config !== undefined && config.enabled !== false
+      )
       .sort((a, b) => (b.priority || 0) - (a.priority || 0));
+
+    if (validConfigs.length === 0) {
+      return async (ctx: KoattyContext, next: KoattyNext) => {
+        await next();
+      };
+    }
 
     // 创建中间件函数数组
     const middlewareFunctions = validConfigs.map(config => {
@@ -830,7 +830,7 @@ export class MiddlewareBuilder {
   }
 
   public register(): void {
-    const manager = MiddlewareManager.getInstance();
+    const manager = RouterMiddlewareManager.getInstance();
     manager.register(this.build());
   }
 }
@@ -846,7 +846,7 @@ export function RegisterMiddleware(config: Omit<MiddlewareConfig, 'middleware'>)
       throw new Error('Decorated method must be a function');
     }
 
-    const manager = MiddlewareManager.getInstance();
+    const manager = RouterMiddlewareManager.getInstance();
     manager.register({
       ...config,
       middleware

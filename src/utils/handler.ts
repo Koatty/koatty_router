@@ -21,7 +21,7 @@ import {
   ValidRules,
   plainToClass
 } from "koatty_validation";
-import { MiddlewareManager } from "../middleware/manager";
+import { RouterMiddlewareManager } from "../middleware/manager";
 import { DefaultLogger as Logger } from "koatty_logger";
 
 interface ParamOptions {
@@ -56,10 +56,10 @@ export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any,
   }
   ctl.ctx ??= ctx;
   
-  // 获取MiddlewareManager实例
-  const middlewareManager = MiddlewareManager.getInstance();
+  // 获取RouterMiddlewareManager实例
+  const middlewareManager = RouterMiddlewareManager.getInstance();
   
-  Logger.Debug(`Handler: MiddlewareManager instance ID: ${(middlewareManager as any)._instanceId}`);
+  Logger.Debug(`Handler: RouterMiddlewareManager instance ID: ${(middlewareManager as any)._instanceId}`);
   
   // 创建中间件链
   const middlewareFns: Middleware<KoattyContext>[] = [];
@@ -74,7 +74,7 @@ export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any,
       Logger.Debug(`Handler: Middleware '${name}' ${config ? 'found' : 'NOT FOUND'}`);
     }
     
-    // 使用MiddlewareManager组合中间件
+    // 使用RouterMiddlewareManager组合中间件
     const composedMiddleware = middlewareManager.compose(middlewares, {
       route: ctx.path,
       method: ctx.method,

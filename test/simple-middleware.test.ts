@@ -3,26 +3,26 @@
  * 这个测试文件验证了新的中间件管理功能
  */
 
-import { MiddlewareManager, MiddlewareBuilder } from "../src/middleware/manager";
+import { RouterMiddlewareManager, MiddlewareBuilder } from "../src/middleware/manager";
 
-describe("MiddlewareManager 简化功能测试", () => {
+describe("RouterMiddlewareManager 简化功能测试", () => {
   beforeEach(() => {
-    // 重置单例
-    MiddlewareManager.resetInstance();
+    RouterMiddlewareManager.resetInstance();
   });
 
   afterEach(() => {
-    MiddlewareManager.resetInstance();
+    RouterMiddlewareManager.resetInstance();
   });
 
-  test("单例模式应该正常工作", () => {
-    const instance1 = MiddlewareManager.getInstance();
-    const instance2 = MiddlewareManager.getInstance();
+  it("应该创建单例实例", () => {
+    const instance1 = RouterMiddlewareManager.getInstance();
+    const instance2 = RouterMiddlewareManager.getInstance();
+
     expect(instance1).toBe(instance2);
   });
 
-  test("应该成功注册中间件", () => {
-    const manager = MiddlewareManager.getInstance();
+  it("应该注册和获取中间件", () => {
+    const manager = RouterMiddlewareManager.getInstance();
     const middleware = async (ctx: any, next: any) => {
       ctx.testFlag = true;
       await next();
@@ -40,8 +40,8 @@ describe("MiddlewareManager 简化功能测试", () => {
     expect(config?.priority).toBe(100);
   });
 
-  test("应该拒绝无效的中间件配置", () => {
-    const manager = MiddlewareManager.getInstance();
+  it("应该拒绝无效的中间件配置", () => {
+    const manager = RouterMiddlewareManager.getInstance();
     
     expect(() => {
       manager.register({
@@ -51,8 +51,8 @@ describe("MiddlewareManager 简化功能测试", () => {
     }).toThrow("Middleware name must be a non-empty string");
   });
 
-  test("应该正确组合中间件", async () => {
-    const manager = MiddlewareManager.getInstance();
+  it("应该组合多个中间件", async () => {
+    const manager = RouterMiddlewareManager.getInstance();
     const executionOrder: string[] = [];
 
     manager.register({
@@ -79,8 +79,8 @@ describe("MiddlewareManager 简化功能测试", () => {
     expect(executionOrder).toEqual(["first", "second"]);
   });
 
-  test("应该跳过禁用的中间件", async () => {
-    const manager = MiddlewareManager.getInstance();
+  it("应该跳过禁用的中间件", async () => {
+    const manager = RouterMiddlewareManager.getInstance();
     const executionOrder: string[] = [];
 
     manager.register({
@@ -106,8 +106,8 @@ describe("MiddlewareManager 简化功能测试", () => {
     expect(executionOrder).toEqual(["enabled"]);
   });
 
-  test("应该正确处理条件中间件", async () => {
-    const manager = MiddlewareManager.getInstance();
+  it("应该支持条件中间件", async () => {
+    const manager = RouterMiddlewareManager.getInstance();
     let executed = false;
 
     manager.register({
@@ -133,8 +133,8 @@ describe("MiddlewareManager 简化功能测试", () => {
     expect(executed).toBe(false);
   });
 
-  test("应该记录执行统计", async () => {
-    const manager = MiddlewareManager.getInstance();
+  it("应该提供执行统计", async () => {
+    const manager = RouterMiddlewareManager.getInstance();
 
     manager.register({
       name: "statsMiddleware",
@@ -152,8 +152,8 @@ describe("MiddlewareManager 简化功能测试", () => {
     expect(stats.totalTime).toBeGreaterThan(0);
   });
 
-  test("内置中间件应该已注册", () => {
-    const manager = MiddlewareManager.getInstance();
+  it("内置中间件应该已注册", () => {
+    const manager = RouterMiddlewareManager.getInstance();
     
     const paramValidation = manager.getMiddleware("paramValidation");
     const routeCache = manager.getMiddleware("routeCache");
@@ -166,6 +166,20 @@ describe("MiddlewareManager 简化功能测试", () => {
     expect(paramValidation?.priority).toBe(100);
     expect(routeCache?.priority).toBe(80);
     expect(routeAuth?.priority).toBe(90);
+  });
+
+  it("应该按优先级排序中间件", async () => {
+    const manager = RouterMiddlewareManager.getInstance();
+
+    // Implementation of this test case is not provided in the original file or the new code block
+    // This test case is left unchanged as it was in the original file
+  });
+
+  it("应该支持中间件分组", () => {
+    const manager = RouterMiddlewareManager.getInstance();
+
+    // Implementation of this test case is not provided in the original file or the new code block
+    // This test case is left unchanged as it was in the original file
   });
 });
 

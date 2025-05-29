@@ -6,8 +6,8 @@
  * @License: BSD (3-Clause)
  */
 
-import { MiddlewareManager } from "../src/middleware/manager";
-import { bodyParser } from "../src/params/payload";
+import { RouterMiddlewareManager } from "../src/middleware/manager";
+import { bodyParser } from "../src/payload/payload";
 import { LRUCache } from "../src/utils/lru";
 
 describe('Performance Benchmarks', () => {
@@ -46,11 +46,11 @@ describe('Performance Benchmarks', () => {
   });
 
   describe('Middleware Manager Performance', () => {
-    let manager: MiddlewareManager;
+    let manager: RouterMiddlewareManager;
 
     beforeEach(() => {
-      MiddlewareManager.resetInstance();
-      manager = MiddlewareManager.getInstance();
+      RouterMiddlewareManager.resetInstance();
+      manager = RouterMiddlewareManager.getInstance();
       
       // 注册多个中间件以模拟真实场景
       for (let i = 0; i < 100; i++) {
@@ -71,7 +71,7 @@ describe('Performance Benchmarks', () => {
 
     afterEach(() => {
       manager.destroy();
-      MiddlewareManager.resetInstance();
+      RouterMiddlewareManager.resetInstance();
     });
 
     it('should efficiently match middlewares with caching', () => {
@@ -273,7 +273,7 @@ describe('Performance Benchmarks', () => {
       
       // 执行内存密集型操作
       const cache = new LRUCache<string, any>(10000);
-      const manager = MiddlewareManager.getInstance();
+      const manager = RouterMiddlewareManager.getInstance();
       
       // 大量数据操作
       for (let i = 0; i < 5000; i++) {
@@ -298,7 +298,7 @@ describe('Performance Benchmarks', () => {
       // 清理
       cache.clear();
       manager.destroy();
-      MiddlewareManager.resetInstance();
+      RouterMiddlewareManager.resetInstance();
       
       // 强制垃圾回收（如果可用）
       if (global.gc) {
