@@ -2,6 +2,101 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.17.0](https://github.com/koatty/koatty_router/compare/v1.16.0...v1.17.0) (2025-01-21)
+
+### Features
+
+* **grpc-streaming**: 实现完整的 gRPC 流处理功能 ([#grpc-streaming](https://github.com/koatty/koatty_router/commit/grpc-streaming))
+  - 新增 `GrpcStreamHandler` 类，支持四种 gRPC 流类型的自动检测和处理
+  - 支持服务器流（Server Streaming）、客户端流（Client Streaming）、双向流（Bidirectional Streaming）和一元调用（Unary Call）
+  - 实现智能流类型检测，无需手动指定流类型
+  - 新增背压控制机制，防止内存溢出和性能问题
+  - 支持并发流管理，限制同时活跃的流数量
+  - 实现连接池和批处理优化，提高网络性能
+  - 新增超时管理，自动清理长时间运行的流
+  - 提供详细的流处理统计和监控功能
+
+* **grpc-router-enhancement**: 增强 gRPC 路由器配置 ([#grpc-enhancement](https://github.com/koatty/koatty_router/commit/grpc-enhancement))
+  - 新增 `streamConfig` 配置选项，支持流处理参数自定义
+  - 支持 `maxConcurrentStreams`、`streamTimeout`、`backpressureThreshold` 等配置
+  - 优化 gRPC 路由器的性能和稳定性
+  - 增强错误处理和日志记录功能
+
+### Improvements
+
+* **streaming-performance**: 优化流处理性能
+  - 实现高效的流数据缓冲和批处理机制
+  - 优化内存使用，减少垃圾回收压力
+  - 提供流处理性能监控和调优建议
+
+* **documentation**: 完善 gRPC 流处理文档
+  - 更新 README.md，添加详细的 gRPC 流处理使用指南
+  - 提供四种流类型的完整代码示例
+  - 增加流处理配置选项说明和最佳实践
+
+### Technical Details
+
+* gRPC 流处理支持自动检测流类型，无需手动配置
+* 实现了完整的背压控制机制，确保系统稳定性
+* 支持流处理的并发控制和超时管理
+* 提供了丰富的流处理统计和监控功能
+
+## [1.16.0](https://github.com/koatty/koatty_router/compare/v1.15.0...v1.16.0) (2025-01-20)
+
+### Features
+
+* **factory-pattern**: 实现路由器工厂模式重构 ([#factory](https://github.com/koatty/koatty_router/commit/factory))
+  - 新增 `RouterFactory` 单例工厂类，支持多协议路由器的统一创建和管理
+  - 支持自定义路由器注册和动态协议扩展
+  - 提供 `RouterFactoryBuilder` 构建器模式，支持高级配置
+  - 新增 `@RegisterRouter` 装饰器，支持自动注册自定义路由器
+  - 重构 `NewRouter` 函数，使用工厂模式创建路由器实例
+
+* **middleware-manager**: 实现统一中间件管理器 ([#middleware](https://github.com/koatty/koatty_router/commit/middleware))
+  - 新增 `MiddlewareManager` 单例管理器，支持中间件的注册、组合和条件执行
+  - 支持基于路径、方法、请求头和自定义条件的中间件过滤
+  - 提供中间件执行统计和性能监控功能
+  - 新增 `MiddlewareBuilder` 流式API，简化中间件配置
+  - 支持中间件分组和批量管理
+  - 新增 `@RegisterMiddleware` 装饰器，支持自动注册中间件
+  - 内置错误处理、请求日志和CORS中间件
+
+* **RouterFactory**: 引入 `RouterFactory` 统一路由创建和管理
+* **自定义路由注册**: 支持自定义路由注册，允许动态扩展协议支持
+* **动态协议扩展**: 通过工厂模式支持新协议的动态添加
+* **MiddlewareManager**: 新增 `MiddlewareManager` 用于中间件注册和执行管理
+* **装饰器中间件自动注册**: 通过路由装饰器声明的中间件类自动注册到 `MiddlewareManager`
+* **统一中间件处理**: `Handler` 函数统一从 `MiddlewareManager` 获取和执行中间件
+
+### Improvements
+
+* **architecture**: 提升代码架构和可维护性
+  - 采用工厂模式和单例模式，提高代码复用性
+  - 统一路由器和中间件的管理接口
+  - 增强类型安全和错误处理机制
+  - 优化性能监控和调试功能
+
+* **documentation**: 完善文档和示例
+  - 更新 README.md，添加详细的使用指南和最佳实践
+  - 提供完整的API文档和代码示例
+  - 增加配置选项说明和性能优化建议
+
+* **代码架构**: 采用工厂模式和中间件管理器模式，提升代码可维护性
+* **文档完善**: 详细的 README 和 API 文档
+* **中间件兼容性**: 保持与原有装饰器中间件系统的完全兼容
+
+### Breaking Changes
+
+* 路由器创建方式保持向后兼容，但推荐使用新的工厂模式
+* 中间件管理从分散式改为集中式管理，提供更好的控制和监控能力
+* **中间件类型**: 路由元数据中的中间件从 `Function[]` 改为 `string[]`
+
+### Technical Details
+
+* 装饰器中间件在 `injectRouter` 阶段自动注册到 `MiddlewareManager`
+* `Handler` 函数简化，统一通过 `MiddlewareManager.compose()` 处理中间件
+* 保持向后兼容，支持传统中间件类的 `run` 方法调用
+
 ## [1.15.0](https://github.com/koatty/koatty_router/compare/v1.14.1...v1.15.0) (2025-04-25)
 
 
