@@ -156,8 +156,8 @@ function parseBody(ctx: KoattyContext, options: PayloadOptions): Promise<unknown
   }
 
   // 性能优化：快速获取内容长度
-  const len = getContentLength(ctx.req.headers);
-  const encoding = ctx.req.headers['content-encoding'] || IDENTITY_ENCODING;
+  const len = getContentLength(ctx.req.headers || {});
+  const encoding = ctx.req.headers?.['content-encoding'] || IDENTITY_ENCODING;
 
   if (len && encoding === IDENTITY_ENCODING) {
     options.length = len;
