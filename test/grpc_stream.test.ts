@@ -30,7 +30,7 @@ jest.mock('koatty_proto', () => ({
   ListServices: () => []
 }));
 
-jest.mock('../src/params/payload', () => ({
+jest.mock('../src/payload/payload', () => ({
   payload: () => () => {}
 }));
 
