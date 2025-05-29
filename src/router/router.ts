@@ -10,8 +10,8 @@
 
 import { Koatty, KoattyRouter } from "koatty_core";
 import { Helper } from "koatty_lib";
-import { payload, PayloadOptions } from "../params/payload";
 import { RouterFactory } from "./factory";
+import { PayloadOptions } from "../payload/interface";
 
 /**
  * RouterOptions

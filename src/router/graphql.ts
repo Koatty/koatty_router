@@ -18,7 +18,7 @@ import {
 import { buildSchema } from "koatty_graphql";
 import { Helper } from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
-import { payload } from "../params/payload";
+import { payload } from "../payload/payload";
 import { injectParamMetaData, injectRouter } from "../utils/inject";
 import { RouterOptions } from "./router";
 import { Handler } from "../utils/handler";
