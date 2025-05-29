@@ -1,5 +1,4 @@
-import { Koatty, KoattyContext } from "koatty_core";
-import { DefaultLogger as Logger } from "koatty_logger";
+import { Koatty, KoattyContext, KoattyNext } from "koatty_core";
 import compose, { Middleware } from "koa-compose";
 import { Helper } from "koatty_lib";
 import { Exception } from "koatty_exception";
@@ -13,6 +12,8 @@ import {
   ValidRules,
   plainToClass
 } from "koatty_validation";
+import { MiddlewareManager } from "../middleware/manager";
+import { DefaultLogger as Logger } from "koatty_logger";
 
 interface ParamOptions {
   index: number;
@@ -34,34 +35,50 @@ interface ParamOptions {
  * @param {string} method - The method name to execute
  * @param {ParamMetadata[]} [ctlParams] - Parameter metadata for injection
  * @param {any} [ctlParamsValue] - Parameter values for injection
+ * @param {string[]} [middlewares] - Array of middleware names to execute
  * @returns {Promise<any>} The execution result
  * @throws {Error} When controller not found or execution fails
  */
 export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any,
-  method: string, ctlParams?: ParamMetadata[], ctlParamsValue?: any, middlewares?: Function[]) {
+  method: string, ctlParams?: ParamMetadata[], ctlParamsValue?: any, middlewares?: string[]) {
     
   if (!ctx || !ctl) {
     return ctx.throw(404, `Controller not found.`);
   }
   ctl.ctx ??= ctx;
   
+  // 获取MiddlewareManager实例
+  const middlewareManager = MiddlewareManager.getInstance();
+  
+  Logger.Debug(`Handler: MiddlewareManager instance ID: ${(middlewareManager as any)._instanceId}`);
+  
   // 创建中间件链
   const middlewareFns: Middleware<KoattyContext>[] = [];
   
-  // 添加路由中间件
+  // 处理路由级别的中间件
   if (middlewares?.length) {
-    for (const m of middlewares) {
-      const middleware = app.getMetaData(`routerMiddleware_${m}`)[0];
-      if (!middleware) {
-        Logger.Warn(`Middleware ${m} not found`);
-        continue;
-      }
-      middlewareFns.push(middleware);
+    Logger.Debug(`Handler: Processing ${middlewares.length} middlewares: ${middlewares.join(', ')}`);
+    
+    // 检查每个中间件是否存在
+    for (const name of middlewares) {
+      const config = middlewareManager.getMiddleware(name);
+      Logger.Debug(`Handler: Middleware '${name}' ${config ? 'found' : 'NOT FOUND'}`);
     }
+    
+    // 使用MiddlewareManager组合中间件
+    const composedMiddleware = middlewareManager.compose(middlewares, {
+      route: ctx.path,
+      method: ctx.method,
+      protocol: ctx.protocol || 'http'
+    });
+    
+    middlewareFns.push(composedMiddleware);
+  } else {
+    Logger.Debug('Handler: No middlewares to process');
   }
 
   // 添加Handler作为最后一个中间件
-  middlewareFns.push(async (ctx: KoattyContext, next: Function) => {
+  middlewareFns.push(async (ctx: KoattyContext, next: KoattyNext) => {
     // 注入参数
     const args = ctlParams ? await getParameter(app, ctx, ctlParams, ctlParamsValue) : [];
     // 执行方法
@@ -70,12 +87,12 @@ export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any,
       throw res;
     }
     ctx.body = ctx.body || res;
-    return next();
+    await next();
   });
 
   // 执行中间件链
   if (middlewareFns.length > 0) {
-    await compose(middlewareFns)(ctx);
+    await compose(middlewareFns)(ctx, async () => {});
   }
   
   return ctx.body;
