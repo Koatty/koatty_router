@@ -17,12 +17,12 @@ import { Helper } from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { Project } from "ts-morph";
 import { MAPPING_KEY } from "../params/mapping";
-import { PayloadOptions } from "../params/payload";
 import {
   PARAM_CHECK_KEY, PARAM_RULE_KEY, PARAM_TYPE_KEY,
   paramterTypes, ValidOtpions, ValidRules
 } from "koatty_validation";
 import { MiddlewareManager } from "../middleware/manager";
+import { PayloadOptions } from "../payload/interface";
 
 /**
  *

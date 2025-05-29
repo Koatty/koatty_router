@@ -11,6 +11,7 @@
 import { KoattyContext, KoattyNext } from "koatty_core";
 import { DefaultLogger as Logger } from "koatty_logger";
 import compose, { Middleware } from "koa-compose";
+import { LRUCache } from "../utils/lru";
 
 /**
  * Middleware function type
@@ -49,13 +50,13 @@ export interface MiddlewareExecutionContext {
 }
 
 /**
- * Path pattern cache for optimized matching
+ * Path pattern cache for optimized matching with memory management
  */
 interface PathPattern {
-  exact: Set<string>;           // 精确匹配的路径
-  prefixes: Map<string, boolean>; // 前缀匹配的路径
-  suffixes: Map<string, boolean>; // 后缀匹配的路径
-  patterns: Map<string, RegExp>;  // 复杂模式的正则表达式（仅在必要时使用）
+  exact: LRUCache<string, boolean>;           // 精确匹配的路径
+  prefixes: LRUCache<string, boolean>;        // 前缀匹配的路径
+  suffixes: LRUCache<string, boolean>;        // 后缀匹配的路径
+  patterns: LRUCache<string, RegExp>;         // 复杂模式的正则表达式
 }
 
 /**
@@ -70,7 +71,7 @@ export interface IMiddlewareManager {
 }
 
 /**
- * Middleware manager implementation
+ * Middleware manager implementation with memory leak prevention
  */
 export class MiddlewareManager implements IMiddlewareManager {
   private static instance: MiddlewareManager | null = null;
@@ -83,19 +84,23 @@ export class MiddlewareManager implements IMiddlewareManager {
     errors: number;
   }>();
   
-  // 优化的路径匹配缓存
+  // 优化的路径匹配缓存 - 使用LRU缓存防止内存泄漏
   private pathPatterns: PathPattern = {
-    exact: new Set(),
-    prefixes: new Map(),
-    suffixes: new Map(),
-    patterns: new Map()
+    exact: new LRUCache<string, boolean>(200),
+    prefixes: new LRUCache<string, boolean>(100),
+    suffixes: new LRUCache<string, boolean>(100),
+    patterns: new LRUCache<string, RegExp>(50)
   };
   
-  // 方法匹配缓存
-  private methodCache = new Map<string, Set<string>>();
+  // 方法匹配缓存 - 限制大小
+  private methodCache = new LRUCache<string, Set<string>>(100);
   
-  // 头部匹配缓存
-  private headerCache = new Map<string, Map<string, string>>();
+  // 头部匹配缓存 - 限制大小
+  private headerCache = new LRUCache<string, Map<string, string>>(100);
+
+  // 缓存清理定时器
+  private cacheCleanupTimer?: NodeJS.Timeout;
+  private readonly CACHE_CLEANUP_INTERVAL = 5 * 60 * 1000; // 5分钟
 
   private constructor() {
     if (MiddlewareManager.instance) {
@@ -104,6 +109,7 @@ export class MiddlewareManager implements IMiddlewareManager {
     this._instanceId = Math.random().toString(36).substr(2, 9);
     Logger.Debug(`MiddlewareManager instance created with ID: ${this._instanceId}`);
     this.initializeBuiltinMiddlewares();
+    this.startCacheCleanup();
   }
 
   /**
@@ -133,9 +139,80 @@ export class MiddlewareManager implements IMiddlewareManager {
    * Reset singleton instance (for testing purposes only)
    */
   public static resetInstance(): void {
+    if (MiddlewareManager.instance) {
+      MiddlewareManager.instance.destroy();
+    }
     MiddlewareManager.instance = null;
     MiddlewareManager.isCreating = false;
     Logger.Debug('MiddlewareManager singleton instance reset');
+  }
+
+  /**
+   * Start cache cleanup timer
+   */
+  private startCacheCleanup(): void {
+    this.cacheCleanupTimer = setInterval(() => {
+      this.performCacheCleanup();
+    }, this.CACHE_CLEANUP_INTERVAL);
+  }
+
+  /**
+   * Perform periodic cache cleanup
+   */
+  private performCacheCleanup(): void {
+    const beforeSize = this.getCacheSize();
+    
+    // 清理执行统计中的过期数据
+    this.cleanupExecutionStats();
+    
+    const afterSize = this.getCacheSize();
+    Logger.Debug(`Cache cleanup completed. Size: ${beforeSize} -> ${afterSize}`);
+  }
+
+  /**
+   * Clean up old execution statistics
+   */
+  private cleanupExecutionStats(): void {
+    const maxStatsEntries = 1000;
+    if (this.executionStats.size > maxStatsEntries) {
+      const entries = Array.from(this.executionStats.entries());
+      // 保留最近使用的统计数据
+      entries.sort((a, b) => b[1].executions - a[1].executions);
+      
+      this.executionStats.clear();
+      entries.slice(0, maxStatsEntries / 2).forEach(([key, value]) => {
+        this.executionStats.set(key, value);
+      });
+    }
+  }
+
+  /**
+   * Get total cache size
+   */
+  private getCacheSize(): number {
+    return this.pathPatterns.exact.size() +
+           this.pathPatterns.prefixes.size() +
+           this.pathPatterns.suffixes.size() +
+           this.pathPatterns.patterns.size() +
+           this.methodCache.size() +
+           this.headerCache.size() +
+           this.executionStats.size;
+  }
+
+  /**
+   * Destroy manager and cleanup resources
+   */
+  public destroy(): void {
+    if (this.cacheCleanupTimer) {
+      clearInterval(this.cacheCleanupTimer);
+      this.cacheCleanupTimer = undefined;
+    }
+    
+    this.clearCaches();
+    this.middlewares.clear();
+    this.executionStats.clear();
+    
+    Logger.Debug(`MiddlewareManager instance ${this._instanceId} destroyed`);
   }
 
   /**
@@ -260,7 +337,7 @@ export class MiddlewareManager implements IMiddlewareManager {
 
     switch (operator) {
       case 'equals':
-        this.pathPatterns.exact.add(path);
+        this.pathPatterns.exact.set(path, true);
         break;
       case 'contains':
         // 对于包含匹配，我们可以优化为前缀或后缀匹配
@@ -440,26 +517,40 @@ export class MiddlewareManager implements IMiddlewareManager {
     if (typeof value === 'string') {
       switch (operator) {
         case 'equals':
-          // 使用Set进行O(1)查找
-          return this.pathPatterns.exact.has(value) ? path === value : path === value;
+          // 使用LRU缓存进行O(1)查找
+          const exactMatch = this.pathPatterns.exact.get(value);
+          if (exactMatch !== undefined) {
+            return path === value;
+          }
+          // 如果缓存中没有，检查并缓存结果
+          const isMatch = path === value;
+          this.pathPatterns.exact.set(value, isMatch);
+          return isMatch;
+          
         case 'contains':
-          // 优先使用前缀匹配
-          if (this.pathPatterns.prefixes.has(value)) {
+          // 优先使用前缀匹配缓存
+          const prefixMatch = this.pathPatterns.prefixes.get(value);
+          if (prefixMatch !== undefined) {
             return path.startsWith(value);
           }
-          return path.includes(value);
+          // 检查并缓存前缀匹配结果
+          const isPrefixMatch = path.startsWith(value) || path.includes(value);
+          this.pathPatterns.prefixes.set(value, isPrefixMatch);
+          return isPrefixMatch;
+          
         case 'matches':
-          // 使用预编译的正则表达式
-          const regex = this.pathPatterns.patterns.get(value);
-          if (regex) {
-            return regex.test(path);
+          // 使用预编译的正则表达式缓存
+          let regex = this.pathPatterns.patterns.get(value);
+          if (!regex) {
+            try {
+              regex = new RegExp(value);
+              this.pathPatterns.patterns.set(value, regex);
+            } catch {
+              return false;
+            }
           }
-          // 回退到动态创建正则表达式
-          try {
-            return new RegExp(value).test(path);
-          } catch {
-            return false;
-          }
+          return regex.test(path);
+          
         default:
           return false;
       }
@@ -474,18 +565,32 @@ export class MiddlewareManager implements IMiddlewareManager {
    * Evaluate method condition with caching
    */
   private evaluateMethodCondition(condition: MiddlewareCondition, method: string): boolean {
-    const { value } = condition;
+    const { value, operator = 'equals' } = condition;
     
     if (typeof value === 'string') {
-      const expectedMethod = value.toUpperCase();
-      const actualMethod = method.toUpperCase();
+      const targetMethod = value.toUpperCase();
+      const currentMethod = method.toUpperCase();
       
-      // 使用缓存的方法集合进行快速查找
-      if (this.methodCache.has(expectedMethod)) {
-        return actualMethod === expectedMethod;
+      // 使用缓存检查方法匹配
+      let methodSet = this.methodCache.get(targetMethod);
+      if (!methodSet) {
+        methodSet = new Set<string>();
+        this.methodCache.set(targetMethod, methodSet);
       }
       
-      return actualMethod === expectedMethod;
+      if (methodSet.has(currentMethod)) {
+        return true;
+      }
+      
+      const isMatch = operator === 'equals' ? 
+        currentMethod === targetMethod : 
+        currentMethod.includes(targetMethod);
+        
+      if (isMatch) {
+        methodSet.add(currentMethod);
+      }
+      
+      return isMatch;
     }
     
     return false;
@@ -499,46 +604,47 @@ export class MiddlewareManager implements IMiddlewareManager {
     
     if (typeof value === 'string') {
       const [headerName, expectedValue] = value.split(':');
-      const headerValue = ctx.get(headerName);
+      if (!headerName) return false;
       
-      if (!expectedValue) {
-        return !!headerValue; // Check if header exists
+      const normalizedHeaderName = headerName.toLowerCase();
+      const actualValue = ctx.headers[normalizedHeaderName];
+      
+      if (!actualValue) return false;
+      
+      // 处理头部值可能是数组的情况
+      const actualValueStr = Array.isArray(actualValue) ? actualValue[0] : actualValue;
+      if (!actualValueStr) return false;
+      
+      // 使用缓存检查头部匹配
+      let headerMap = this.headerCache.get(normalizedHeaderName);
+      if (!headerMap) {
+        headerMap = new Map<string, string>();
+        this.headerCache.set(normalizedHeaderName, headerMap);
       }
       
-      // 使用缓存的头部信息进行快速查找
-      const cachedHeaders = this.headerCache.get(headerName.toLowerCase());
-      if (cachedHeaders && cachedHeaders.has(expectedValue)) {
-        switch (operator) {
-          case 'equals':
-            return headerValue === expectedValue;
-          case 'contains':
-            return headerValue.includes(expectedValue);
-          case 'matches':
-            try {
-              return new RegExp(expectedValue).test(headerValue);
-            } catch {
-              return false;
-            }
-          default:
-            return false;
+      if (expectedValue) {
+        const cachedResult = headerMap.get(expectedValue);
+        if (cachedResult !== undefined) {
+          return actualValueStr === expectedValue;
         }
+        
+        const isMatch = operator === 'equals' ? 
+          actualValueStr === expectedValue :
+          operator === 'contains' ?
+          actualValueStr.includes(expectedValue) :
+          false;
+          
+        if (isMatch) {
+          headerMap.set(expectedValue, actualValueStr);
+        }
+        
+        return isMatch;
+      } else {
+        // 只检查头部是否存在
+        return true;
       }
-      
-      // 回退到直接比较
-      switch (operator) {
-        case 'equals':
-          return headerValue === expectedValue;
-        case 'contains':
-          return headerValue.includes(expectedValue);
-        case 'matches':
-          try {
-            return new RegExp(expectedValue).test(headerValue);
-          } catch {
-            return false;
-          }
-        default:
-          return false;
-      }
+    } else if (typeof value === 'function') {
+      return value(ctx);
     }
     
     return false;
@@ -619,7 +725,7 @@ export class MiddlewareManager implements IMiddlewareManager {
   }
 
   /**
-   * Clear caches to free memory
+   * Clear all caches with proper cleanup
    */
   public clearCaches(): void {
     this.pathPatterns.exact.clear();
@@ -628,7 +734,32 @@ export class MiddlewareManager implements IMiddlewareManager {
     this.pathPatterns.patterns.clear();
     this.methodCache.clear();
     this.headerCache.clear();
-    Logger.Debug('Cleared middleware caches');
+    
+    Logger.Debug('All caches cleared');
+  }
+
+  /**
+   * Get memory usage statistics
+   */
+  public getMemoryStats(): {
+    totalCacheSize: number;
+    pathPatternsSize: number;
+    methodCacheSize: number;
+    headerCacheSize: number;
+    executionStatsSize: number;
+    middlewareCount: number;
+  } {
+    return {
+      totalCacheSize: this.getCacheSize(),
+      pathPatternsSize: this.pathPatterns.exact.size() + 
+                       this.pathPatterns.prefixes.size() + 
+                       this.pathPatterns.suffixes.size() + 
+                       this.pathPatterns.patterns.size(),
+      methodCacheSize: this.methodCache.size(),
+      headerCacheSize: this.headerCache.size(),
+      executionStatsSize: this.executionStats.size,
+      middlewareCount: this.middlewares.size
+    };
   }
 
   /**

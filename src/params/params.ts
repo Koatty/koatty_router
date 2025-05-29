@@ -10,7 +10,8 @@
 
 import { KoattyContext } from "koatty_core";
 import { injectParam } from "../utils/inject";
-import { PayloadOptions, bodyParser, queryParser } from "./payload";
+import { bodyParser, queryParser } from "../payload/payload";
+import { PayloadOptions } from "../payload/interface";
 
 /**
  * Get request header.
