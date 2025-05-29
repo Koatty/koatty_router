@@ -251,3 +251,16 @@ export class PayloadCacheManager {
 
 // 模块级别的单例实例
 export const cacheManager = PayloadCacheManager.getInstance();
+/**
+ * 清理所有缓存
+ */
+export function clearTypeMapCache(): void {
+  cacheManager.clearAll();
+}
+
+/**
+ * 获取完整的缓存统计信息
+ */
+export function getTypeMapCacheStats(): CompleteCacheStats {
+  return cacheManager.getStats();
+}
