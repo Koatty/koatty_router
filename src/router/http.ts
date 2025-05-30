@@ -6,7 +6,7 @@
  * @LastEditTime: 2025-03-15 16:35:13
  */
 import KoaRouter from "@koa/router";
-import { IOCContainer } from "koatty_container";
+import { IOC } from "koatty_container";
 import {
   Koatty, KoattyContext, KoattyRouter,
   RouterImplementation
@@ -30,8 +30,10 @@ export class HttpRouter implements KoattyRouter {
   router: KoaRouter;
   private routerMap: Map<string, RouterImplementation>;
 
-  constructor(app: Koatty, options?: RouterOptions) {
+  constructor(app: Koatty, options: RouterOptions = { protocol: "http", prefix: "" }) {
     this.options = { ...options };
+    this.protocol = options.protocol || "http";
+    
     // initialize
     this.router = new KoaRouter(this.options);
     this.routerMap = new Map();
@@ -73,7 +75,7 @@ export class HttpRouter implements KoattyRouter {
   async LoadRouter(app: Koatty, list: any[]) {
     try {
       for (const n of list) {
-        const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
+        const ctlClass = IOC.getClass(n, "CONTROLLER");
         // inject router
         const ctlRouters = injectRouter(app, ctlClass, this.options.protocol);
         if (!ctlRouters) {
@@ -93,7 +95,7 @@ export class HttpRouter implements KoattyRouter {
             path,
             method: requestMethod,
             implementation: (ctx: KoattyContext): Promise<any> => {
-              const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
+              const ctl = IOC.getInsByClass(ctlClass, [ctx]);
               return Handler(app, ctx, ctl, method, params, undefined, router.middleware);
             },
           });

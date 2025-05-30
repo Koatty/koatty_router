@@ -34,22 +34,45 @@ const httpRouter = NewRouter(app, {
   prefix: "/api"
 });
 
-// 创建WebSocket路由器
+// 创建WebSocket路由器 - 协议特定参数放在 ext 中
 const wsRouter = NewRouter(app, {
   protocol: "ws",
-  prefix: "/ws"
+  prefix: "/ws",
+  ext: {
+    maxFrameSize: 1024 * 1024,    // 1MB
+    heartbeatInterval: 15000,     // 15秒
+    heartbeatTimeout: 30000,      // 30秒
+    maxConnections: 1000,         // 最大连接数
+    maxBufferSize: 10 * 1024 * 1024, // 10MB
+    cleanupInterval: 5 * 60 * 1000   // 5分钟
+  }
 });
 
-// 创建gRPC路由器
+// 创建gRPC路由器 - 协议特定参数放在 ext 中
 const grpcRouter = NewRouter(app, {
   protocol: "grpc",
+  prefix: "/grpc",
   ext: {
     protoFile: "./proto/service.proto",
+    poolSize: 10,
+    batchSize: 100,
     streamConfig: {
       maxConcurrentStreams: 50,
       streamTimeout: 60000,
       backpressureThreshold: 2048
     }
+  }
+});
+
+// 创建GraphQL路由器 - 协议特定参数放在 ext 中
+const graphqlRouter = NewRouter(app, {
+  protocol: "graphql",
+  prefix: "/graphql",
+  ext: {
+    schemaFile: "./schema/schema.graphql",
+    playground: true,
+    introspection: true,
+    debug: false
   }
 });
 ```
@@ -59,7 +82,7 @@ const grpcRouter = NewRouter(app, {
 Koatty Router 支持完整的 gRPC 流处理功能，包括四种流类型的自动检测和处理：
 
 ```typescript
-@Controller()
+@GrpcController()
 export class StreamController {
   
   // 服务器流 - 发送多个响应
@@ -104,7 +127,7 @@ export class StreamController {
 ### 控制器装饰器
 
 ```typescript
-import { Controller, Get, Post, RequestMapping } from "koatty_router";
+import { Get, Post, RequestMapping } from "koatty_router";
 
 @Controller("/user")
 export class UserController {
@@ -182,12 +205,15 @@ const customFactory = new RouterFactoryBuilder()
 通过路由装饰器声明的中间件类会自动注册到 `RouterMiddlewareManager`：
 
 ```typescript
-// 中间件类
+// Koatty中间件类
+@Middleware()
 class AuthMiddleware {
-  async run(ctx: KoattyContext, next: KoattyNext) {
-    // 认证逻辑
-    console.log('Auth middleware executed');
-    await next();
+  async run(options: any, app: App) {
+    return function (ctx: KoattyContext, next: KoattyNext) {
+      // 认证逻辑
+      console.log('Auth middleware executed');
+      await next();
+    }
   }
 }
 
@@ -207,12 +233,10 @@ export class UserController {
 const middlewareManager = RouterMiddlewareManager.getInstance();
 
 // 注册路由级别中间件
+const authMiddleware = new AuthMiddleware().run({}, app);
 middlewareManager.register({
   name: 'paramValidation',
-  middleware: async (ctx, next) => {
-    // 参数验证逻辑
-    await next();
-  },
+  middleware: authMiddleware,
   priority: 100,
   metadata: { type: 'route' }
 });
@@ -238,10 +262,7 @@ const composedMiddleware = middlewareManager.compose([
 // 注册基于条件的中间件
 middlewareManager.register({
   name: 'routeCache',
-  middleware: async (ctx, next) => {
-    // 缓存逻辑
-    await next();
-  },
+  middleware: authMiddleware,
   conditions: [
     { type: 'method', value: 'GET' }
   ]
@@ -314,8 +335,14 @@ export class UserController {
 const wsRouter = NewRouter(app, {
   protocol: "ws",
   prefix: "/ws",
-  maxFrameSize: 1024 * 1024, // 1MB
-  heartbeatInterval: 15000    // 15秒
+  ext: {
+    maxFrameSize: 1024 * 1024,    // 1MB - 最大分帧大小
+    heartbeatInterval: 15000,     // 15秒 - 心跳检测间隔
+    heartbeatTimeout: 30000,      // 30秒 - 心跳超时时间
+    maxConnections: 1000,         // 最大连接数
+    maxBufferSize: 10 * 1024 * 1024, // 10MB - 最大缓冲区大小
+    cleanupInterval: 5 * 60 * 1000   // 5分钟 - 清理间隔
+  }
 });
 ```
 
@@ -324,10 +351,16 @@ const wsRouter = NewRouter(app, {
 ```typescript
 const grpcRouter = NewRouter(app, {
   protocol: "grpc",
+  prefix: "/grpc",
   ext: {
-    protoFile: "./proto/service.proto",
-    poolSize: 10,
-    batchSize: 100
+    protoFile: "./proto/service.proto",  // Protocol Buffer 文件路径
+    poolSize: 10,                        // 连接池大小
+    batchSize: 100,                      // 批处理大小
+    streamConfig: {                      // 流配置
+      maxConcurrentStreams: 50,          // 最大并发流数量
+      streamTimeout: 60000,              // 流超时时间
+      backpressureThreshold: 2048        // 背压阈值
+    }
   }
 });
 ```
@@ -337,9 +370,12 @@ const grpcRouter = NewRouter(app, {
 ```typescript
 const graphqlRouter = NewRouter(app, {
   protocol: "graphql",
+  prefix: "/graphql",
   ext: {
-    schemaFile: "./schema/schema.graphql",
-    playground: true
+    schemaFile: "./schema/schema.graphql", // GraphQL Schema 文件路径
+    playground: true,                      // 启用 GraphQL Playground
+    introspection: true,                   // 启用内省查询
+    debug: false                           // 调试模式
   }
 });
 ```
@@ -390,7 +426,63 @@ interface RouterOptions {
   sensitive?: boolean;         // 大小写敏感
   strict?: boolean;           // 严格匹配
   payload?: PayloadOptions;    // 载荷解析选项
-  ext?: Record<string, any>;   // 扩展配置
+  ext?: Record<string, any>;   // 协议特定扩展配置
+}
+```
+
+### 协议特定扩展配置 (ext)
+
+#### WebSocket 配置
+```typescript
+ext: {
+  maxFrameSize?: number;        // 最大分帧大小(字节)，默认1MB
+  frameTimeout?: number;        // 分帧处理超时(ms)，默认30秒
+  heartbeatInterval?: number;   // 心跳检测间隔(ms)，默认15秒
+  heartbeatTimeout?: number;    // 心跳超时时间(ms)，默认30秒
+  maxConnections?: number;      // 最大连接数，默认1000
+  maxBufferSize?: number;       // 最大缓冲区大小(字节)，默认10MB
+  cleanupInterval?: number;     // 清理间隔(ms)，默认5分钟
+}
+```
+
+#### gRPC 配置
+```typescript
+ext: {
+  protoFile: string;           // Protocol Buffer 文件路径（必需）
+  poolSize?: number;           // 连接池大小，默认10
+  batchSize?: number;          // 批处理大小，默认10
+  streamConfig?: {             // 流配置
+    maxConcurrentStreams?: number;    // 最大并发流数量，默认50
+    streamTimeout?: number;           // 流超时时间(ms)，默认60秒
+    backpressureThreshold?: number;   // 背压阈值(字节)，默认2048
+    streamBufferSize?: number;        // 流缓冲区大小，默认1024
+    enableCompression?: boolean;      // 是否启用流压缩，默认false
+  };
+  serverOptions?: Record<string, any>; // gRPC 服务器选项
+  enableReflection?: boolean;          // 是否启用反射，默认false
+}
+```
+
+#### GraphQL 配置
+```typescript
+ext: {
+  schemaFile: string;          // GraphQL Schema 文件路径（必需）
+  playground?: boolean;        // 启用 GraphQL Playground，默认false
+  introspection?: boolean;     // 启用内省查询，默认true
+  debug?: boolean;             // 调试模式，默认false
+  depthLimit?: number;         // 查询深度限制，默认10
+  complexityLimit?: number;    // 查询复杂度限制，默认1000
+  customScalars?: Record<string, any>; // 自定义标量类型
+  middlewares?: any[];         // 中间件配置
+}
+```
+
+#### HTTP/HTTPS 配置
+```typescript
+ext: {
+  // HTTP/HTTPS 协议目前没有特定配置
+  // 可以添加自定义选项
+  [key: string]: any;
 }
 ```
 

@@ -7,7 +7,7 @@
 
 // Mock modules first
 jest.mock('koatty_container', () => ({
-  IOCContainer: {
+  IOC: {
     getInsByClass: () => ({}),
     getClass: () => ({})
   }

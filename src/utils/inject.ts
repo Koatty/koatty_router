@@ -9,7 +9,7 @@
  */
 import "reflect-metadata";
 import {
-  getOriginMetadata, IOC, IOCContainer, recursiveGetMetadata,
+  getOriginMetadata, IOC, recursiveGetMetadata,
   TAGGED_PARAM
 } from "koatty_container";
 import { CONTROLLER_ROUTER, Koatty } from "koatty_core";
@@ -62,8 +62,8 @@ interface RouterMetadataObject {
  * Additionally, it registers middleware classes to RouterMiddlewareManager for unified management.
  */
 export function injectRouter(app: Koatty, target: any, protocol = 'http'): RouterMetadataObject | null {
-  const ctlName = IOCContainer.getIdentifier(target);
-  const options = IOCContainer.getPropertyData(CONTROLLER_ROUTER, target, ctlName) ||
+  const ctlName = IOC.getIdentifier(target);
+  const options = IOC.getPropertyData(CONTROLLER_ROUTER, target, ctlName) ||
     { path: "", protocol: 'http' };
   options.path = options.path.startsWith("/") || options.path === "" ? options.path : `/${options.path}`;
   if (options.protocol !== protocol) return null;
@@ -219,7 +219,7 @@ export function injectParamMetaData(app: Koatty, target: any,
   const argsMetaObj: ParamMetadataMap = {};
 
   for (const meta in metaDatas) {
-    Logger.Debug(`Register inject param key ${IOCContainer.getIdentifier(target)
+    Logger.Debug(`Register inject param key ${IOC.getIdentifier(target)
       }: ${Helper.toString(meta)} => value: ${JSON.stringify(metaDatas[meta])}`);
 
     const data: ParamMetadata[] = (metaDatas[meta] ?? []).sort((a: ParamMetadata,
@@ -235,7 +235,7 @@ export function injectParamMetaData(app: Koatty, target: any,
       v.type = v.isDto ? v.type : (v.type).toLowerCase();
       v.dtoCheck = !!(validatedMetaDatas[meta]?.dtoCheck);
       if (v.isDto) {
-        v.clazz = IOCContainer.getClass(v.type, "COMPONENT");
+        v.clazz = IOC.getClass(v.type, "COMPONENT");
         if (!v.clazz) {
           throw Error(`Failed to obtain the class ${v.type},
             because the class is not registered in the container.`);
@@ -278,7 +278,7 @@ export function injectParamMetaData(app: Koatty, target: any,
  */
 export const injectParam = (fn: Function, name: string): ParameterDecorator => {
   return (target: object, propertyKey: string | symbol | undefined, descriptor: number) => {
-    const targetType = IOCContainer.getType(target);
+    const targetType = IOC.getType(target);
     if (targetType !== "CONTROLLER") {
       throw Error(`${name} decorator is only used in controllers class.`);
     }
@@ -295,11 +295,11 @@ export const injectParam = (fn: Function, name: string): ParameterDecorator => {
     let isDto = false;
 
     if (!(Helper.toString(type) in paramterTypes)) {
-      type = IOCContainer.getIdentifier(paramTypes[descriptor]);
+      type = IOC.getIdentifier(paramTypes[descriptor]);
       isDto = true;
     }
 
-    IOCContainer.attachPropertyData(TAGGED_PARAM, {
+    IOC.attachPropertyData(TAGGED_PARAM, {
       name: propertyKey,
       fn,
       index: descriptor,

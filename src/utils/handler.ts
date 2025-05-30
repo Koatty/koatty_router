@@ -12,7 +12,7 @@ import compose, { Middleware } from "koa-compose";
 import { Helper } from "koatty_lib";
 import { Exception } from "koatty_exception";
 import { ParamMetadata } from "./inject";
-import { IOCContainer } from "koatty_container";
+import { IOC } from "koatty_container";
 import {
   ClassValidator,
   convertParamsType,
@@ -152,7 +152,7 @@ async function getParameter(app: Koatty, ctx: KoattyContext, params?: ParamMetad
  */
 async function validateParam(app: Koatty, ctx: KoattyContext, value: any, opt: ParamOptions) {
   if (opt.isDto && !opt.clazz) {
-    opt.clazz = IOCContainer.getClass(opt.type, "COMPONENT");
+    opt.clazz = IOC.getClass(opt.type, "COMPONENT");
   }
   return checkParams(app, ctx, value, opt);
 }

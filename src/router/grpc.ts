@@ -6,7 +6,7 @@
  * @LastEditTime: 2025-04-06 22:56:00
  */
 import { UntypedHandleCall, ServerReadableStream, ServerWritableStream, ServerDuplexStream } from "@grpc/grpc-js";
-import { IOCContainer } from "koatty_container";
+import { IOC } from "koatty_container";
 import {
   IRpcServerCall,
   IRpcServerCallback,
@@ -21,6 +21,7 @@ import { injectParamMetaData, injectRouter, ParamMetadata } from "../utils/injec
 import { parsePath } from "../utils/path";
 import { RouterOptions } from "./router";
 import { Handler } from "../utils/handler";
+import { getProtocolConfig } from "./types";
 
 /**
  * gRPC流类型枚举
@@ -268,14 +269,17 @@ export class GrpcRouter implements KoattyRouter {
   private streamManager: StreamManager;
 
   constructor(app: Koatty, options: RouterOptions = { protocol: "grpc", prefix: "" }) {
-    const ext = options.ext || {};
+    const extConfig = getProtocolConfig('grpc', options.ext || {});
+    
     this.options = {
       ...options,
-      protoFile: ext.protoFile,
-      poolSize: ext.poolSize || 10,
-      batchSize: ext.batchSize || 10,
-      streamConfig: ext.streamConfig || {}
-    };
+      protoFile: extConfig.protoFile,
+      poolSize: extConfig.poolSize || 10,
+      batchSize: extConfig.batchSize || 10,
+      streamConfig: extConfig.streamConfig || {}
+    } as GrpcRouterOptions;
+    
+    this.protocol = options.protocol || "grpc";
     this.router = new Map();
     this.connectionPool = new GrpcConnectionPool(this.options.poolSize);
     this.batchProcessor = new GrpcBatchProcessor(this.options.batchSize);
@@ -338,7 +342,7 @@ export class GrpcRouter implements KoattyRouter {
       Logger.Debug(`Handling unary call for ${ctlItem.name}.${ctlItem.method}`);
       
       app.callback("grpc", (ctx) => {
-        const ctl = IOCContainer.getInsByClass(ctlItem.ctl, [ctx]);
+        const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
         return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.middleware);
       })(call, callback);
     } catch (error) {
@@ -403,7 +407,7 @@ export class GrpcRouter implements KoattyRouter {
           this.streamManager.removeStream(streamId);
         };
 
-        const ctl = IOCContainer.getInsByClass(ctlItem.ctl, [ctx]);
+        const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
         return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.middleware);
       })(call, () => {});
       
@@ -461,7 +465,7 @@ export class GrpcRouter implements KoattyRouter {
         // 处理所有接收到的消息
         app.callback("grpc", (ctx) => {
           ctx.streamMessages = messages;
-          const ctl = IOCContainer.getInsByClass(ctlItem.ctl, [ctx]);
+          const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
           return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.middleware);
         })(call, callback);
         
@@ -541,7 +545,7 @@ export class GrpcRouter implements KoattyRouter {
             this.streamManager.removeStream(streamId);
           };
 
-          const ctl = IOCContainer.getInsByClass(ctlItem.ctl, [ctx]);
+          const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
           return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.middleware);
         })(call, () => {});
       });
@@ -631,7 +635,7 @@ export class GrpcRouter implements KoattyRouter {
       const ctls: CtlInterface = {};
 
       for (const n of list) {
-        const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
+        const ctlClass = IOC.getClass(n, "CONTROLLER");
         const ctlRouters = injectRouter(app, ctlClass, this.options.protocol);
         if (!ctlRouters) continue;
 

@@ -10,7 +10,7 @@
 
 // tslint:disable-next-line: no-import-side-effect
 import "reflect-metadata";
-import { IOCContainer } from 'koatty_container';
+import { IOC } from 'koatty_container';
 
 // used for request mapping metadata
 export const MAPPING_KEY = 'MAPPING_KEY';
@@ -66,7 +66,7 @@ export const RequestMapping = (
 ): MethodDecorator => {
   const routerName = routerOptions.routerName ?? "";
   return (target: any, key: string, descriptor: PropertyDescriptor) => {
-    const targetType = IOCContainer.getType(target);
+    const targetType = IOC.getType(target);
     if (targetType !== "CONTROLLER") {
       throw Error("RequestMapping decorator is only used in controllers class.");
     }
@@ -84,7 +84,7 @@ export const RequestMapping = (
     const middlewareNames = routerOptions.middleware?.map(m => m.name) || [];
 
     // tslint:disable-next-line: no-object-literal-type-assertion
-    IOCContainer.attachPropertyData(MAPPING_KEY, {
+    IOC.attachPropertyData(MAPPING_KEY, {
       path,
       requestMethod: reqMethod,
       routerName,

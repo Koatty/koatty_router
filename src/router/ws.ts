@@ -7,7 +7,7 @@
  */
 
 import KoaRouter from "@koa/router";
-import { IOCContainer } from "koatty_container";
+import { IOC } from "koatty_container";
 import {
   Koatty, KoattyContext, KoattyRouter,
   RouterImplementation
@@ -20,6 +20,7 @@ import { injectParamMetaData, injectRouter } from "../utils/inject";
 import { Handler } from "../utils/handler";
 import { parsePath } from "../utils/path";
 import { RouterOptions } from "./router";
+import { getProtocolConfig } from "./types";
 
 /**
  * WebsocketRouter Options
@@ -62,17 +63,19 @@ export class WebsocketRouter implements KoattyRouter {
   private totalBufferSize: number = 0;
   private cleanupTimer?: NodeJS.Timeout;
 
-  constructor(app: Koatty, options?: WebsocketRouterOptions) {
+  constructor(app: Koatty, options: RouterOptions = { protocol: "ws", prefix: "" }) {
+    const extConfig = getProtocolConfig('ws', options.ext || {});
+    
     this.options = {
       ...options,
-      prefix: options?.prefix || '',
-      maxFrameSize: options?.maxFrameSize || 1024 * 1024, // 1MB
-      frameTimeout: options?.frameTimeout || 30000, // 30秒
-      heartbeatInterval: options?.heartbeatInterval || 15000, // 15秒
-      heartbeatTimeout: options?.heartbeatTimeout || 30000, // 30秒
-      maxConnections: options?.maxConnections || 1000,
-      maxBufferSize: options?.maxBufferSize || 10 * 1024 * 1024, // 10MB
-      cleanupInterval: options?.cleanupInterval || 5 * 60 * 1000 // 5分钟
+      prefix: options.prefix || '',
+      maxFrameSize: extConfig.maxFrameSize || 1024 * 1024, // 1MB
+      frameTimeout: extConfig.frameTimeout || 30000, // 30秒
+      heartbeatInterval: extConfig.heartbeatInterval || 15000, // 15秒
+      heartbeatTimeout: extConfig.heartbeatTimeout || 30000, // 30秒
+      maxConnections: extConfig.maxConnections || 1000,
+      maxBufferSize: extConfig.maxBufferSize || 10 * 1024 * 1024, // 10MB
+      cleanupInterval: extConfig.cleanupInterval || 5 * 60 * 1000 // 5分钟
     };
     
     // 参数验证
@@ -217,7 +220,7 @@ export class WebsocketRouter implements KoattyRouter {
   async LoadRouter(app: Koatty, list: any[]) {
     try {
       for (const n of list) {
-        const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
+        const ctlClass = IOC.getClass(n, "CONTROLLER");
         // inject router
         const ctlRouters = injectRouter(app, ctlClass, this.options.protocol);
         if (!ctlRouters) {
@@ -237,7 +240,7 @@ export class WebsocketRouter implements KoattyRouter {
             path,
             method: requestMethod,
             implementation: (ctx: KoattyContext): Promise<any> => {
-              const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
+              const ctl = IOC.getInsByClass(ctlClass, [ctx]);
               return this.websocketHandler(app, ctx, ctl, method, params, undefined, router.middleware);
             },
           });
