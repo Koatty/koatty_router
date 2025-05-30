@@ -10,7 +10,7 @@
 import KoaRouter from "@koa/router";
 import fs from "fs";
 import { graphqlHTTP } from "koa-graphql";
-import { IOCContainer } from "koatty_container";
+import { IOC } from "koatty_container";
 import {
   IGraphQLImplementation, Koatty, KoattyContext,
   KoattyRouter, RouterImplementation
@@ -22,6 +22,7 @@ import { payload } from "../payload/payload";
 import { injectParamMetaData, injectRouter } from "../utils/inject";
 import { RouterOptions } from "./router";
 import { Handler } from "../utils/handler";
+import { getProtocolConfig } from "./types";
 
 /**
  * GrpcRouter Options
@@ -39,12 +40,15 @@ export class GraphQLRouter implements KoattyRouter {
   router: KoaRouter;
   private routerMap: Map<string, RouterImplementation>;
 
-  constructor(app: Koatty, options?: RouterOptions) {
-    options.ext = options.ext || {};
+  constructor(app: Koatty, options: RouterOptions = { protocol: "graphql", prefix: "" }) {
+    const extConfig = getProtocolConfig('graphql', options.ext || {});
+    
     this.options = {
       ...options,
-      schemaFile: options.ext.schemaFile,
-    };
+      schemaFile: extConfig.schemaFile,
+    } as GraphQLRouterOptions;
+    
+    this.protocol = options.protocol || "graphql";
     // initialize
     this.router = new KoaRouter(this.options);
     this.routerMap = new Map();
@@ -97,7 +101,7 @@ export class GraphQLRouter implements KoattyRouter {
       const rootValue: IGraphQLImplementation = {};
 
       for (const n of list) {
-        const ctlClass = IOCContainer.getClass(n, "CONTROLLER");
+        const ctlClass = IOC.getClass(n, "CONTROLLER");
         // inject router
         const ctlRouters = injectRouter(app, ctlClass, this.options.protocol);
         if (!ctlRouters) {
@@ -114,7 +118,7 @@ export class GraphQLRouter implements KoattyRouter {
 
           Logger.Debug(`Register request mapping: ${n}.${method}`);
           rootValue[method] = (args: any, ctx: KoattyContext): Promise<any> => {
-            const ctl = IOCContainer.getInsByClass(ctlClass, [ctx]);
+            const ctl = IOC.getInsByClass(ctlClass, [ctx]);
             return Handler(app, ctx, ctl, method, params, Object.values(args));
           }
           this.SetRouter(router.ctlPath || "/graphql", {

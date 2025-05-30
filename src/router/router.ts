@@ -20,6 +20,7 @@ import { PayloadOptions } from "../payload/interface";
  * @interface RouterOptions
  */
 export interface RouterOptions {
+  /** 路由前缀 */
   prefix: string;
   /**
    * Methods which should be supported by the router.
@@ -37,7 +38,7 @@ export interface RouterOptions {
    * account when matching routes.
    */
   strict?: boolean;
-  // server protocol
+  /** server protocol */
   protocol?: string;
 
   /**
@@ -45,15 +46,38 @@ export interface RouterOptions {
    */
   payload?: PayloadOptions;
   /**
-   * Other extended configuration
+   * 协议特定的扩展配置
+   * 
+   * 各协议的特定参数都放在此字段中：
+   * - WebSocket: { maxFrameSize, heartbeatInterval, maxConnections, ... }
+   * - gRPC: { protoFile, poolSize, batchSize, streamConfig, ... }
+   * - GraphQL: { schemaFile, playground, introspection, ... }
+   * - HTTP/HTTPS: 预留扩展字段
+   * 
+   * @example
+   * ```typescript
+   * // WebSocket 配置
+   * ext: {
+   *   maxFrameSize: 1024 * 1024,
+   *   heartbeatInterval: 15000,
+   *   maxConnections: 1000
+   * }
+   * 
+   * // gRPC 配置
+   * ext: {
+   *   protoFile: "./proto/service.proto",
+   *   poolSize: 10,
+   *   streamConfig: { maxConcurrentStreams: 50 }
+   * }
+   * 
+   * // GraphQL 配置
+   * ext: {
+   *   schemaFile: "./schema/schema.graphql",
+   *   playground: true
+   * }
+   * ```
    */
   ext?: Record<string, any>;
-  // {
-  //  // gRPC protocol file
-  //  protoFile ?: string;
-  //  // graphql schema file
-  //  schemaFile ?: string;
-  //}
 }
 
 /**
