@@ -10,6 +10,6 @@ describe("injectRouter", () => {
   })
   test("NoPrivateMapping", async () => {
     const routers = injectRouter(app, TestController);
-    expect(Object.keys(routers).length).toBe(1);
+    expect(Object.keys(routers || {}).length).toBe(1);
   })
 })

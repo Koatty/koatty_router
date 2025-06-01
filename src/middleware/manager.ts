@@ -11,7 +11,7 @@
 import { KoattyContext, KoattyNext } from "koatty_core";
 import { DefaultLogger as Logger } from "koatty_logger";
 import compose, { Middleware } from "koa-compose";
-import { LRUCache } from "../utils/lru";
+import { LRUCache } from "lru-cache";
 
 /**
  * Middleware function type
@@ -88,17 +88,17 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
   
   // 优化的路径匹配缓存 - 使用LRU缓存防止内存泄漏
   private pathPatterns: PathPattern = {
-    exact: new LRUCache<string, boolean>(200),
-    prefixes: new LRUCache<string, boolean>(100),
-    suffixes: new LRUCache<string, boolean>(100),
-    patterns: new LRUCache<string, RegExp>(50)
+    exact: new LRUCache<string, boolean>({ max: 200 }),
+    prefixes: new LRUCache<string, boolean>({ max: 100 }),
+    suffixes: new LRUCache<string, boolean>({ max: 100 }),
+    patterns: new LRUCache<string, RegExp>({ max: 50 })
   };
   
   // 方法匹配缓存 - 限制大小
-  private methodCache = new LRUCache<string, Set<string>>(100);
+  private methodCache = new LRUCache<string, Set<string>>({ max: 100 });
   
   // 头部匹配缓存 - 限制大小
-  private headerCache = new LRUCache<string, Map<string, string>>(100);
+  private headerCache = new LRUCache<string, Map<string, string>>({ max: 100 });
 
   // 缓存清理定时器
   private cacheCleanupTimer?: NodeJS.Timeout;
@@ -196,12 +196,12 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
    * Get total cache size
    */
   private getCacheSize(): number {
-    return this.pathPatterns.exact.size() +
-           this.pathPatterns.prefixes.size() +
-           this.pathPatterns.suffixes.size() +
-           this.pathPatterns.patterns.size() +
-           this.methodCache.size() +
-           this.headerCache.size() +
+    return this.pathPatterns.exact.size +
+           this.pathPatterns.prefixes.size +
+           this.pathPatterns.suffixes.size +
+           this.pathPatterns.patterns.size +
+           this.methodCache.size +
+           this.headerCache.size +
            this.executionStats.size;
   }
 
@@ -751,12 +751,12 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
   } {
     return {
       totalCacheSize: this.getCacheSize(),
-      pathPatternsSize: this.pathPatterns.exact.size() + 
-                       this.pathPatterns.prefixes.size() + 
-                       this.pathPatterns.suffixes.size() + 
-                       this.pathPatterns.patterns.size(),
-      methodCacheSize: this.methodCache.size(),
-      headerCacheSize: this.headerCache.size(),
+      pathPatternsSize: this.pathPatterns.exact.size + 
+                       this.pathPatterns.prefixes.size + 
+                       this.pathPatterns.suffixes.size + 
+                       this.pathPatterns.patterns.size,
+      methodCacheSize: this.methodCache.size,
+      headerCacheSize: this.headerCache.size,
       executionStatsSize: this.executionStats.size,
       middlewareCount: this.middlewares.size
     };
