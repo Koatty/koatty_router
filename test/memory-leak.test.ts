@@ -1,62 +1,72 @@
 /*
- * @Description: Memory Leak Prevention Tests
- * @Usage: Test LRU cache and memory management
+ * @Description: Memory leak prevention tests
  * @Author: richen
  * @Date: 2025-01-20 10:00:00
+ * @LastEditTime: 2025-01-20 10:00:00
  * @License: BSD (3-Clause)
+ * @Copyright (c): <richenlin(at)gmail.com>
  */
-
-import { LRUCache } from "../src/utils/lru";
+import { LRUCache } from "lru-cache";
 import { RouterMiddlewareManager } from "../src/middleware/manager";
+
+describe('LRUCache', () => {
+  it('should limit cache size', () => {
+    const cache = new LRUCache<string, number>({ max: 3 });
+    
+    cache.set('a', 1);
+    cache.set('b', 2);
+    cache.set('c', 3);
+    cache.set('d', 4); // This should evict 'a'
+    
+    expect(cache.has('a')).toBe(false);
+    expect(cache.has('b')).toBe(true);
+    expect(cache.has('c')).toBe(true);
+    expect(cache.has('d')).toBe(true);
+    expect(cache.size).toBe(3);
+  });
+
+  it('should move accessed items to front', () => {
+    const cache = new LRUCache<string, number>({ max: 3 });
+    
+    cache.set('a', 1);
+    cache.set('b', 2);
+    cache.set('c', 3);
+    
+    // Access 'a' to move it to front
+    cache.get('a');
+    
+    cache.set('d', 4); // This should evict 'b' (least recently used)
+    
+    expect(cache.has('a')).toBe(true);
+    expect(cache.has('b')).toBe(false);
+    expect(cache.has('c')).toBe(true);
+    expect(cache.has('d')).toBe(true);
+  });
+
+  it('should prevent memory leaks with large datasets', () => {
+    const cache = new LRUCache<string, number>({ max: 10 });
+    
+    // Add many items
+    for (let i = 0; i < 1000; i++) {
+      cache.set(`key${i}`, i);
+    }
+    
+    // Cache should only contain 10 items
+    expect(cache.size).toBe(10);
+    
+    // Should contain the last 10 items
+    for (let i = 990; i < 1000; i++) {
+      expect(cache.has(`key${i}`)).toBe(true);
+    }
+    
+    // Should not contain early items
+    expect(cache.has('key0')).toBe(false);
+    expect(cache.has('key100')).toBe(false);
+  });
+});
 
 describe('Memory Leak Prevention', () => {
   
-  describe('LRUCache', () => {
-    it('should limit cache size and evict old entries', () => {
-      const cache = new LRUCache<string, number>(3);
-      
-      // 添加超过容量的条目
-      cache.set('a', 1);
-      cache.set('b', 2);
-      cache.set('c', 3);
-      cache.set('d', 4); // 应该驱逐 'a'
-      
-      expect(cache.size()).toBe(3);
-      expect(cache.has('a')).toBe(false);
-      expect(cache.has('d')).toBe(true);
-    });
-
-    it('should update LRU order on access', () => {
-      const cache = new LRUCache<string, number>(3);
-      
-      cache.set('a', 1);
-      cache.set('b', 2);
-      cache.set('c', 3);
-      
-      // 访问 'a' 使其成为最近使用的
-      cache.get('a');
-      
-      // 添加新条目应该驱逐 'b'（最少使用的）
-      cache.set('d', 4);
-      
-      expect(cache.has('a')).toBe(true);
-      expect(cache.has('b')).toBe(false);
-      expect(cache.has('c')).toBe(true);
-      expect(cache.has('d')).toBe(true);
-    });
-
-    it('should provide cache statistics', () => {
-      const cache = new LRUCache<string, number>(10);
-      cache.set('a', 1);
-      cache.set('b', 2);
-      
-      const stats = cache.getStats();
-      expect(stats.size).toBe(2);
-      expect(stats.capacity).toBe(10);
-      expect(stats.utilizationRate).toBe(0.2);
-    });
-  });
-
   describe('RouterMiddlewareManager Memory Management', () => {
     let manager: RouterMiddlewareManager;
 

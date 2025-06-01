@@ -8,7 +8,7 @@
  * @Copyright (c): <richenlin(at)gmail.com>
  */
 import { KoattyContext } from "koatty_core";
-import { LRUCache } from "../utils/lru";
+import { LRUCache } from "lru-cache";
 import { PayloadOptions } from "./interface";
 import { parseText } from "./parser/text";
 import { parseJson } from "./parser/json";
@@ -105,9 +105,9 @@ export class PayloadCacheManager {
 
   // 私有构造函数确保单例
   private constructor() {
-    this.typeMapCache = new LRUCache<string, ParserMap>(100);
-    this.contentTypeCache = new LRUCache<string, string>(200);
-    this.optionsCache = new LRUCache<string, PayloadOptions>(50);
+    this.typeMapCache = new LRUCache<string, ParserMap>({ max: 100 });
+    this.contentTypeCache = new LRUCache<string, string>({ max: 200 });
+    this.optionsCache = new LRUCache<string, PayloadOptions>({ max: 50 });
   }
 
   /**
@@ -216,33 +216,27 @@ export class PayloadCacheManager {
    * 获取缓存统计信息
    */
   public getStats(): CompleteCacheStats {
-    const typeMapStats = this.typeMapCache.getStats();
-    const contentTypeStats = this.contentTypeCache.getStats();
-    const optionsStats = this.optionsCache.getStats();
+    const getStatsForCache = (cache: LRUCache<any, any>, maxSize: number): CacheStats => ({
+      size: cache.size,
+      maxSize,
+      utilizationRate: cache.size / maxSize
+    });
+
+    const typeMapStats = getStatsForCache(this.typeMapCache, 100);
+    const contentTypeStats = getStatsForCache(this.contentTypeCache, 200);
+    const optionsStats = getStatsForCache(this.optionsCache, 50);
 
     const totalSize = typeMapStats.size + contentTypeStats.size + optionsStats.size;
-    const totalCapacity = typeMapStats.capacity + contentTypeStats.capacity + optionsStats.capacity;
+    const totalCapacity = typeMapStats.maxSize + contentTypeStats.maxSize + optionsStats.maxSize;
 
     return {
-      typeMap: {
-        size: typeMapStats.size,
-        maxSize: typeMapStats.capacity,
-        utilizationRate: typeMapStats.utilizationRate
-      },
-      contentType: {
-        size: contentTypeStats.size,
-        maxSize: contentTypeStats.capacity,
-        utilizationRate: contentTypeStats.utilizationRate
-      },
-      options: {
-        size: optionsStats.size,
-        maxSize: optionsStats.capacity,
-        utilizationRate: optionsStats.utilizationRate
-      },
+      typeMap: typeMapStats,
+      contentType: contentTypeStats,
+      options: optionsStats,
       overall: {
         totalSize,
         totalCapacity,
-        averageUtilization: totalCapacity > 0 ? totalSize / totalCapacity : 0
+        averageUtilization: totalSize / totalCapacity
       }
     };
   }
