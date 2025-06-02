@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.18.0-0](https://github.com/koatty/koatty_router/compare/v1.15.0...v1.18.0-0) (2025-06-02)
+
+
+### Features
+
+* add cache management utilities for clearing type map cache and retrieving cache statistics ([f0a7005](https://github.com/koatty/koatty_router/commit/f0a70051c6ed90154a046260f2fe7f359cfc147c))
+* enhance router options with middleware support and type refinements ([77bd0fa](https://github.com/koatty/koatty_router/commit/77bd0fa405efbe91fd9bdee583c26f79a7d6b122))
+* implement gRPC streaming support with automatic stream type detection, backpressure control, and concurrent management; enhance router factory with stream configuration options; update documentation and examples for gRPC streaming ([3294e0b](https://github.com/koatty/koatty_router/commit/3294e0b52295a9cbd2606ca4097ee72265d86e3a))
+* implement router factory pattern with protocol registry, stream management, and enhanced WebSocket connection handling ([3ad321e](https://github.com/koatty/koatty_router/commit/3ad321ee607200616f6f285879363c225417b018))
+* introduce middleware manager with centralized registration, composition, and execution tracking, along with builder pattern and decorator support ([32c9a5b](https://github.com/koatty/koatty_router/commit/32c9a5b5a852fb141216c0060dc74ce1eb5cbe9c))
+* optimize middleware manager with LRU caching for path patterns, methods, and headers to prevent memory leaks, and add cache cleanup mechanism with memory usage statistics ([90a0b15](https://github.com/koatty/koatty_router/commit/90a0b1583317a4e077eaf1cc1899bb9efd498927))
+* refactor middleware manager to RouterMiddlewareManager with enhanced interface and singleton pattern, update all related references and tests ([d23ed5f](https://github.com/koatty/koatty_router/commit/d23ed5f226e09a66a8cb889f1f1eefea0efae8bc))
+* refactor router configuration system to use protocol-specific ext configurations, update all router implementations (HTTP/WS/GRPC/GraphQL) to use new config structure, and migrate IOC container references to new IOC interface ([2ec4b65](https://github.com/koatty/koatty_router/commit/2ec4b6584467b4b34d61026220de4afccd5ec00a))
+
 ## [1.17.0](https://github.com/koatty/koatty_router/compare/v1.16.0...v1.17.0) (2025-01-21)
 
 ### Features
