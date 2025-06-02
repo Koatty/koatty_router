@@ -52,7 +52,9 @@ Record&lt;string, any&gt;
 
 </td><td>
 
-_(Optional)_ Other extended configuration
+_(Optional)_ 协议特定的扩展配置
+
+各协议的特定参数都放在此字段中： - WebSocket: { maxFrameSize, heartbeatInterval, maxConnections, ... } - gRPC: { protoFile, poolSize, batchSize, streamConfig, ... } - GraphQL: { schemaFile, playground, introspection, ... } - HTTP/HTTPS: 预留扩展字段
 
 
 </td></tr>
@@ -109,6 +111,8 @@ string
 
 </td><td>
 
+路由前缀
+
 
 </td></tr>
 <tr><td>
@@ -126,7 +130,7 @@ string
 
 </td><td>
 
-_(Optional)_
+_(Optional)_ server protocol
 
 
 </td></tr>

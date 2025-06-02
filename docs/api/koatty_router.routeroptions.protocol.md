@@ -4,6 +4,8 @@
 
 ## RouterOptions.protocol property
 
+server protocol
+
 **Signature:**
 
 ```typescript

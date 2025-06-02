@@ -4,10 +4,38 @@
 
 ## RouterOptions.ext property
 
-Other extended configuration
+协议特定的扩展配置
+
+各协议的特定参数都放在此字段中： - WebSocket: { maxFrameSize, heartbeatInterval, maxConnections, ... } - gRPC: { protoFile, poolSize, batchSize, streamConfig, ... } - GraphQL: { schemaFile, playground, introspection, ... } - HTTP/HTTPS: 预留扩展字段
 
 **Signature:**
 
 ```typescript
 ext?: Record<string, any>;
 ```
+
+## Example
+
+
+```typescript
+// WebSocket 配置
+ext: {
+  maxFrameSize: 1024 * 1024,
+  heartbeatInterval: 15000,
+  maxConnections: 1000
+}
+
+// gRPC 配置
+ext: {
+  protoFile: "./proto/service.proto",
+  poolSize: 10,
+  streamConfig: { maxConcurrentStreams: 50 }
+}
+
+// GraphQL 配置
+ext: {
+  schemaFile: "./schema/schema.graphql",
+  playground: true
+}
+```
+
