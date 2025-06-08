@@ -3,7 +3,12 @@
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+## [1.18.0](https://github.com/koatty/koatty_router/compare/v1.18.0-0...v1.18.0) (2025-06-08)
+
+>>>>>>> 85c40fb (build: v1.18.0)
 ## [1.18.0-0](https://github.com/koatty/koatty_router/compare/v1.15.0...v1.18.0-0) (2025-06-02)
 
 
