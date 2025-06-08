@@ -17,10 +17,16 @@ import { DefaultLogger as logger } from "koatty_logger";
  */
 export function parsePath(opath: string): string {
   let path = opath || "/";
+  
+  // Replace multiple consecutive slashes with single slash
+  path = path.replace(/\/+/g, '/');
+  
+  // Remove trailing slash (except for root path)
   if (path.length > 1 && path.endsWith("/")) {
     path = path.slice(0, path.length - 1);
   }
-  return path.replace('//', '/');
+  
+  return path;
 }
 
 /**
