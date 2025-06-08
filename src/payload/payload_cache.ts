@@ -176,7 +176,8 @@ export class PayloadCacheManager {
         return null;
       }
 
-      normalizedType = match[1];
+      // 返回标准化的小写形式
+      normalizedType = match[1].toLowerCase();
       this.contentTypeCache.set(contentType, normalizedType);
     }
 

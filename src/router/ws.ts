@@ -66,6 +66,7 @@ export class WebsocketRouter implements KoattyRouter {
   constructor(app: Koatty, options: RouterOptions = { protocol: "ws", prefix: "" }) {
     const extConfig = getProtocolConfig('ws', options.ext || {});
     
+    this.protocol = options.protocol || 'ws';
     this.options = {
       ...options,
       prefix: options.prefix || '',
