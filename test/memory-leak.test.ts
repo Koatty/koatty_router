@@ -8,40 +8,40 @@
  */
 import { LRUCache } from "lru-cache";
 import { RouterMiddlewareManager } from "../src/middleware/manager";
-
-describe('LRUCache', () => {
+  
+  describe('LRUCache', () => {
   it('should limit cache size', () => {
     const cache = new LRUCache<string, number>({ max: 3 });
-    
-    cache.set('a', 1);
-    cache.set('b', 2);
-    cache.set('c', 3);
+      
+      cache.set('a', 1);
+      cache.set('b', 2);
+      cache.set('c', 3);
     cache.set('d', 4); // This should evict 'a'
-    
-    expect(cache.has('a')).toBe(false);
+      
+      expect(cache.has('a')).toBe(false);
     expect(cache.has('b')).toBe(true);
     expect(cache.has('c')).toBe(true);
-    expect(cache.has('d')).toBe(true);
+      expect(cache.has('d')).toBe(true);
     expect(cache.size).toBe(3);
-  });
+    });
 
   it('should move accessed items to front', () => {
     const cache = new LRUCache<string, number>({ max: 3 });
-    
-    cache.set('a', 1);
-    cache.set('b', 2);
-    cache.set('c', 3);
-    
+      
+      cache.set('a', 1);
+      cache.set('b', 2);
+      cache.set('c', 3);
+      
     // Access 'a' to move it to front
-    cache.get('a');
-    
+      cache.get('a');
+      
     cache.set('d', 4); // This should evict 'b' (least recently used)
-    
-    expect(cache.has('a')).toBe(true);
-    expect(cache.has('b')).toBe(false);
-    expect(cache.has('c')).toBe(true);
-    expect(cache.has('d')).toBe(true);
-  });
+      
+      expect(cache.has('a')).toBe(true);
+      expect(cache.has('b')).toBe(false);
+      expect(cache.has('c')).toBe(true);
+      expect(cache.has('d')).toBe(true);
+    });
 
   it('should prevent memory leaks with large datasets', () => {
     const cache = new LRUCache<string, number>({ max: 10 });
@@ -62,11 +62,11 @@ describe('LRUCache', () => {
     // Should not contain early items
     expect(cache.has('key0')).toBe(false);
     expect(cache.has('key100')).toBe(false);
+    });
   });
-});
 
 describe('Memory Leak Prevention', () => {
-  
+
   describe('RouterMiddlewareManager Memory Management', () => {
     let manager: RouterMiddlewareManager;
 

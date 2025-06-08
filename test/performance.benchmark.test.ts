@@ -179,12 +179,13 @@ describe('Performance Benchmarks', () => {
   describe('Payload Parsing Performance', () => {
     it('should efficiently parse payloads with type map caching', () => {
       const iterations = 1000;
+      const testData = '{"test": "data"}';
       
       // 创建一个模拟的可读流
       const { Readable } = require('stream');
       const mockStream = new Readable({
         read() {
-          this.push('{"test": "data"}');
+          this.push(testData);
           this.push(null);
         }
       });
@@ -192,7 +193,7 @@ describe('Performance Benchmarks', () => {
       // 添加headers属性到mockStream
       mockStream.headers = {
         'content-type': 'application/json',
-        'content-length': '17'
+        'content-length': String(Buffer.byteLength(testData, 'utf8'))
       };
       
       const mockCtx = {
@@ -201,7 +202,7 @@ describe('Performance Benchmarks', () => {
         request: { 
           headers: { 
             'content-type': 'application/json',
-            'content-length': '17'
+            'content-length': String(Buffer.byteLength(testData, 'utf8'))
           } 
         },
         getMetaData: () => [null],
@@ -243,11 +244,13 @@ describe('Performance Benchmarks', () => {
       // 清理缓存以确保测试的准确性
       clearTypeMapCache();
       
+      const testData = '{"test": "data"}';
+      
       // 创建一个模拟的可读流
       const { Readable } = require('stream');
       const mockStream = new Readable({
         read() {
-          this.push('{"test": "data"}');
+          this.push(testData);
           this.push(null);
         }
       });
@@ -255,7 +258,7 @@ describe('Performance Benchmarks', () => {
       // 添加headers属性到mockStream
       mockStream.headers = {
         'content-type': 'application/json',
-        'content-length': '17'
+        'content-length': String(Buffer.byteLength(testData, 'utf8'))
       };
       
       const mockCtx = {
@@ -264,7 +267,7 @@ describe('Performance Benchmarks', () => {
         request: { 
           headers: { 
             'content-type': 'application/json',
-            'content-length': '17'
+            'content-length': String(Buffer.byteLength(testData, 'utf8'))
           } 
         },
         getMetaData: () => [null],
@@ -334,11 +337,13 @@ describe('Performance Benchmarks', () => {
       // 清理缓存
       clearTypeMapCache();
       
+      const testData = '{"test": "data"}';
+      
       // 创建一个模拟的可读流
       const { Readable } = require('stream');
       const mockStream = new Readable({
         read() {
-          this.push('{"test": "data"}');
+          this.push(testData);
           this.push(null);
         }
       });
@@ -346,7 +351,7 @@ describe('Performance Benchmarks', () => {
       // 添加headers属性到mockStream
       mockStream.headers = {
         'content-type': 'application/json',
-        'content-length': '17'
+        'content-length': String(Buffer.byteLength(testData, 'utf8'))
       };
       
       const mockCtx = {
@@ -355,7 +360,7 @@ describe('Performance Benchmarks', () => {
         request: { 
           headers: { 
             'content-type': 'application/json',
-            'content-length': '17'
+            'content-length': String(Buffer.byteLength(testData, 'utf8'))
           } 
         },
         getMetaData: () => [null],
