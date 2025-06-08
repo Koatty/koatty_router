@@ -33,31 +33,31 @@ export function benchmarkCache() {
 export function memoryStressTest() {
   const cache = new LRUCache<string, any>({ max: 10000 });
   
-  const initialMemory = process.memoryUsage();
-  
+      const initialMemory = process.memoryUsage();
+      
   // Create a lot of objects
   for (let i = 0; i < 100000; i++) {
     cache.set(`stress-${i}`, {
       id: i,
       data: new Array(100).fill(i),
-      timestamp: Date.now()
-    });
-  }
-  
-  const peakMemory = process.memoryUsage();
-  
-  cache.clear();
-  
-  if (global.gc) {
-    global.gc();
-  }
-  
-  const finalMemory = process.memoryUsage();
-  
+          timestamp: Date.now()
+        });
+      }
+      
+      const peakMemory = process.memoryUsage();
+      
+      cache.clear();
+      
+      if (global.gc) {
+        global.gc();
+      }
+      
+      const finalMemory = process.memoryUsage();
+      
   console.log('Memory Stress Test:');
-  console.log(`Initial: ${(initialMemory.heapUsed / 1024 / 1024).toFixed(2)} MB`);
-  console.log(`Peak: ${(peakMemory.heapUsed / 1024 / 1024).toFixed(2)} MB`);
-  console.log(`Final: ${(finalMemory.heapUsed / 1024 / 1024).toFixed(2)} MB`);
+      console.log(`Initial: ${(initialMemory.heapUsed / 1024 / 1024).toFixed(2)} MB`);
+      console.log(`Peak: ${(peakMemory.heapUsed / 1024 / 1024).toFixed(2)} MB`);
+      console.log(`Final: ${(finalMemory.heapUsed / 1024 / 1024).toFixed(2)} MB`);
 }
 
 export function testPayloadCachePerformance() {
