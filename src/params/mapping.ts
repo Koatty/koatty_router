@@ -11,12 +11,33 @@
 // tslint:disable-next-line: no-import-side-effect
 import "reflect-metadata";
 import { IOC } from 'koatty_container';
+import { KoattyContext } from 'koatty_core';
 
 // used for request mapping metadata
 export const MAPPING_KEY = 'MAPPING_KEY';
 
 /**
- * Koatty router options
+ * Middleware condition for advanced middleware configuration
+ */
+export interface MiddlewareCondition {
+  type: 'path' | 'method' | 'header' | 'custom';
+  value: string | RegExp | ((ctx: KoattyContext) => boolean);
+  operator?: 'equals' | 'contains' | 'matches' | 'custom';
+}
+
+/**
+ * Enhanced middleware configuration for decorators
+ */
+export interface MiddlewareDecoratorConfig {
+  middleware: Function;
+  priority?: number;
+  enabled?: boolean;
+  conditions?: MiddlewareCondition[];
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Koatty router options with enhanced middleware support
  *
  * @export
  * @interface RouterOption
@@ -26,7 +47,7 @@ export interface RouterOption {
   requestMethod: string;
   routerName?: string;
   method: string;
-  middleware?: Function[];
+  middleware?: Function[] | MiddlewareDecoratorConfig[];
 }
 
 /**
@@ -47,12 +68,13 @@ export enum RequestMethod {
 }
 
 /**
- * Routes HTTP requests to the specified path.
+ * Routes HTTP requests to the specified path with enhanced middleware support.
  *
  * @param {string} [path="/"]
  * @param {RequestMethod} [reqMethod=RequestMethod.GET]
  * @param {{
  *         routerName?: string;
+ *         middleware?: Function[] | MiddlewareDecoratorConfig[];
  *     }} [routerOptions={}]
  * @returns {*}  {MethodDecorator}
  */
@@ -61,7 +83,7 @@ export const RequestMapping = (
   reqMethod: RequestMethod = RequestMethod.GET,
   routerOptions: {
     routerName?: string;
-    middleware?: Function[];
+    middleware?: Function[] | MiddlewareDecoratorConfig[];
   } = {}
 ): MethodDecorator => {
   const routerName = routerOptions.routerName ?? "";
@@ -71,17 +93,38 @@ export const RequestMapping = (
       throw Error("RequestMapping decorator is only used in controllers class.");
     }
 
-    // 检查middleware是否实现IMiddleware接口
+    // 处理中间件配置
+    let middlewareConfigs: MiddlewareDecoratorConfig[] = [];
+    
     if (routerOptions.middleware) {
-      for (const m of routerOptions.middleware) {
-        if (typeof m !== 'function' || !('run' in m.prototype)) {
-          throw new Error(`Middleware must be a class implementing IMiddleware`);
+      middlewareConfigs = routerOptions.middleware.map(item => {
+        if (typeof item === 'function') {
+          // 兼容旧的简单中间件配置
+          if (!('run' in item.prototype)) {
+            throw new Error(`Middleware must be a class implementing IMiddleware`);
+          }
+          return {
+            middleware: item,
+            priority: 50, // 默认优先级
+            enabled: true,
+            conditions: [],
+            metadata: {}
+          } as MiddlewareDecoratorConfig;
+        } else {
+          // 新的高级中间件配置
+          if (typeof item.middleware !== 'function' || !('run' in item.middleware.prototype)) {
+            throw new Error(`Middleware must be a class implementing IMiddleware`);
+          }
+          return {
+            priority: 50,
+            enabled: true,
+            conditions: [],
+            metadata: {},
+            ...item
+          } as MiddlewareDecoratorConfig;
         }
-      }
+      });
     }
-
-    // 获取中间件类名数组
-    const middlewareNames = routerOptions.middleware?.map(m => m.name) || [];
 
     // tslint:disable-next-line: no-object-literal-type-assertion
     IOC.attachPropertyData(MAPPING_KEY, {
@@ -89,7 +132,7 @@ export const RequestMapping = (
       requestMethod: reqMethod,
       routerName,
       method: key,
-      middleware: middlewareNames
+      middlewareConfigs // 存储完整的中间件配置
     }, target, key);
 
     return descriptor;
@@ -143,3 +186,48 @@ export const OptionsMapping = (path = "/", routerOptions?: RouterOption) => {
 export const HeadMapping = (path = "/", routerOptions?: RouterOption) => {
   return RequestMapping(path, RequestMethod.HEAD, routerOptions);
 };
+
+/**
+ * Helper function to create middleware configuration with advanced features
+ * 
+ * @param middleware - The middleware class
+ * @param options - Advanced configuration options
+ * @returns MiddlewareDecoratorConfig
+ * 
+ * @example
+ * ```typescript
+ * @GetMapping('/api/users', {
+ *   middleware: [
+ *     withMiddleware(AuthMiddleware, { 
+ *       priority: 100,
+ *       conditions: [{ type: 'header', value: 'authorization', operator: 'contains' }]
+ *     }),
+ *     withMiddleware(RateLimitMiddleware, { 
+ *       priority: 90,
+ *       metadata: { limit: 100, window: 60000 }
+ *     })
+ *   ]
+ * })
+ * ```
+ */
+export function withMiddleware(
+  middleware: Function,
+  options: {
+    priority?: number;
+    enabled?: boolean;
+    conditions?: MiddlewareCondition[];
+    metadata?: Record<string, any>;
+  } = {}
+): MiddlewareDecoratorConfig {
+  if (typeof middleware !== 'function' || !('run' in middleware.prototype)) {
+    throw new Error(`Middleware must be a class implementing IMiddleware`);
+  }
+
+  return {
+    middleware,
+    priority: options.priority ?? 50,
+    enabled: options.enabled ?? true,
+    conditions: options.conditions ?? [],
+    metadata: options.metadata ?? {}
+  };
+}

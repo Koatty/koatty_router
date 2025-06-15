@@ -16,7 +16,7 @@ import { CONTROLLER_ROUTER, Koatty } from "koatty_core";
 import { Helper } from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { Project } from "ts-morph";
-import { MAPPING_KEY } from "../params/mapping";
+import { MAPPING_KEY, MiddlewareDecoratorConfig } from "../params/mapping";
 import {
   PARAM_CHECK_KEY, PARAM_RULE_KEY, PARAM_TYPE_KEY,
   paramterTypes, ValidOtpions, ValidRules
@@ -35,7 +35,7 @@ interface RouterMetadata {
   ctlPath: string;
   requestMethod: string;
   routerName: string;
-  middleware?: string[];
+  middlewareConfigs?: MiddlewareDecoratorConfig[]; // 更新为新的配置格式
   composedMiddleware?: Function;
 }
 
@@ -61,6 +61,7 @@ interface RouterMetadataObject {
  * It extracts the controller path, validates method scopes in debug mode,
  * and combines controller and method level route configurations.
  * Additionally, it registers middleware classes to RouterMiddlewareManager for unified management.
+ * Now supports advanced middleware features like priority, conditions, and metadata.
  */
 export async function injectRouter(app: Koatty, target: any, protocol = 'http'): Promise<RouterMetadataObject | null> {
   const ctlName = IOC.getIdentifier(target);
@@ -90,55 +91,88 @@ export async function injectRouter(app: Koatty, target: any, protocol = 'http'):
       continue;
     }
     for (const val of rmetaData[metaKey]) {
-      // 合并控制器类级别的中间件和路由方法级别的中间件
-      const middleware = [
-        ...(options.middleware || []),
-        ...(val.middleware || [])
+      // 处理控制器级别和方法级别的中间件配置
+      const controllerMiddlewareConfigs: MiddlewareDecoratorConfig[] = [];
+      const methodMiddlewareConfigs: MiddlewareDecoratorConfig[] = val.middlewareConfigs || [];
+
+      // 处理控制器级别的中间件（如果有的话）
+      if (options.middleware) {
+        for (const middlewareItem of options.middleware) {
+          if (typeof middlewareItem === 'function') {
+            controllerMiddlewareConfigs.push({
+              middleware: middlewareItem,
+              priority: 50,
+              enabled: true,
+              conditions: [],
+              metadata: { source: 'controller' }
+            });
+          } else {
+            controllerMiddlewareConfigs.push({
+              priority: 50,
+              enabled: true,
+              conditions: [],
+              metadata: { source: 'controller' },
+              ...middlewareItem
+            });
+          }
+        }
+      }
+
+      // 合并控制器级别和方法级别的中间件配置
+      const allMiddlewareConfigs = [
+        ...controllerMiddlewareConfigs,
+        ...methodMiddlewareConfigs
       ];
+
+      // 按优先级排序（高优先级先执行）
+      allMiddlewareConfigs.sort((a, b) => (b.priority || 50) - (a.priority || 50));
 
       // 将装饰器声明的中间件类注册到RouterMiddlewareManager
       const middlewareInstanceIds: string[] = [];
-      for (const middlewareClass of middleware) {
-        if (typeof middlewareClass === 'function') {
-          const middlewareName = middlewareClass.name;
-          const currentRoute = `${options.path}${val.path}`.replace("//", "/");
-          
-          Logger.Debug(`injectRouter: Processing middleware class: ${middlewareName} for route: ${currentRoute}`);
+      for (const middlewareConfig of allMiddlewareConfigs) {
+        if (!middlewareConfig.enabled) {
+          Logger.Debug(`injectRouter: Skipping disabled middleware: ${middlewareConfig.middleware.name}`);
+          continue;
+        }
 
-          // 尝试通过路由和中间件名获取特定实例
-          const existingInstance = middlewareManager.getMiddlewareByRoute(middlewareName, currentRoute, val.requestMethod);
+        const middlewareName = middlewareConfig.middleware.name;
+        const currentRoute = `${options.path}${val.path}`.replace("//", "/");
+        
+        Logger.Debug(`injectRouter: Processing middleware class: ${middlewareName} for route: ${currentRoute} with priority: ${middlewareConfig.priority}`);
+
+        // 尝试通过路由和中间件名获取特定实例
+        const existingInstance = middlewareManager.getMiddlewareByRoute(middlewareName, currentRoute, val.requestMethod);
+        
+        if (!existingInstance) {
+          Logger.Debug(`injectRouter: Registering new middleware instance: ${middlewareName}@${currentRoute}`);
           
-          if (!existingInstance) {
-            Logger.Debug(`injectRouter: Registering new middleware instance: ${middlewareName}@${currentRoute}`);
-            
-            // 注册到RouterMiddlewareManager
-            // middlewareManager会智能处理中间件类，自动调用run方法
-            const instanceId = await middlewareManager.register({
-              name: middlewareName,
-              middleware: middlewareClass, // 直接传递中间件类
-              priority: 50, // 默认优先级
-              enabled: true,
-              conditions: [], // 无条件限制
-              metadata: {
-                type: 'route',
-                description: `Auto-registered middleware from decorator: ${middlewareName}`,
-                source: 'decorator'
-              },
-              middlewareConfig: {
-                middlewareName,
-                protocol,
-                route: currentRoute,
-                method: val.requestMethod
-              }
-            });
-            
-            Logger.Debug(`injectRouter: Successfully registered middleware: ${middlewareName} with instanceId: ${instanceId}`);
-            
-            middlewareInstanceIds.push(instanceId);
-          } else {
-            Logger.Debug(`injectRouter: Middleware instance already exists: ${middlewareName}@${currentRoute}`);
-            middlewareInstanceIds.push(existingInstance.instanceId!);
-          }
+          // 注册到RouterMiddlewareManager，使用装饰器中的高级配置
+          const instanceId = await middlewareManager.register({
+            name: middlewareName,
+            middleware: middlewareConfig.middleware, // 直接传递中间件类
+            priority: middlewareConfig.priority || 50,
+            enabled: middlewareConfig.enabled ?? true,
+            conditions: middlewareConfig.conditions || [],
+            metadata: {
+              type: 'route',
+              description: `Auto-registered middleware from decorator: ${middlewareName}`,
+              source: 'decorator',
+              ...middlewareConfig.metadata
+            },
+            middlewareConfig: {
+              middlewareName,
+              protocol,
+              route: currentRoute,
+              method: val.requestMethod
+            }
+          });
+          
+          Logger.Debug(`injectRouter: Successfully registered middleware: ${middlewareName} with instanceId: ${instanceId}, priority: ${middlewareConfig.priority}`);
+          
+          middlewareInstanceIds.push(instanceId);
+        } else {
+          Logger.Debug(`injectRouter: Middleware instance already exists: ${middlewareName}@${currentRoute}`);
+          middlewareInstanceIds.push(existingInstance.instanceId!);
         }
       }
 
@@ -163,7 +197,7 @@ export async function injectRouter(app: Koatty, target: any, protocol = 'http'):
         ...val,
         path: `${options.path}${val.path}`.replace("//", "/"),
         ctlPath: options.path,
-        middleware: middlewareInstanceIds, // 存储实例ID用于调试和执行
+        middlewareConfigs: allMiddlewareConfigs, // 存储完整的中间件配置用于调试
         composedMiddleware, // 存储预组合的中间件函数
       };
       router[`${tmp.path}||${tmp.requestMethod}`] = tmp;
