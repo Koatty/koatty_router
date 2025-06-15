@@ -223,7 +223,7 @@ export class WebsocketRouter implements KoattyRouter {
       for (const n of list) {
         const ctlClass = IOC.getClass(n, "CONTROLLER");
         // inject router
-        const ctlRouters = injectRouter(app, ctlClass, this.options.protocol);
+        const ctlRouters = await injectRouter(app, ctlClass, this.options.protocol);
         if (!ctlRouters) {
           continue;
         }
@@ -242,7 +242,7 @@ export class WebsocketRouter implements KoattyRouter {
             method: requestMethod,
             implementation: (ctx: KoattyContext): Promise<any> => {
               const ctl = IOC.getInsByClass(ctlClass, [ctx]);
-              return this.websocketHandler(app, ctx, ctl, method, params, undefined, router.middleware);
+              return this.websocketHandler(app, ctx, ctl, method, params, undefined, router.composedMiddleware);
             },
           });
           // }
@@ -258,7 +258,7 @@ export class WebsocketRouter implements KoattyRouter {
     }
   }
 
-  private websocketHandler(app: Koatty, ctx: KoattyContext, ctl: Function, method: string, params?: any, ctlParamsValue?: any, middlewares?: string[]): Promise<any> {
+  private websocketHandler(app: Koatty, ctx: KoattyContext, ctl: Function, method: string, params?: any, ctlParamsValue?: any, composedMiddleware?: Function): Promise<any> {
     return new Promise((resolve, reject) => {
       const socketId = ctx.socketId || ctx.requestId;
       
@@ -403,7 +403,7 @@ export class WebsocketRouter implements KoattyRouter {
               connection.buffers = [];
               connection.totalBufferSize = 0;
               
-              const result = Handler(app, ctx, ctl, method, params, ctlParamsValue, middlewares);
+              const result = Handler(app, ctx, ctl, method, params, ctlParamsValue, composedMiddleware);
               resolve(result);
             } catch (error) {
               Logger.Error(`Error processing message for ${socketId}:`, error);
