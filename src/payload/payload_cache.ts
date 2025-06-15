@@ -19,25 +19,7 @@ import { parseGrpc } from "./parser/grpc";
 import { parseGraphQL } from "./parser/graphql";
 import { parseWebSocket } from "./parser/websocket";
 
-/**
- * 缓存统计信息接口
- */
-interface CacheStats {
-  size: number;
-  maxSize: number;
-  utilizationRate: number;
-}
 
-export interface CompleteCacheStats {
-  typeMap: CacheStats;
-  contentType: CacheStats;
-  options: CacheStats;
-  overall: {
-    totalSize: number;
-    totalCapacity: number;
-    averageUtilization: number;
-  };
-}
 
 
 // 预定义常量避免重复创建
@@ -213,34 +195,7 @@ export class PayloadCacheManager {
     this.optionsCache.clear();
   }
 
-  /**
-   * 获取缓存统计信息
-   */
-  public getStats(): CompleteCacheStats {
-    const getStatsForCache = (cache: LRUCache<any, any>, maxSize: number): CacheStats => ({
-      size: cache.size,
-      maxSize,
-      utilizationRate: cache.size / maxSize
-    });
 
-    const typeMapStats = getStatsForCache(this.typeMapCache, 100);
-    const contentTypeStats = getStatsForCache(this.contentTypeCache, 200);
-    const optionsStats = getStatsForCache(this.optionsCache, 50);
-
-    const totalSize = typeMapStats.size + contentTypeStats.size + optionsStats.size;
-    const totalCapacity = typeMapStats.maxSize + contentTypeStats.maxSize + optionsStats.maxSize;
-
-    return {
-      typeMap: typeMapStats,
-      contentType: contentTypeStats,
-      options: optionsStats,
-      overall: {
-        totalSize,
-        totalCapacity,
-        averageUtilization: totalSize / totalCapacity
-      }
-    };
-  }
 }
 
 
@@ -253,9 +208,4 @@ export function clearTypeMapCache(): void {
   cacheManager.clearAll();
 }
 
-/**
- * 获取完整的缓存统计信息
- */
-export function getTypeMapCacheStats(): CompleteCacheStats {
-  return cacheManager.getStats();
-}
+
