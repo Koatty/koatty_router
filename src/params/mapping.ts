@@ -11,19 +11,10 @@
 // tslint:disable-next-line: no-import-side-effect
 import "reflect-metadata";
 import { IOC } from 'koatty_container';
-import { KoattyContext } from 'koatty_core';
+import { MiddlewareCondition } from "../middleware/manager";
 
 // used for request mapping metadata
 export const MAPPING_KEY = 'MAPPING_KEY';
-
-/**
- * Middleware condition for advanced middleware configuration
- */
-export interface MiddlewareCondition {
-  type: 'path' | 'method' | 'header' | 'custom';
-  value: string | RegExp | ((ctx: KoattyContext) => boolean);
-  operator?: 'equals' | 'contains' | 'matches' | 'custom';
-}
 
 /**
  * Enhanced middleware configuration for decorators
