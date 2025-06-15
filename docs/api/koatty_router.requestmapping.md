@@ -4,14 +4,14 @@
 
 ## RequestMapping() function
 
-Routes HTTP requests to the specified path.
+Routes HTTP requests to the specified path with enhanced middleware support.
 
 **Signature:**
 
 ```typescript
 RequestMapping: (path?: string, reqMethod?: RequestMethod, routerOptions?: {
     routerName?: string;
-    middleware?: Function[];
+    middleware?: Function[] | MiddlewareDecoratorConfig[];
 }) => MethodDecorator
 ```
 
@@ -72,7 +72,7 @@ routerOptions
 
 </td><td>
 
-{ routerName?: string; middleware?: Function\[\]; }
+{ routerName?: string; middleware?: Function\[\] \| [MiddlewareDecoratorConfig](./koatty_router.middlewaredecoratorconfig.md)<!-- -->\[\]; }
 
 
 </td><td>

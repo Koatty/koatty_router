@@ -7,5 +7,5 @@
 **Signature:**
 
 ```typescript
-middleware?: Function[];
+middleware?: Function[] | MiddlewareDecoratorConfig[];
 ```

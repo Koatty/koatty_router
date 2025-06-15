@@ -4,12 +4,12 @@
 
 ## RouterMiddlewareManager.getMiddleware() method
 
-Get middleware configuration
+Get middleware configuration by name or instance ID
 
 **Signature:**
 
 ```typescript
-getMiddleware(name: string): MiddlewareConfig | null;
+getMiddleware(nameOrInstanceId: string): MiddlewareConfig | null;
 ```
 
 ## Parameters
@@ -32,7 +32,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-name
+nameOrInstanceId
 
 
 </td><td>

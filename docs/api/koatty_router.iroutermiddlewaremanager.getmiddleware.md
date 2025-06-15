@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-getMiddleware(name: string): MiddlewareConfig | null;
+getMiddleware(nameOrInstanceId: string): MiddlewareConfig | null;
 ```
 
 ## Parameters
@@ -30,7 +30,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-name
+nameOrInstanceId
 
 
 </td><td>

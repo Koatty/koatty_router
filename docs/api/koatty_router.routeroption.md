@@ -4,7 +4,7 @@
 
 ## RouterOption interface
 
-Koatty router options
+Koatty router options with enhanced middleware support
 
   RouterOption
 
@@ -64,7 +64,7 @@ string
 
 </td><td>
 
-Function\[\]
+Function\[\] \| [MiddlewareDecoratorConfig](./koatty_router.middlewaredecoratorconfig.md)<!-- -->\[\]
 
 
 </td><td>

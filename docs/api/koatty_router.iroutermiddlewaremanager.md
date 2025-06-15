@@ -27,7 +27,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[compose(names, context)](./koatty_router.iroutermiddlewaremanager.compose.md)
+[compose(instanceIds, context)](./koatty_router.iroutermiddlewaremanager.compose.md)
 
 
 </td><td>
@@ -36,7 +36,16 @@ Description
 </td></tr>
 <tr><td>
 
-[getMiddleware(name)](./koatty_router.iroutermiddlewaremanager.getmiddleware.md)
+[getMiddleware(nameOrInstanceId)](./koatty_router.iroutermiddlewaremanager.getmiddleware.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[getMiddlewareByRoute(middlewareName, route, method)](./koatty_router.iroutermiddlewaremanager.getmiddlewarebyroute.md)
 
 
 </td><td>
@@ -63,7 +72,7 @@ Description
 </td></tr>
 <tr><td>
 
-[unregister(name)](./koatty_router.iroutermiddlewaremanager.unregister.md)
+[unregister(nameOrInstanceId)](./koatty_router.iroutermiddlewaremanager.unregister.md)
 
 
 </td><td>
