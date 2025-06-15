@@ -47,19 +47,7 @@ Clear all caches with proper cleanup
 </td></tr>
 <tr><td>
 
-[clearStats()](./koatty_router.routermiddlewaremanager.clearstats.md)
 
-
-</td><td>
-
-
-</td><td>
-
-Clear statistics
-
-
-</td></tr>
-<tr><td>
 
 [compose(names, context)](./koatty_router.routermiddlewaremanager.compose.md)
 
@@ -119,19 +107,7 @@ Get singleton instance
 </td></tr>
 <tr><td>
 
-[getMemoryStats()](./koatty_router.routermiddlewaremanager.getmemorystats.md)
 
-
-</td><td>
-
-
-</td><td>
-
-Get memory usage statistics
-
-
-</td></tr>
-<tr><td>
 
 [getMiddleware(name)](./koatty_router.routermiddlewaremanager.getmiddleware.md)
 
@@ -147,19 +123,7 @@ Get middleware configuration
 </td></tr>
 <tr><td>
 
-[getStats(name)](./koatty_router.routermiddlewaremanager.getstats.md)
 
-
-</td><td>
-
-
-</td><td>
-
-Get execution statistics
-
-
-</td></tr>
-<tr><td>
 
 [listMiddlewares()](./koatty_router.routermiddlewaremanager.listmiddlewares.md)
 
