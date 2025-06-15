@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.19.0](https://github.com/koatty/koatty_router/compare/v1.18.0...v1.19.0) (2025-06-15)
+
+
+### Features
+
+* enhance middleware configuration merging with decorator priority and method-level disable support ([437fbaa](https://github.com/koatty/koatty_router/commit/437fbaaea441cfb7881ec6c9346c6d7b74d7b4c0))
+* enhance middleware management system with class support, instance tracking, and route-based registration ([8ebab08](https://github.com/koatty/koatty_router/commit/8ebab08c89dab8fd5e60873f30283edf5fa71b44))
+* enhance request mapping with advanced middleware support including conditions, priority, and metadata configuration ([af55bec](https://github.com/koatty/koatty_router/commit/af55bec8ef4e55414c185e0976f0d669b8e079ac))
+
 ## [1.18.0](https://github.com/koatty/koatty_router/compare/v1.18.0-0...v1.18.0) (2025-06-08)
 
 ## [1.18.0-0](https://github.com/koatty/koatty_router/compare/v1.15.0...v1.18.0-0) (2025-06-02)
