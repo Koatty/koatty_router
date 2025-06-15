@@ -163,7 +163,8 @@ describe('injectRouter - 新特性测试', () => {
           middlewareName: 'TestAuthMiddleware',
           protocol: 'http',
           route: '/api/users',
-          method: 'GET'
+          method: 'GET',
+          decoratorConfig: { source: 'controller' }
         }
       });
 
@@ -183,7 +184,8 @@ describe('injectRouter - 新特性测试', () => {
           middlewareName: 'TestRateLimitMiddleware',
           protocol: 'http',
           route: '/api/users',
-          method: 'GET'
+          method: 'GET',
+          decoratorConfig: {}
         }
       });
     });
