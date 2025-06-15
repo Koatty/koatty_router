@@ -196,60 +196,169 @@ const customFactory = new RouterFactoryBuilder()
 
 ## 中间件管理
 
-`RouterMiddlewareManager` 专注于路由级别的中间件注册、组合和条件执行，全局中间件由 Koatty 框架层面管理。
+`RouterMiddlewareManager` 专注于路由级别的中间件注册、组合和条件执行，支持基于路由的独立配置，避免配置冲突。全局中间件由 Koatty 框架层面管理。
 
-### 中间件注册方式
+### 核心特性
 
-#### 1. 装饰器自动注册
+- 🎯 **路由级别隔离** - 每个路由的中间件实例独立配置
+- 🔧 **智能实例管理** - 使用 `${middlewareName}@${route}#${method}` 格式的唯一标识
+- ⚡ **预组合优化** - 注册时组合中间件，提升运行时性能
+- 🔄 **异步中间件类** - 完整支持异步 `run` 方法
+- 📊 **统一管理** - 支持手动注册和装饰器自动注册
 
-通过路由装饰器声明的中间件类会自动注册到 `RouterMiddlewareManager`：
+### 中间件定义
+
+中间件类必须使用 `@Middleware()` 装饰器，并实现 `run` 方法：
 
 ```typescript
-// Koatty中间件类
+import { Middleware } from "koatty_router";
+
 @Middleware()
-class AuthMiddleware {
-  async run(options: any, app: App) {
-    return function (ctx: KoattyContext, next: KoattyNext) {
+export class AuthMiddleware {
+  async run(config: any, app: Application) {
+    return async (ctx: KoattyContext, next: KoattyNext) => {
       // 认证逻辑
       console.log('Auth middleware executed');
+      ctx.authChecked = true;
       await next();
-    }
+    };
   }
 }
 
-// 控制器中使用
-@Controller()
-export class UserController {
-  @RequestMapping("/users", "GET", [AuthMiddleware])
-  async getUsers() {
-    return { users: [] };
+@Middleware()
+export class RateLimitMiddleware {
+  async run(config: any, app: Application) {
+    return async (ctx: KoattyContext, next: KoattyNext) => {
+      // 限流逻辑
+      console.log('RateLimit middleware executed');
+      ctx.rateLimited = true;
+      await next();
+    };
   }
 }
 ```
 
-#### 2. 手动注册
+### 装饰器使用方式
+
+#### 1. 控制器级别中间件
 
 ```typescript
-const middlewareManager = RouterMiddlewareManager.getInstance();
+// 控制器级别中间件会应用到所有方法
+@Controller('/api', [AuthMiddleware])
+export class UserController {
+  
+  @GetMapping('/users')
+  getUsers() {
+    // 执行顺序: AuthMiddleware -> getUsers
+    // 实例ID: AuthMiddleware@/api/users#GET
+    return 'users list';
+  }
+  
+  @PostMapping('/admin')
+  adminAction() {
+    // 执行顺序: AuthMiddleware -> adminAction
+    // 实例ID: AuthMiddleware@/api/admin#POST
+    return 'admin action';
+  }
+}
+```
 
-// 注册路由级别中间件
-const authMiddleware = new AuthMiddleware().run({}, app);
-middlewareManager.register({
-  name: 'paramValidation',
-  middleware: authMiddleware,
+#### 2. 方法级别中间件
+
+```typescript
+@Controller('/api')
+export class UserController {
+  
+  @GetMapping('/users', { 
+    middleware: [AuthMiddleware, RateLimitMiddleware] 
+  })
+  getUsers() {
+    // 执行顺序: AuthMiddleware -> RateLimitMiddleware -> getUsers
+    // 实例ID: 
+    // - AuthMiddleware@/api/users#GET
+    // - RateLimitMiddleware@/api/users#GET
+    return 'users list';
+  }
+  
+  @PostMapping('/admin', { 
+    middleware: [RateLimitMiddleware] 
+  })
+  adminAction() {
+    // 执行顺序: RateLimitMiddleware -> adminAction
+    // 实例ID: RateLimitMiddleware@/api/admin#POST
+    return 'admin action';
+  }
+}
+```
+
+#### 3. 混合使用（控制器 + 方法级别）
+
+```typescript
+@Controller('/api', [AuthMiddleware])
+export class UserController {
+  
+  @GetMapping('/users', { 
+    middleware: [RateLimitMiddleware] 
+  })
+  getUsers() {
+    // 执行顺序: AuthMiddleware -> RateLimitMiddleware -> getUsers
+    // 实例ID:
+    // - AuthMiddleware@/api/users#GET
+    // - RateLimitMiddleware@/api/users#GET
+    return 'users list';
+  }
+}
+```
+
+### 手动注册和管理
+
+#### 1. 手动注册中间件
+
+```typescript
+const middlewareManager = RouterMiddlewareManager.getInstance(app);
+
+// 为不同路由注册同一中间件的不同配置
+const authInstance1 = await middlewareManager.register({
+  name: 'AuthMiddleware',
+  middleware: AuthMiddleware,
   priority: 100,
-  metadata: { type: 'route' }
+  enabled: true,
+  middlewareConfig: {
+    route: '/api/users',
+    method: 'GET'
+  }
+});
+
+const authInstance2 = await middlewareManager.register({
+  name: 'AuthMiddleware', 
+  middleware: AuthMiddleware,
+  priority: 200, // 不同优先级
+  enabled: true,
+  middlewareConfig: {
+    route: '/api/admin',
+    method: 'POST'
+  }
 });
 ```
 
-### 中间件组合
+#### 2. 通过路由获取中间件
 
 ```typescript
-// 组合多个路由中间件
+// 通过路由和中间件名获取特定实例
+const userAuth = middlewareManager.getMiddlewareByRoute('AuthMiddleware', '/api/users', 'GET');
+const adminAuth = middlewareManager.getMiddlewareByRoute('AuthMiddleware', '/api/admin', 'POST');
+
+// 获取中间件的所有实例
+const allAuthInstances = middlewareManager.getMiddlewareInstances('AuthMiddleware');
+```
+
+#### 3. 中间件组合
+
+```typescript
+// 使用实例ID组合中间件
 const composedMiddleware = middlewareManager.compose([
-  'routeAuth',
-  'paramValidation',
-  'routeCache'
+  'AuthMiddleware@/api/users#GET',
+  'RateLimitMiddleware@/api/users#GET'
 ], {
   route: '/api/users',
   method: 'GET'
@@ -260,14 +369,37 @@ const composedMiddleware = middlewareManager.compose([
 
 ```typescript
 // 注册基于条件的中间件
-middlewareManager.register({
-  name: 'routeCache',
-  middleware: authMiddleware,
+await middlewareManager.register({
+  name: 'CacheMiddleware',
+  middleware: CacheMiddleware,
   conditions: [
-    { type: 'method', value: 'GET' }
-  ]
+    { type: 'method', value: 'GET' },
+    { type: 'path', value: '/api/cache', operator: 'contains' }
+  ],
+  middlewareConfig: {
+    route: '/api/cache',
+    method: 'GET'
+  }
 });
 ```
+
+### 实例ID格式
+
+每个中间件实例都有唯一的标识符：
+
+```
+格式: ${middlewareName}@${route}#${method}
+
+示例:
+- AuthMiddleware@/api/users#GET
+- RateLimitMiddleware@/api/admin#POST
+- CacheMiddleware@/api/cache#GET
+```
+
+这种格式确保：
+- 同一中间件在不同路由上有独立配置
+- 避免配置冲突
+- 支持精确查找和管理
 
 **注意**: `RouterMiddlewareManager` 主要用于路由级别的中间件管理，全局中间件（如错误处理、请求日志、CORS）应通过 Koatty 框架的中间件系统管理。
 
@@ -380,29 +512,7 @@ const graphqlRouter = NewRouter(app, {
 });
 ```
 
-## 性能监控
-
-### 中间件统计
-
-```typescript
-const manager = RouterMiddlewareManager.getInstance();
-
-// 获取执行统计
-const stats = manager.getStats();
-console.log(stats);
-// {
-//   "routeAuth": { executions: 100, totalTime: 1500, errors: 2, avgTime: 15 },
-//   "paramValidation": { executions: 150, totalTime: 300, errors: 0, avgTime: 2 }
-// }
-
-// 获取特定中间件统计
-const authStats = manager.getStats("routeAuth");
-
-// 清除统计
-manager.clearStats();
-```
-
-### 路由器信息
+## 路由器信息
 
 ```typescript
 const factory = RouterFactory.getInstance();
@@ -555,7 +665,42 @@ manager.register({
 
 ## 更新日志
 
-查看 [CHANGELOG.md](./CHANGELOG.md) 了解版本更新信息。
+### 中间件管理重构 🎉
+
+#### 🚀 新特性
+- **路由级别中间件隔离** - 每个路由的中间件实例独立配置，避免配置冲突
+- **智能实例管理** - 使用 `${middlewareName}@${route}#${method}` 格式的唯一标识
+- **预组合优化** - 注册时组合中间件，提升运行时性能
+- **异步中间件类支持** - 完整支持异步 `run` 方法
+- **getMiddlewareByRoute方法** - 支持通过路由和中间件名精确获取实例
+
+#### 🛠️ 使用示例
+```typescript
+// 新的中间件定义方式
+@Middleware()
+export class AuthMiddleware {
+  async run(config: any, app: Application) {
+    return async (ctx: KoattyContext, next: KoattyNext) => {
+      // 中间件逻辑
+      await next();
+    };
+  }
+}
+
+// 控制器级别中间件
+@Controller('/api', [AuthMiddleware])
+export class UserController {
+  @GetMapping('/users', { middleware: [RateLimitMiddleware] })
+  getUsers() {
+    return 'users';
+  }
+}
+
+// 手动获取特定路由的中间件
+const middleware = manager.getMiddlewareByRoute('AuthMiddleware', '/api/users', 'GET');
+```
+
+查看 [CHANGELOG.md](./CHANGELOG.md) 了解完整的版本更新信息。
 
 ## 许可证
 
