@@ -116,7 +116,7 @@ Description
 </td></tr>
 <tr><td>
 
-[register()](./koatty_router.middlewarebuilder.register.md)
+[register(app)](./koatty_router.middlewarebuilder.register.md)
 
 
 </td><td>

@@ -75,6 +75,25 @@ _(Optional)_
 </td></tr>
 <tr><td>
 
+[instanceId?](./koatty_router.middlewareconfig.instanceid.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+<tr><td>
+
 [metadata?](./koatty_router.middlewareconfig.metadata.md)
 
 
@@ -102,10 +121,29 @@ _(Optional)_
 
 </td><td>
 
-[MiddlewareFunction](./koatty_router.middlewarefunction.md)
+[MiddlewareFunction](./koatty_router.middlewarefunction.md) \| Function
 
 
 </td><td>
+
+
+</td></tr>
+<tr><td>
+
+[middlewareConfig?](./koatty_router.middlewareconfig.middlewareconfig.md)
+
+
+</td><td>
+
+
+</td><td>
+
+{ \[key: string\]: any; }
+
+
+</td><td>
+
+_(Optional)_
 
 
 </td></tr>

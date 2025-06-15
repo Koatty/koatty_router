@@ -233,7 +233,7 @@ Routes HTTP PUT requests to the specified path.
 </td></tr>
 <tr><td>
 
-[RegisterMiddleware(config)](./koatty_router.registermiddleware.md)
+[RegisterMiddleware(app, config)](./koatty_router.registermiddleware.md)
 
 
 </td><td>

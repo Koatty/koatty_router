@@ -9,8 +9,42 @@ Get singleton instance
 **Signature:**
 
 ```typescript
-static getInstance(): RouterMiddlewareManager;
+static getInstance(app: Application): RouterMiddlewareManager;
 ```
+
+## Parameters
+
+<table><thead><tr><th>
+
+Parameter
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+app
+
+
+</td><td>
+
+Application
+
+
+</td><td>
+
+
+</td></tr>
+</tbody></table>
 **Returns:**
 
 [RouterMiddlewareManager](./koatty_router.routermiddlewaremanager.md)
