@@ -9,7 +9,7 @@ describe("injectRouter", () => {
     app = new App("");
   })
   test("NoPrivateMapping", async () => {
-    const routers = injectRouter(app, TestController);
+    const routers = await injectRouter(app, TestController);
     expect(Object.keys(routers || {}).length).toBe(1);
   })
 })

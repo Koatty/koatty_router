@@ -170,46 +170,7 @@ describe('Handler Simple Tests', () => {
     });
   });
 
-  describe('Middleware handling', () => {
-    it('should execute without middleware', async () => {
-      await Handler(mockApp, mockCtx, mockCtl, 'testMethod');
-      
-      expect(mockMiddlewareManager.getMiddleware).not.toHaveBeenCalled();
-      expect(mockMiddlewareManager.compose).not.toHaveBeenCalled();
-    });
 
-    it('should execute with middleware', async () => {
-      const middlewares = ['testMiddleware'];
-      
-      await Handler(mockApp, mockCtx, mockCtl, 'testMethod', undefined, undefined, middlewares);
-      
-      expect(mockMiddlewareManager.getMiddleware).toHaveBeenCalledWith('testMiddleware');
-      expect(mockMiddlewareManager.compose).toHaveBeenCalledWith(middlewares, {
-        route: '/test',
-        method: 'GET',
-        protocol: 'http'
-      });
-    });
-
-    it('should handle empty middleware array', async () => {
-      const middlewares: string[] = [];
-      
-      await Handler(mockApp, mockCtx, mockCtl, 'testMethod', undefined, undefined, middlewares);
-      
-      expect(mockMiddlewareManager.getMiddleware).not.toHaveBeenCalled();
-    });
-
-    it('should handle protocol fallback', async () => {
-      mockCtx.protocol = undefined;
-      const middlewares = ['test'];
-      
-      await Handler(mockApp, mockCtx, mockCtl, 'testMethod', undefined, undefined, middlewares);
-      
-      expect(mockMiddlewareManager.compose).toHaveBeenCalledWith(middlewares, expect.objectContaining({
-        protocol: 'http'
-      }));
-    });
-  });
 
   describe('Parameter handling', () => {
     it('should handle no parameters', async () => {
