@@ -1,3 +1,4 @@
+import { Controller, KoattyContext } from "koatty_core";
 import { injectRouter } from '../src/utils/inject';
 import { RouterMiddlewareManager } from '../src/middleware/manager';
 import { IOC } from 'koatty_container';
@@ -7,7 +8,7 @@ jest.mock('koatty_container', () => ({
   IOC: {
     getIdentifier: jest.fn(),
     getPropertyData: jest.fn(),
-    attachPropertyData: jest.fn()
+    getType: jest.fn()
   },
   recursiveGetMetadata: jest.fn()
 }));
@@ -23,8 +24,8 @@ const mockApp = {
 // Mock中间件类
 class TestAuthMiddleware {
   async run(config: any, app: any) {
-    return async (ctx: any, next: any) => {
-      ctx.authChecked = true;
+    return async (ctx: KoattyContext, next: any) => {
+      ctx.authExecuted = true;
       await next();
     };
   }
@@ -32,8 +33,8 @@ class TestAuthMiddleware {
 
 class TestRateLimitMiddleware {
   async run(config: any, app: any) {
-    return async (ctx: any, next: any) => {
-      ctx.rateLimited = true;
+    return async (ctx: KoattyContext, next: any) => {
+      ctx.rateLimitExecuted = true;
       await next();
     };
   }
@@ -74,7 +75,13 @@ describe('injectRouter - 新特性测试', () => {
           path: '/users',
           requestMethod: 'GET',
           method: 'testMethod',
-          middleware: [TestRateLimitMiddleware]
+          middlewareConfigs: [{
+            middleware: TestRateLimitMiddleware,
+            priority: 50,
+            enabled: true,
+            conditions: [],
+            metadata: {}
+          }]
         }]
       });
 
@@ -98,10 +105,11 @@ describe('injectRouter - 新特性测试', () => {
       expect(routeKey).toBeDefined();
       
       if (routeKey && result) {
-        expect(result[routeKey].middleware).toEqual([
-          'TestAuthMiddleware@/api/users#GET',
-          'TestRateLimitMiddleware@/api/users#GET'
-        ]);
+        // 现在中间件配置存储在 middlewareConfigs 中
+        expect(result[routeKey].middlewareConfigs).toBeDefined();
+        expect(result[routeKey].middlewareConfigs).toHaveLength(2);
+        expect(result[routeKey].middlewareConfigs![0].middleware).toBe(TestAuthMiddleware);
+        expect(result[routeKey].middlewareConfigs![1].middleware).toBe(TestRateLimitMiddleware);
       }
     });
 
@@ -119,7 +127,13 @@ describe('injectRouter - 新特性测试', () => {
           path: '/users',
           requestMethod: 'GET',
           method: 'testMethod',
-          middleware: [TestRateLimitMiddleware] // 方法级别
+          middlewareConfigs: [{ // 方法级别
+            middleware: TestRateLimitMiddleware,
+            priority: 50,
+            enabled: true,
+            conditions: [],
+            metadata: {}
+          }]
         }]
       });
 
@@ -143,7 +157,7 @@ describe('injectRouter - 新特性测试', () => {
         metadata: {
           type: 'route',
           description: 'Auto-registered middleware from decorator: TestAuthMiddleware',
-          source: 'decorator'
+          source: 'controller'
         },
         middlewareConfig: {
           middlewareName: 'TestAuthMiddleware',
@@ -190,7 +204,7 @@ describe('injectRouter - 新特性测试', () => {
           path: '/users',
           requestMethod: 'GET',
           method: 'testMethod',
-          middleware: []
+          middlewareConfigs: []
         }]
       });
 
@@ -230,7 +244,13 @@ describe('injectRouter - 新特性测试', () => {
           path: '/users',
           requestMethod: 'GET',
           method: 'testMethod',
-          middleware: [TestAuthMiddleware]
+          middlewareConfigs: [{
+            middleware: TestAuthMiddleware,
+            priority: 50,
+            enabled: true,
+            conditions: [],
+            metadata: {}
+          }]
         }]
       });
 
@@ -276,7 +296,7 @@ describe('injectRouter - 新特性测试', () => {
           path: '/users',
           requestMethod: 'GET',
           method: 'testMethod',
-          middleware: []
+          middlewareConfigs: []
         }]
       });
 
@@ -311,7 +331,13 @@ describe('injectRouter - 新特性测试', () => {
           path: '/users/:id',
           requestMethod: 'GET',
           method: 'testMethod',
-          middleware: [TestAuthMiddleware]
+          middlewareConfigs: [{
+            middleware: TestAuthMiddleware,
+            priority: 50,
+            enabled: true,
+            conditions: [],
+            metadata: {}
+          }]
         }]
       });
 
@@ -344,7 +370,13 @@ describe('injectRouter - 新特性测试', () => {
           path: '/users',
           requestMethod: 'GET',
           method: 'testMethod',
-          middleware: [TestAuthMiddleware]
+          middlewareConfigs: [{
+            middleware: TestAuthMiddleware,
+            priority: 50,
+            enabled: true,
+            conditions: [],
+            metadata: {}
+          }]
         }]
       });
 
