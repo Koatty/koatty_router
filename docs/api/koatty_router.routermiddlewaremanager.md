@@ -103,7 +103,7 @@ Destroy manager and cleanup resources
 </td></tr>
 <tr><td>
 
-[getInstance()](./koatty_router.routermiddlewaremanager.getinstance.md)
+[getInstance(app)](./koatty_router.routermiddlewaremanager.getinstance.md)
 
 
 </td><td>
@@ -219,7 +219,7 @@ Enable/disable middleware
 </td></tr>
 <tr><td>
 
-[unregister(name)](./koatty_router.routermiddlewaremanager.unregister.md)
+[unregister(nameOrInstanceId)](./koatty_router.routermiddlewaremanager.unregister.md)
 
 
 </td><td>
@@ -227,7 +227,7 @@ Enable/disable middleware
 
 </td><td>
 
-Unregister middleware
+Unregister middleware by name or instance ID
 
 
 </td></tr>

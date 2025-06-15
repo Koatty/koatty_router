@@ -9,7 +9,7 @@ Decorator for auto-registering middlewares
 **Signature:**
 
 ```typescript
-export declare function RegisterMiddleware(config: Omit<MiddlewareConfig, 'middleware'>): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
+export declare function RegisterMiddleware(app: Application, config: Omit<MiddlewareConfig, 'middleware'>): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
 ```
 
 ## Parameters
@@ -31,6 +31,20 @@ Description
 
 </th></tr></thead>
 <tbody><tr><td>
+
+app
+
+
+</td><td>
+
+Application
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
 
 config
 

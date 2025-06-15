@@ -4,12 +4,12 @@
 
 ## RouterMiddlewareManager.unregister() method
 
-Unregister middleware
+Unregister middleware by name or instance ID
 
 **Signature:**
 
 ```typescript
-unregister(name: string): boolean;
+unregister(nameOrInstanceId: string): boolean;
 ```
 
 ## Parameters
@@ -32,7 +32,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-name
+nameOrInstanceId
 
 
 </td><td>

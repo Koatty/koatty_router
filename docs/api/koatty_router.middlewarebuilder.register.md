@@ -7,8 +7,42 @@
 **Signature:**
 
 ```typescript
-register(): void;
+register(app: Application): void;
 ```
+
+## Parameters
+
+<table><thead><tr><th>
+
+Parameter
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+app
+
+
+</td><td>
+
+Application
+
+
+</td><td>
+
+
+</td></tr>
+</tbody></table>
 **Returns:**
 
 void
