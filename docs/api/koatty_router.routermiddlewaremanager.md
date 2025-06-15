@@ -47,17 +47,15 @@ Clear all caches with proper cleanup
 </td></tr>
 <tr><td>
 
-
-
-[compose(names, context)](./koatty_router.routermiddlewaremanager.compose.md)
-
-
-</td><td>
+[compose(instanceIds, context)](./koatty_router.routermiddlewaremanager.compose.md)
 
 
 </td><td>
 
-Compose middlewares
+
+</td><td>
+
+Compose middlewares by instance IDs
 
 
 </td></tr>
@@ -107,23 +105,47 @@ Get singleton instance
 </td></tr>
 <tr><td>
 
-
-
-[getMiddleware(name)](./koatty_router.routermiddlewaremanager.getmiddleware.md)
-
-
-</td><td>
+[getMiddleware(nameOrInstanceId)](./koatty_router.routermiddlewaremanager.getmiddleware.md)
 
 
 </td><td>
 
-Get middleware configuration
+
+</td><td>
+
+Get middleware configuration by name or instance ID
 
 
 </td></tr>
 <tr><td>
 
+[getMiddlewareByRoute(middlewareName, route, method)](./koatty_router.routermiddlewaremanager.getmiddlewarebyroute.md)
 
+
+</td><td>
+
+
+</td><td>
+
+Get middleware by route and middleware name
+
+
+</td></tr>
+<tr><td>
+
+[getMiddlewareInstances(name)](./koatty_router.routermiddlewaremanager.getmiddlewareinstances.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Get all middleware instances by name
+
+
+</td></tr>
+<tr><td>
 
 [listMiddlewares()](./koatty_router.routermiddlewaremanager.listmiddlewares.md)
 
@@ -169,7 +191,7 @@ Reset singleton instance (for testing)
 </td></tr>
 <tr><td>
 
-[setEnabled(name, enabled)](./koatty_router.routermiddlewaremanager.setenabled.md)
+[setEnabled(nameOrInstanceId, enabled)](./koatty_router.routermiddlewaremanager.setenabled.md)
 
 
 </td><td>
@@ -177,7 +199,7 @@ Reset singleton instance (for testing)
 
 </td><td>
 
-Enable/disable middleware
+Enable/disable middleware by name or instance ID
 
 
 </td></tr>

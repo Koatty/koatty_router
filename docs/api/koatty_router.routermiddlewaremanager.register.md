@@ -9,7 +9,7 @@ Register middleware
 **Signature:**
 
 ```typescript
-register(config: MiddlewareConfig): Promise<void>;
+register(config: MiddlewareConfig): Promise<string>;
 ```
 
 ## Parameters
@@ -47,5 +47,5 @@ config
 </tbody></table>
 **Returns:**
 
-Promise&lt;void&gt;
+Promise&lt;string&gt;
 

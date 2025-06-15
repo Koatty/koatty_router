@@ -4,12 +4,12 @@
 
 ## RouterMiddlewareManager.setEnabled() method
 
-Enable/disable middleware
+Enable/disable middleware by name or instance ID
 
 **Signature:**
 
 ```typescript
-setEnabled(name: string, enabled: boolean): void;
+setEnabled(nameOrInstanceId: string, enabled: boolean): void;
 ```
 
 ## Parameters
@@ -32,7 +32,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-name
+nameOrInstanceId
 
 
 </td><td>

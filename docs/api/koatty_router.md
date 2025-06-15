@@ -261,7 +261,7 @@ Get parsed body(form variable and file object).
 
 </td><td>
 
-Routes HTTP requests to the specified path.
+Routes HTTP requests to the specified path with enhanced middleware support.
 
 
 </td></tr>
@@ -274,6 +274,17 @@ Routes HTTP requests to the specified path.
 
 Get parsed query-string and path variable(koa ctx.query and ctx.params), and set as an object.
 
+
+
+</td></tr>
+<tr><td>
+
+[withMiddleware(middleware, options)](./koatty_router.withmiddleware.md)
+
+
+</td><td>
+
+Helper function to create middleware configuration with advanced features
 
 
 </td></tr>
@@ -327,6 +338,17 @@ Middleware configuration
 </td></tr>
 <tr><td>
 
+[MiddlewareDecoratorConfig](./koatty_router.middlewaredecoratorconfig.md)
+
+
+</td><td>
+
+Enhanced middleware configuration for decorators
+
+
+</td></tr>
+<tr><td>
+
 [MiddlewareExecutionContext](./koatty_router.middlewareexecutioncontext.md)
 
 
@@ -343,7 +365,7 @@ Middleware execution context
 
 </td><td>
 
-Koatty router options
+Koatty router options with enhanced middleware support
 
   RouterOption
 

@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-compose(names: string[], context?: MiddlewareExecutionContext): MiddlewareFunction;
+compose(instanceIds: string[], context?: MiddlewareExecutionContext): MiddlewareFunction;
 ```
 
 ## Parameters
@@ -30,7 +30,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-names
+instanceIds
 
 
 </td><td>
