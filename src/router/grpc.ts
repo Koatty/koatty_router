@@ -256,7 +256,7 @@ interface CtlInterface {
     ctl: Function;
     method: string;
     params: ParamMetadata[];
-    middleware: string[];
+    composedMiddleware?: Function;
   }
 }
 
@@ -344,7 +344,7 @@ export class GrpcRouter implements KoattyRouter {
       
       app.callback("grpc", (ctx) => {
         const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
-        return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.middleware);
+        return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.composedMiddleware);
       })(call, callback);
     } catch (error) {
       Logger.Error(`Error in unary call: ${error}`);
@@ -409,7 +409,7 @@ export class GrpcRouter implements KoattyRouter {
         };
 
         const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
-        return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.middleware);
+        return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.composedMiddleware);
       })(call, () => {});
       
     } catch (error) {
@@ -467,7 +467,7 @@ export class GrpcRouter implements KoattyRouter {
         app.callback("grpc", (ctx) => {
           ctx.streamMessages = messages;
           const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
-          return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.middleware);
+          return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.composedMiddleware);
         })(call, callback);
         
         this.streamManager.removeStream(streamId);
@@ -547,7 +547,7 @@ export class GrpcRouter implements KoattyRouter {
           };
 
           const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
-          return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.middleware);
+          return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.composedMiddleware);
         })(call, () => {});
       });
 
@@ -637,7 +637,7 @@ export class GrpcRouter implements KoattyRouter {
 
       for (const n of list) {
         const ctlClass = IOC.getClass(n, "CONTROLLER");
-        const ctlRouters = injectRouter(app, ctlClass, this.options.protocol);
+        const ctlRouters = await injectRouter(app, ctlClass, this.options.protocol);
         if (!ctlRouters) continue;
 
         const ctlParams = injectParamMetaData(app, ctlClass, this.options.payload);
@@ -647,7 +647,7 @@ export class GrpcRouter implements KoattyRouter {
             ctl: ctlClass,
             method: router.method,
             params: ctlParams[router.method],
-            middleware: router.middleware
+            composedMiddleware: router.composedMiddleware
           };
         }
       }

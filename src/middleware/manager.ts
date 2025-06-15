@@ -12,6 +12,7 @@ import { KoattyContext, KoattyNext } from "koatty_core";
 import { DefaultLogger as Logger } from "koatty_logger";
 import compose, { Middleware } from "koa-compose";
 import { LRUCache } from "lru-cache";
+import { Application } from "koatty_container";
 
 /**
  * Middleware function type
@@ -23,11 +24,16 @@ export type MiddlewareFunction = (ctx: KoattyContext, next: KoattyNext) => Promi
  */
 export interface MiddlewareConfig {
   name: string;
-  middleware: MiddlewareFunction;
+  instanceId?: string; // 中间件实例的唯一标识符
+  middleware: MiddlewareFunction | Function; // 支持中间件函数或中间件类
   priority?: number;
   enabled?: boolean;
   conditions?: MiddlewareCondition[];
   metadata?: Record<string, any>;
+  // 用于中间件类的配置参数
+  middlewareConfig?: {
+    [key: string]: any;
+  };
 }
 
 /**
@@ -64,11 +70,12 @@ interface PathPattern {
  * Defines the contract for managing router-level middleware
  */
 export interface IRouterMiddlewareManager {
-  register(config: MiddlewareConfig): void;
-  unregister(name: string): boolean;
-  getMiddleware(name: string): MiddlewareConfig | null;
+  register(config: MiddlewareConfig): Promise<string>;
+  unregister(nameOrInstanceId: string): boolean;
+  getMiddleware(nameOrInstanceId: string): MiddlewareConfig | null;
+  getMiddlewareByRoute(middlewareName: string, route: string, method?: string): MiddlewareConfig | null;
   listMiddlewares(): string[];
-  compose(names: string[], context?: MiddlewareExecutionContext): MiddlewareFunction;
+  compose(instanceIds: string[], context?: MiddlewareExecutionContext): MiddlewareFunction;
 }
 
 /**
@@ -76,16 +83,18 @@ export interface IRouterMiddlewareManager {
  * Manages router-level middleware registration, composition, and conditional execution
  */
 export class RouterMiddlewareManager implements IRouterMiddlewareManager {
+  private app: Application;
   private static instance: RouterMiddlewareManager | null = null;
   private static isCreating = false;
   private readonly _instanceId: string;
-  private middlewares = new Map<string, MiddlewareConfig>();
+  private middlewares = new Map<string, MiddlewareConfig>(); // 按实例ID存储
+  private middlewaresByName = new Map<string, Set<string>>(); // 按名称索引实例ID
   private executionStats = new Map<string, {
     executions: number;
     totalTime: number;
     errors: number;
   }>();
-  
+
   // 优化的路径匹配缓存 - 使用LRU缓存防止内存泄漏
   private pathPatterns: PathPattern = {
     exact: new LRUCache<string, boolean>({ max: 200 }),
@@ -93,10 +102,10 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
     suffixes: new LRUCache<string, boolean>({ max: 100 }),
     patterns: new LRUCache<string, RegExp>({ max: 50 })
   };
-  
+
   // 方法匹配缓存 - 限制大小
   private methodCache = new LRUCache<string, Set<string>>({ max: 100 });
-  
+
   // 头部匹配缓存 - 限制大小
   private headerCache = new LRUCache<string, Map<string, string>>({ max: 100 });
 
@@ -107,13 +116,13 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
   /**
    * Private constructor to enforce singleton pattern
    */
-  private constructor() {
+  private constructor(app: Application) {
+    this.app = app;
     if (RouterMiddlewareManager.instance) {
       throw new Error('RouterMiddlewareManager is a singleton. Use getInstance() instead.');
     }
     this._instanceId = Math.random().toString(36).substr(2, 9);
     Logger.Debug(`RouterMiddlewareManager instance created with ID: ${this._instanceId}`);
-    this.initializeBuiltinMiddlewares();
     this.startCacheCleanup();
   }
 
@@ -121,7 +130,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
    * Get singleton instance
    * @returns RouterMiddlewareManager instance
    */
-  public static getInstance(): RouterMiddlewareManager {
+  public static getInstance(app: Application): RouterMiddlewareManager {
     if (RouterMiddlewareManager.instance) {
       return RouterMiddlewareManager.instance;
     }
@@ -132,7 +141,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
 
     RouterMiddlewareManager.isCreating = true;
     try {
-      RouterMiddlewareManager.instance = new RouterMiddlewareManager();
+      RouterMiddlewareManager.instance = new RouterMiddlewareManager(app);
       Logger.Debug('RouterMiddlewareManager singleton instance initialized');
     } finally {
       RouterMiddlewareManager.isCreating = false;
@@ -167,10 +176,10 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
    */
   private performCacheCleanup(): void {
     const beforeSize = this.getCacheSize();
-    
+
     // 清理执行统计中的过期数据
     this.cleanupExecutionStats();
-    
+
     const afterSize = this.getCacheSize();
     Logger.Debug(`Cache cleanup completed. Size: ${beforeSize} -> ${afterSize}`);
   }
@@ -184,7 +193,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
       const entries = Array.from(this.executionStats.entries());
       // 保留最近使用的统计数据
       entries.sort((a, b) => b[1].executions - a[1].executions);
-      
+
       this.executionStats.clear();
       entries.slice(0, maxStatsEntries / 2).forEach(([key, value]) => {
         this.executionStats.set(key, value);
@@ -197,12 +206,12 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
    */
   private getCacheSize(): number {
     return this.pathPatterns.exact.size +
-           this.pathPatterns.prefixes.size +
-           this.pathPatterns.suffixes.size +
-           this.pathPatterns.patterns.size +
-           this.methodCache.size +
-           this.headerCache.size +
-           this.executionStats.size;
+      this.pathPatterns.prefixes.size +
+      this.pathPatterns.suffixes.size +
+      this.pathPatterns.patterns.size +
+      this.methodCache.size +
+      this.headerCache.size +
+      this.executionStats.size;
   }
 
   /**
@@ -213,71 +222,18 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
       clearInterval(this.cacheCleanupTimer);
       this.cacheCleanupTimer = undefined;
     }
-    
+
     this.clearCaches();
     this.middlewares.clear();
     this.executionStats.clear();
-    
+
     Logger.Debug(`RouterMiddlewareManager instance ${this._instanceId} destroyed`);
-  }
-
-  /**
-   * Initialize built-in middlewares
-   */
-  private initializeBuiltinMiddlewares(): void {
-    // 路由级别的参数验证中间件示例
-    this.register({
-      name: 'paramValidation',
-      priority: 100,
-      middleware: async (ctx: KoattyContext, next: KoattyNext) => {
-        // 参数验证逻辑示例
-        Logger.Debug('Parameter validation middleware executed');
-        await next();
-      },
-      metadata: {
-        type: 'route',
-        description: 'Route-level parameter validation'
-      }
-    });
-
-    // 路由级别的缓存中间件示例
-    this.register({
-      name: 'routeCache',
-      priority: 80,
-      middleware: async (ctx: KoattyContext, next: KoattyNext) => {
-        // 路由缓存逻辑示例
-        Logger.Debug('Route cache middleware executed');
-        await next();
-      },
-      conditions: [
-        { type: 'method', value: 'GET' }
-      ],
-      metadata: {
-        type: 'route',
-        description: 'Route-level caching for GET requests'
-      }
-    });
-
-    // 路由级别的权限检查中间件示例
-    this.register({
-      name: 'routeAuth',
-      priority: 90,
-      middleware: async (ctx: KoattyContext, next: KoattyNext) => {
-        // 路由权限检查逻辑示例
-        Logger.Debug('Route authorization middleware executed');
-        await next();
-      },
-      metadata: {
-        type: 'route',
-        description: 'Route-level authorization check'
-      }
-    });
   }
 
   /**
    * Register middleware
    */
-  public register(config: MiddlewareConfig): void {
+  public async register(config: MiddlewareConfig): Promise<string> {
     if (!config.name || typeof config.name !== 'string') {
       throw new Error('Middleware name must be a non-empty string');
     }
@@ -286,25 +242,109 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
       throw new Error('Middleware must be a function');
     }
 
+    // 处理中间件类或中间件函数
+    let actualMiddleware: MiddlewareFunction;
+
+    // 检查是否为中间件类（有run方法）
+    if (this.isMiddlewareClass(config.middleware)) {
+      Logger.Debug(`Processing middleware class: ${config.name}`);
+      actualMiddleware = await this.processMiddlewareClass(config);
+    } else {
+      // 直接使用中间件函数
+      actualMiddleware = config.middleware as MiddlewareFunction;
+    }
+
+    // 生成唯一的实例ID
+    const instanceId = config.instanceId || this.generateInstanceId(config.name, config.middlewareConfig);
+
     // Set defaults
     const middlewareConfig: MiddlewareConfig = {
       priority: 500,
       enabled: true,
       conditions: [],
       metadata: {},
-      ...config
+      ...config,
+      instanceId,
+      middleware: actualMiddleware // 使用处理后的中间件函数
     };
 
-    if (this.middlewares.has(config.name)) {
-      Logger.Warn(`Overriding existing middleware: ${config.name}`);
-    }
+    // 按实例ID存储
+    this.middlewares.set(instanceId, middlewareConfig);
 
-    this.middlewares.set(config.name, middlewareConfig);
-    
+    // 按名称索引实例ID
+    if (!this.middlewaresByName.has(config.name)) {
+      this.middlewaresByName.set(config.name, new Set());
+    }
+    this.middlewaresByName.get(config.name)!.add(instanceId);
+
     // 预处理条件以优化匹配性能
     this.preprocessConditions(middlewareConfig);
+
+    Logger.Debug(`Registered middleware: ${config.name} with instanceId: ${instanceId}`);
+    return instanceId;
+  }
+
+  /**
+   * Generate unique instance ID using middleware name and route
+   */
+  private generateInstanceId(name: string, config?: any): string {
+    if (config && config.route) {
+      // 使用中间件名和路由组合作为唯一标识
+      const route = config.route.replace(/[^a-zA-Z0-9\/\-_]/g, '_'); // 清理路由中的特殊字符
+      const method = config.method || 'ALL';
+      return `${name}@${route}#${method}`;
+    }
     
-    Logger.Debug(`Registered middleware: ${config.name}`);
+    // 如果没有路由信息，使用时间戳作为后备方案
+    const timestamp = Date.now();
+    return `${name}_${timestamp}`;
+  }
+
+  /**
+   * Check if the provided function is a middleware class
+   */
+  private isMiddlewareClass(middleware: Function): boolean {
+    // 检查是否为构造函数（类）
+    if (middleware.prototype && middleware.prototype.constructor === middleware) {
+      // 检查原型上是否有run方法
+      return typeof middleware.prototype.run === 'function';
+    }
+    return false;
+  }
+
+  /**
+   * Process middleware class to get actual middleware function
+   */
+  private async processMiddlewareClass(config?: MiddlewareConfig): Promise<MiddlewareFunction> {
+    const MiddlewareClass = config?.middleware as any;
+    try {
+      // 实例化中间件类
+      const middlewareInstance = new MiddlewareClass();
+
+      // 检查实例是否有run方法
+      if (!middlewareInstance.run || typeof middlewareInstance.run !== 'function') {
+        throw new Error(`Middleware class ${MiddlewareClass.name} does not have a run method`);
+      }
+
+      // 调用run方法获取真正的Koa中间件函数
+      const appConfig = this.app.config("config", "middleware") || {};
+      const middlewareBusinessConfig = appConfig[MiddlewareClass?.name] || {};
+      
+      // 调用run方法，传递业务配置和app实例
+      const koaMiddleware = await middlewareInstance.run(middlewareBusinessConfig, this.app);
+
+      // 验证返回的是否为函数
+      if (typeof koaMiddleware !== 'function') {
+        throw new Error(`Middleware ${MiddlewareClass.name}.run() must return a function, got ${typeof koaMiddleware}`);
+      }
+
+      Logger.Debug(`Successfully processed middleware class: ${MiddlewareClass.name}`);
+      return koaMiddleware;
+
+    } catch (error) {
+      Logger.Error(`Error processing middleware class ${MiddlewareClass.name}:`, error);
+      throw error;
+    }
   }
 
   /**
@@ -392,26 +432,114 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
   }
 
   /**
-   * Unregister middleware
+   * Unregister middleware by name or instance ID
    */
-  public unregister(name: string): boolean {
-    const result = this.middlewares.delete(name);
-    
-    if (result) {
-      this.executionStats.delete(name);
-      Logger.Debug(`Unregistered middleware: ${name}`);
-    } else {
-      Logger.Warn(`Middleware not found: ${name}`);
+  public unregister(nameOrInstanceId: string): boolean {
+    // 首先尝试按实例ID删除
+    if (this.middlewares.has(nameOrInstanceId)) {
+      const config = this.middlewares.get(nameOrInstanceId)!;
+      this.middlewares.delete(nameOrInstanceId);
+      
+      // 从名称索引中移除
+      const instanceIds = this.middlewaresByName.get(config.name);
+      if (instanceIds) {
+        instanceIds.delete(nameOrInstanceId);
+        if (instanceIds.size === 0) {
+          this.middlewaresByName.delete(config.name);
+        }
+      }
+      
+      this.executionStats.delete(nameOrInstanceId);
+      Logger.Debug(`Unregistered middleware: ${config.name} (instanceId: ${nameOrInstanceId})`);
+      return true;
     }
-    
-    return result;
+
+    // 然后尝试按名称删除所有实例
+    const instanceIds = this.middlewaresByName.get(nameOrInstanceId);
+    if (instanceIds && instanceIds.size > 0) {
+      let deletedCount = 0;
+      for (const instanceId of instanceIds) {
+        if (this.middlewares.delete(instanceId)) {
+          this.executionStats.delete(instanceId);
+          deletedCount++;
+        }
+      }
+      this.middlewaresByName.delete(nameOrInstanceId);
+      Logger.Debug(`Unregistered ${deletedCount} instances of middleware: ${nameOrInstanceId}`);
+      return deletedCount > 0;
+    }
+
+    Logger.Warn(`Middleware not found: ${nameOrInstanceId}`);
+    return false;
   }
 
   /**
-   * Get middleware configuration
+   * Get middleware configuration by name or instance ID
    */
-  public getMiddleware(name: string): MiddlewareConfig | null {
-    return this.middlewares.get(name) || null;
+  public getMiddleware(nameOrInstanceId: string): MiddlewareConfig | null {
+    // 首先尝试按实例ID查找
+    if (this.middlewares.has(nameOrInstanceId)) {
+      return this.middlewares.get(nameOrInstanceId)!;
+    }
+
+    // 然后尝试按名称查找第一个实例
+    const instanceIds = this.middlewaresByName.get(nameOrInstanceId);
+    if (instanceIds && instanceIds.size > 0) {
+      const firstInstanceId = instanceIds.values().next().value;
+      return this.middlewares.get(firstInstanceId) || null;
+    }
+
+    return null;
+  }
+
+  /**
+   * Get middleware by route and middleware name
+   */
+  public getMiddlewareByRoute(middlewareName: string, route: string, method?: string): MiddlewareConfig | null {
+    // 生成预期的实例ID
+    const cleanRoute = route.replace(/[^a-zA-Z0-9\/\-_]/g, '_');
+    const targetMethod = method || 'ALL';
+    const expectedInstanceId = `${middlewareName}@${cleanRoute}#${targetMethod}`;
+    
+    // 直接通过实例ID查找
+    const config = this.middlewares.get(expectedInstanceId);
+    if (config) {
+      Logger.Debug(`Found middleware by route: ${middlewareName}@${route}#${targetMethod}`);
+      return config;
+    }
+
+    // 如果没找到，尝试查找该中间件的所有实例，匹配路由
+    const instanceIds = this.middlewaresByName.get(middlewareName);
+    if (instanceIds && instanceIds.size > 0) {
+      for (const instanceId of instanceIds) {
+        const middlewareConfig = this.middlewares.get(instanceId);
+        if (middlewareConfig && 
+            middlewareConfig.middlewareConfig?.route === route &&
+            (middlewareConfig.middlewareConfig?.method === method || 
+             middlewareConfig.middlewareConfig?.method === 'ALL' || 
+             !method)) {
+          Logger.Debug(`Found middleware by route match: ${middlewareName}@${route}`);
+          return middlewareConfig;
+        }
+      }
+    }
+
+    Logger.Debug(`Middleware not found by route: ${middlewareName}@${route}#${targetMethod}`);
+    return null;
+  }
+
+  /**
+   * Get all middleware instances by name
+   */
+  public getMiddlewareInstances(name: string): MiddlewareConfig[] {
+    const instanceIds = this.middlewaresByName.get(name);
+    if (!instanceIds || instanceIds.size === 0) {
+      return [];
+    }
+
+    return Array.from(instanceIds)
+      .map(instanceId => this.middlewares.get(instanceId))
+      .filter((config): config is MiddlewareConfig => config !== undefined);
   }
 
   /**
@@ -435,13 +563,13 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
   }
 
   /**
-   * Compose middlewares
+   * Compose middlewares by instance IDs
    */
-  public compose(names: string[], context?: MiddlewareExecutionContext): MiddlewareFunction {
+  public compose(instanceIds: string[], context?: MiddlewareExecutionContext): MiddlewareFunction {
     // 获取有效的中间件配置并按优先级排序
-    const validConfigs = names
-      .map(name => this.middlewares.get(name))
-      .filter((config): config is MiddlewareConfig => 
+    const validConfigs = instanceIds
+      .map(instanceId => this.middlewares.get(instanceId))
+      .filter((config): config is MiddlewareConfig =>
         config !== undefined && config.enabled !== false
       )
       .sort((a, b) => (b.priority || 0) - (a.priority || 0));
@@ -469,12 +597,12 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
    * Create conditional middleware
    */
   private createConditionalMiddleware(
-    config: MiddlewareConfig, 
+    config: MiddlewareConfig,
     context?: MiddlewareExecutionContext
   ): Middleware<KoattyContext> {
     return async (ctx: KoattyContext, next: KoattyNext) => {
       const shouldExecute = this.evaluateConditions(config.conditions!, ctx, context);
-      
+
       if (shouldExecute) {
         await this.wrapMiddleware(config)(ctx, next);
       } else {
@@ -487,7 +615,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
    * Evaluate middleware conditions
    */
   private evaluateConditions(
-    conditions: MiddlewareCondition[], 
+    conditions: MiddlewareCondition[],
     ctx: KoattyContext,
     context?: MiddlewareExecutionContext
   ): boolean {
@@ -513,7 +641,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
    */
   private evaluatePathCondition(condition: MiddlewareCondition, path: string): boolean {
     const { value, operator = 'equals' } = condition;
-    
+
     if (typeof value === 'string') {
       switch (operator) {
         case 'equals':
@@ -526,7 +654,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
           const isMatch = path === value;
           this.pathPatterns.exact.set(value, isMatch);
           return isMatch;
-          
+
         case 'contains':
           // 优先使用前缀匹配缓存
           const prefixMatch = this.pathPatterns.prefixes.get(value);
@@ -537,7 +665,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
           const isPrefixMatch = path.startsWith(value) || path.includes(value);
           this.pathPatterns.prefixes.set(value, isPrefixMatch);
           return isPrefixMatch;
-          
+
         case 'matches':
           // 使用预编译的正则表达式缓存
           let regex = this.pathPatterns.patterns.get(value);
@@ -550,14 +678,14 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
             }
           }
           return regex.test(path);
-          
+
         default:
           return false;
       }
     } else if (value instanceof RegExp) {
       return value.test(path);
     }
-    
+
     return false;
   }
 
@@ -566,33 +694,33 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
    */
   private evaluateMethodCondition(condition: MiddlewareCondition, method: string): boolean {
     const { value, operator = 'equals' } = condition;
-    
+
     if (typeof value === 'string') {
       const targetMethod = value.toUpperCase();
       const currentMethod = method.toUpperCase();
-      
+
       // 使用缓存检查方法匹配
       let methodSet = this.methodCache.get(targetMethod);
       if (!methodSet) {
         methodSet = new Set<string>();
         this.methodCache.set(targetMethod, methodSet);
       }
-      
+
       if (methodSet.has(currentMethod)) {
         return true;
       }
-      
-      const isMatch = operator === 'equals' ? 
-        currentMethod === targetMethod : 
+
+      const isMatch = operator === 'equals' ?
+        currentMethod === targetMethod :
         currentMethod.includes(targetMethod);
-        
+
       if (isMatch) {
         methodSet.add(currentMethod);
       }
-      
+
       return isMatch;
     }
-    
+
     return false;
   }
 
@@ -601,43 +729,43 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
    */
   private evaluateHeaderCondition(condition: MiddlewareCondition, ctx: KoattyContext): boolean {
     const { value, operator = 'equals' } = condition;
-    
+
     if (typeof value === 'string') {
       const [headerName, expectedValue] = value.split(':');
       if (!headerName) return false;
-      
+
       const normalizedHeaderName = headerName.toLowerCase();
       const actualValue = ctx.headers[normalizedHeaderName];
-      
+
       if (!actualValue) return false;
-      
+
       // 处理头部值可能是数组的情况
       const actualValueStr = Array.isArray(actualValue) ? actualValue[0] : actualValue;
       if (!actualValueStr) return false;
-      
+
       // 使用缓存检查头部匹配
       let headerMap = this.headerCache.get(normalizedHeaderName);
       if (!headerMap) {
         headerMap = new Map<string, string>();
         this.headerCache.set(normalizedHeaderName, headerMap);
       }
-      
+
       if (expectedValue) {
         const cachedResult = headerMap.get(expectedValue);
         if (cachedResult !== undefined) {
           return actualValueStr === expectedValue;
         }
-        
-        const isMatch = operator === 'equals' ? 
+
+        const isMatch = operator === 'equals' ?
           actualValueStr === expectedValue :
           operator === 'contains' ?
-          actualValueStr.includes(expectedValue) :
-          false;
-          
+            actualValueStr.includes(expectedValue) :
+            false;
+
         if (isMatch) {
           headerMap.set(expectedValue, actualValueStr);
         }
-        
+
         return isMatch;
       } else {
         // 只检查头部是否存在
@@ -646,7 +774,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
     } else if (typeof value === 'function') {
       return value(ctx);
     }
-    
+
     return false;
   }
 
@@ -654,12 +782,12 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
    * Evaluate custom condition
    */
   private evaluateCustomCondition(
-    condition: MiddlewareCondition, 
+    condition: MiddlewareCondition,
     ctx: KoattyContext,
     _context?: MiddlewareExecutionContext
   ): boolean {
     const { value } = condition;
-    
+
     if (typeof value === 'function') {
       try {
         return value(ctx);
@@ -668,7 +796,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
         return false;
       }
     }
-    
+
     return false;
   }
 
@@ -679,7 +807,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
     return async (ctx: KoattyContext, next: KoattyNext) => {
       const start = Date.now();
       let stats = this.executionStats.get(config.name);
-      
+
       if (!stats) {
         stats = { executions: 0, totalTime: 0, errors: 0 };
         this.executionStats.set(config.name, stats);
@@ -704,7 +832,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
     if (name) {
       return this.executionStats.get(name) || {};
     }
-    
+
     const allStats: Record<string, any> = {};
     for (const [middlewareName, stats] of this.executionStats) {
       allStats[middlewareName] = {
@@ -712,7 +840,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
         avgTime: stats.executions > 0 ? stats.totalTime / stats.executions : 0
       };
     }
-    
+
     return allStats;
   }
 
@@ -734,7 +862,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
     this.pathPatterns.patterns.clear();
     this.methodCache.clear();
     this.headerCache.clear();
-    
+
     Logger.Debug('All caches cleared');
   }
 
@@ -751,10 +879,10 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
   } {
     return {
       totalCacheSize: this.getCacheSize(),
-      pathPatternsSize: this.pathPatterns.exact.size + 
-                       this.pathPatterns.prefixes.size + 
-                       this.pathPatterns.suffixes.size + 
-                       this.pathPatterns.patterns.size,
+      pathPatternsSize: this.pathPatterns.exact.size +
+        this.pathPatterns.prefixes.size +
+        this.pathPatterns.suffixes.size +
+        this.pathPatterns.patterns.size,
       methodCacheSize: this.methodCache.size,
       headerCacheSize: this.headerCache.size,
       executionStatsSize: this.executionStats.size,
@@ -767,7 +895,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
    */
   public createGroup(groupName: string, middlewareNames: string[]): void {
     const groupMiddleware = this.compose(middlewareNames);
-    
+
     this.register({
       name: groupName,
       middleware: groupMiddleware,
@@ -825,12 +953,12 @@ export class MiddlewareBuilder {
     if (!this.config.name || !this.config.middleware) {
       throw new Error('Middleware name and function are required');
     }
-    
+
     return this.config as MiddlewareConfig;
   }
 
-  public register(): void {
-    const manager = RouterMiddlewareManager.getInstance();
+  public register(app: Application): void {
+    const manager = RouterMiddlewareManager.getInstance(app);
     manager.register(this.build());
   }
 }
@@ -838,15 +966,15 @@ export class MiddlewareBuilder {
 /**
  * Decorator for auto-registering middlewares
  */
-export function RegisterMiddleware(config: Omit<MiddlewareConfig, 'middleware'>) {
+export function RegisterMiddleware(app: Application, config: Omit<MiddlewareConfig, 'middleware'>) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const middleware = descriptor.value;
-    
+
     if (typeof middleware !== 'function') {
       throw new Error('Decorated method must be a function');
     }
 
-    const manager = RouterMiddlewareManager.getInstance();
+    const manager = RouterMiddlewareManager.getInstance(app);
     manager.register({
       ...config,
       middleware

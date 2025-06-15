@@ -21,7 +21,6 @@ import {
   ValidRules,
   plainToClass
 } from "koatty_validation";
-import { RouterMiddlewareManager } from "../middleware/manager";
 import { DefaultLogger as Logger } from "koatty_logger";
 
 interface ParamOptions {
@@ -44,46 +43,27 @@ interface ParamOptions {
  * @param {string} method - The method name to execute
  * @param {ParamMetadata[]} [ctlParams] - Parameter metadata for injection
  * @param {any} [ctlParamsValue] - Parameter values for injection
- * @param {string[]} [middlewares] - Array of middleware names to execute
+ * @param {Function} [composedMiddleware] - Pre-composed middleware function
  * @returns {Promise<any>} The execution result
  * @throws {Error} When controller not found or execution fails
  */
 export async function Handler(app: Koatty, ctx: KoattyContext, ctl: any,
-  method: string, ctlParams?: ParamMetadata[], ctlParamsValue?: any, middlewares?: string[]) {
+  method: string, ctlParams?: ParamMetadata[], ctlParamsValue?: any, composedMiddleware?: Function) {
     
   if (!ctx || !ctl) {
     return ctx.throw(404, `Controller not found.`);
   }
   ctl.ctx ??= ctx;
   
-  // 获取RouterMiddlewareManager实例
-  const middlewareManager = RouterMiddlewareManager.getInstance();
-  
-  Logger.Debug(`Handler: RouterMiddlewareManager instance ID: ${(middlewareManager as any)._instanceId}`);
-  
   // 创建中间件链
   const middlewareFns: Middleware<KoattyContext>[] = [];
   
-  // 处理路由级别的中间件
-  if (middlewares?.length) {
-    Logger.Debug(`Handler: Processing ${middlewares.length} middlewares: ${middlewares.join(', ')}`);
-    
-    // 检查每个中间件是否存在
-    for (const name of middlewares) {
-      const config = middlewareManager.getMiddleware(name);
-      Logger.Debug(`Handler: Middleware '${name}' ${config ? 'found' : 'NOT FOUND'}`);
-    }
-    
-    // 使用RouterMiddlewareManager组合中间件
-    const composedMiddleware = middlewareManager.compose(middlewares, {
-      route: ctx.path,
-      method: ctx.method,
-      protocol: ctx.protocol || 'http'
-    });
-    
-    middlewareFns.push(composedMiddleware);
+  // 如果有预组合的中间件，直接使用
+  if (composedMiddleware && typeof composedMiddleware === 'function') {
+    Logger.Debug(`Handler: Using pre-composed middleware`);
+    middlewareFns.push(composedMiddleware as Middleware<KoattyContext>);
   } else {
-    Logger.Debug('Handler: No middlewares to process');
+    Logger.Debug('Handler: No middleware to execute');
   }
 
   // 添加Handler作为最后一个中间件

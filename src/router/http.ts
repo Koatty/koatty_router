@@ -79,7 +79,7 @@ export class HttpRouter implements KoattyRouter {
       for (const n of list) {
         const ctlClass = IOC.getClass(n, "CONTROLLER");
         // inject router
-        const ctlRouters = injectRouter(app, ctlClass, this.options.protocol);
+        const ctlRouters = await injectRouter(app, ctlClass, this.options.protocol);
         if (!ctlRouters) {
           continue;
         }
@@ -98,7 +98,7 @@ export class HttpRouter implements KoattyRouter {
             method: requestMethod,
             implementation: (ctx: KoattyContext): Promise<any> => {
               const ctl = IOC.getInsByClass(ctlClass, [ctx]);
-              return Handler(app, ctx, ctl, method, params, undefined, router.middleware);
+              return Handler(app, ctx, ctl, method, params, undefined, router.composedMiddleware);
             },
           });
         }
