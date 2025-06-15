@@ -305,8 +305,17 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
       const appConfig = this.app.config("config", "middleware") || {};
       const middlewareBusinessConfig = appConfig[MiddlewareClass?.name] || {};
       
-      // 调用run方法，传递业务配置和app实例
-      const koaMiddleware = await middlewareInstance.run(middlewareBusinessConfig, this.app);
+      // 合并装饰器配置和应用配置
+      const decoratorConfig = config?.middlewareConfig?.decoratorConfig || {};
+      const finalConfig = {
+        ...middlewareBusinessConfig,
+        ...decoratorConfig // 装饰器配置优先级更高
+      };
+      
+      Logger.Debug(`Processing middleware ${MiddlewareClass.name} with config:`, finalConfig);
+      
+      // 调用run方法，传递合并后的配置和app实例
+      const koaMiddleware = await middlewareInstance.run(finalConfig, this.app);
 
       // 验证返回的是否为函数
       if (typeof koaMiddleware !== 'function') {

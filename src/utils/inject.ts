@@ -98,31 +98,102 @@ export async function injectRouter(app: Koatty, target: any, protocol = 'http'):
       // 处理控制器级别的中间件（如果有的话）
       if (options.middleware) {
         for (const middlewareItem of options.middleware) {
+          let config: MiddlewareDecoratorConfig;
           if (typeof middlewareItem === 'function') {
-            controllerMiddlewareConfigs.push({
+            config = {
               middleware: middlewareItem,
               priority: 50,
               enabled: true,
               conditions: [],
               metadata: { source: 'controller' }
-            });
+            };
           } else {
-            controllerMiddlewareConfigs.push({
+            config = {
               priority: 50,
               enabled: true,
               conditions: [],
               metadata: { source: 'controller' },
               ...middlewareItem
-            });
+            };
           }
+          
+          // 控制器级别的中间件都会被添加到配置中，包括enabled: false的
+          controllerMiddlewareConfigs.push(config);
         }
       }
 
-      // 合并控制器级别和方法级别的中间件配置
-      const allMiddlewareConfigs = [
-        ...controllerMiddlewareConfigs,
-        ...methodMiddlewareConfigs
-      ];
+      // 创建控制器级别中间件的映射，用于方法级别的禁用检查
+      const controllerMiddlewareMap = new Map<Function, MiddlewareDecoratorConfig>();
+      controllerMiddlewareConfigs.forEach(config => {
+        if (config.middleware) {
+          controllerMiddlewareMap.set(config.middleware, config);
+        }
+      });
+
+      // 处理方法级别的中间件配置
+      const methodDisabledMiddlewares = new Set<Function>();
+      const methodAddedMiddlewares: MiddlewareDecoratorConfig[] = [];
+      
+      // 分析方法级别的中间件配置
+      for (const methodConfig of methodMiddlewareConfigs) {
+        if (methodConfig.enabled === false && methodConfig.middleware) {
+          // enabled: false 只对控制器已声明的中间件有效
+          if (controllerMiddlewareMap.has(methodConfig.middleware)) {
+            methodDisabledMiddlewares.add(methodConfig.middleware);
+            Logger.Debug(`injectRouter: Method-level disabling middleware: ${methodConfig.middleware.name}`);
+          } else {
+            Logger.Debug(`injectRouter: Invalid configuration - middleware ${methodConfig.middleware.name} not declared at controller level, ignoring enabled: false`);
+          }
+        } else if (methodConfig.enabled !== false && methodConfig.middleware) {
+          // enabled: true 或未设置，添加到方法级别中间件（无论控制器是否声明）
+          methodAddedMiddlewares.push({
+            priority: 50,
+            enabled: true,
+            conditions: [],
+            metadata: { source: 'method' },
+            ...methodConfig
+          });
+          Logger.Debug(`injectRouter: Method-level adding middleware: ${methodConfig.middleware.name}`);
+        }
+      }
+
+      // 过滤控制器级别的中间件：移除enabled: false的和被方法级别禁用的
+      const filteredControllerMiddlewares = controllerMiddlewareConfigs.filter(config => {
+        // 如果控制器级别就是enabled: false，则忽略
+        if (config.enabled === false) {
+          Logger.Debug(`injectRouter: Controller-level middleware disabled: ${config.middleware?.name}`);
+          return false;
+        }
+        
+        // 如果被方法级别禁用，则移除
+        if (config.middleware && methodDisabledMiddlewares.has(config.middleware)) {
+          Logger.Debug(`injectRouter: Controller middleware disabled by method-level config: ${config.middleware.name}`);
+          return false;
+        }
+        
+        return true;
+      });
+
+      // 合并中间件配置：控制器启用的 + 方法级别添加的
+      // 使用 Map 来去重，避免同一个中间件被重复添加
+      const middlewareMap = new Map<Function, MiddlewareDecoratorConfig>();
+      
+      // 先添加控制器级别的中间件
+      filteredControllerMiddlewares.forEach(config => {
+        if (config.middleware) {
+          middlewareMap.set(config.middleware, config);
+        }
+      });
+      
+      // 再添加方法级别的中间件（会覆盖同名的控制器中间件配置）
+      methodAddedMiddlewares.forEach(config => {
+        if (config.middleware) {
+          middlewareMap.set(config.middleware, config);
+        }
+      });
+      
+      // 转换为数组并按优先级排序
+      const allMiddlewareConfigs = Array.from(middlewareMap.values());
 
       // 按优先级排序（高优先级先执行）
       allMiddlewareConfigs.sort((a, b) => (b.priority || 50) - (a.priority || 50));
@@ -163,7 +234,9 @@ export async function injectRouter(app: Koatty, target: any, protocol = 'http'):
               middlewareName,
               protocol,
               route: currentRoute,
-              method: val.requestMethod
+              method: val.requestMethod,
+              // 将装饰器中的metadata配置传递给中间件实例
+              decoratorConfig: middlewareConfig.metadata || {}
             }
           });
           
