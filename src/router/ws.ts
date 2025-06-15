@@ -421,24 +421,7 @@ export class WebsocketRouter implements KoattyRouter {
     });
   }
 
-  /**
-   * Get connection statistics
-   */
-  public getConnectionStats(): {
-    activeConnections: number;
-    totalBufferSize: number;
-    averageBufferSize: number;
-    maxConnections: number;
-    maxBufferSize: number;
-  } {
-    return {
-      activeConnections: this.connectionCount,
-      totalBufferSize: this.totalBufferSize,
-      averageBufferSize: this.connectionCount > 0 ? this.totalBufferSize / this.connectionCount : 0,
-      maxConnections: this.options.maxConnections!,
-      maxBufferSize: this.options.maxBufferSize!
-    };
-  }
+
 
   /**
    * Force cleanup all connections (for shutdown)

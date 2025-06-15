@@ -89,11 +89,6 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
   private readonly _instanceId: string;
   private middlewares = new Map<string, MiddlewareConfig>(); // 按实例ID存储
   private middlewaresByName = new Map<string, Set<string>>(); // 按名称索引实例ID
-  private executionStats = new Map<string, {
-    executions: number;
-    totalTime: number;
-    errors: number;
-  }>();
 
   // 优化的路径匹配缓存 - 使用LRU缓存防止内存泄漏
   private pathPatterns: PathPattern = {
@@ -177,29 +172,11 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
   private performCacheCleanup(): void {
     const beforeSize = this.getCacheSize();
 
-    // 清理执行统计中的过期数据
-    this.cleanupExecutionStats();
-
     const afterSize = this.getCacheSize();
     Logger.Debug(`Cache cleanup completed. Size: ${beforeSize} -> ${afterSize}`);
   }
 
-  /**
-   * Clean up old execution statistics
-   */
-  private cleanupExecutionStats(): void {
-    const maxStatsEntries = 1000;
-    if (this.executionStats.size > maxStatsEntries) {
-      const entries = Array.from(this.executionStats.entries());
-      // 保留最近使用的统计数据
-      entries.sort((a, b) => b[1].executions - a[1].executions);
 
-      this.executionStats.clear();
-      entries.slice(0, maxStatsEntries / 2).forEach(([key, value]) => {
-        this.executionStats.set(key, value);
-      });
-    }
-  }
 
   /**
    * Get total cache size
@@ -210,8 +187,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
       this.pathPatterns.suffixes.size +
       this.pathPatterns.patterns.size +
       this.methodCache.size +
-      this.headerCache.size +
-      this.executionStats.size;
+      this.headerCache.size;
   }
 
   /**
@@ -225,7 +201,6 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
 
     this.clearCaches();
     this.middlewares.clear();
-    this.executionStats.clear();
 
     Logger.Debug(`RouterMiddlewareManager instance ${this._instanceId} destroyed`);
   }
@@ -449,7 +424,6 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
         }
       }
       
-      this.executionStats.delete(nameOrInstanceId);
       Logger.Debug(`Unregistered middleware: ${config.name} (instanceId: ${nameOrInstanceId})`);
       return true;
     }
@@ -460,7 +434,6 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
       let deletedCount = 0;
       for (const instanceId of instanceIds) {
         if (this.middlewares.delete(instanceId)) {
-          this.executionStats.delete(instanceId);
           deletedCount++;
         }
       }
@@ -550,16 +523,33 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
   }
 
   /**
-   * Enable/disable middleware
+   * Enable/disable middleware by name or instance ID
    */
-  public setEnabled(name: string, enabled: boolean): void {
-    const middleware = this.middlewares.get(name);
+  public setEnabled(nameOrInstanceId: string, enabled: boolean): void {
+    // 首先尝试按实例ID查找
+    const middleware = this.middlewares.get(nameOrInstanceId);
     if (middleware) {
       middleware.enabled = enabled;
-      Logger.Debug(`${enabled ? 'Enabled' : 'Disabled'} middleware: ${name}`);
-    } else {
-      Logger.Warn(`Middleware not found: ${name}`);
+      Logger.Debug(`${enabled ? 'Enabled' : 'Disabled'} middleware: ${nameOrInstanceId}`);
+      return;
     }
+
+    // 然后尝试按名称查找所有实例
+    const instanceIds = this.middlewaresByName.get(nameOrInstanceId);
+    if (instanceIds && instanceIds.size > 0) {
+      let updatedCount = 0;
+      for (const instanceId of instanceIds) {
+        const config = this.middlewares.get(instanceId);
+        if (config) {
+          config.enabled = enabled;
+          updatedCount++;
+        }
+      }
+      Logger.Debug(`${enabled ? 'Enabled' : 'Disabled'} ${updatedCount} instances of middleware: ${nameOrInstanceId}`);
+      return;
+    }
+
+    Logger.Warn(`Middleware not found: ${nameOrInstanceId}`);
   }
 
   /**
@@ -801,56 +791,15 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
   }
 
   /**
-   * Wrap middleware with execution tracking
+   * Wrap middleware
    */
   private wrapMiddleware(config: MiddlewareConfig): Middleware<KoattyContext> {
     return async (ctx: KoattyContext, next: KoattyNext) => {
-      const start = Date.now();
-      let stats = this.executionStats.get(config.name);
-
-      if (!stats) {
-        stats = { executions: 0, totalTime: 0, errors: 0 };
-        this.executionStats.set(config.name, stats);
-      }
-
-      try {
-        stats.executions++;
-        await config.middleware(ctx, next);
-        stats.totalTime += Date.now() - start;
-      } catch (error) {
-        stats.errors++;
-        stats.totalTime += Date.now() - start;
-        throw error;
-      }
+      await config.middleware(ctx, next);
     };
   }
 
-  /**
-   * Get execution statistics
-   */
-  public getStats(name?: string): Record<string, any> {
-    if (name) {
-      return this.executionStats.get(name) || {};
-    }
 
-    const allStats: Record<string, any> = {};
-    for (const [middlewareName, stats] of this.executionStats) {
-      allStats[middlewareName] = {
-        ...stats,
-        avgTime: stats.executions > 0 ? stats.totalTime / stats.executions : 0
-      };
-    }
-
-    return allStats;
-  }
-
-  /**
-   * Clear statistics
-   */
-  public clearStats(): void {
-    this.executionStats.clear();
-    Logger.Debug('Cleared middleware execution statistics');
-  }
 
   /**
    * Clear all caches with proper cleanup
@@ -866,29 +815,7 @@ export class RouterMiddlewareManager implements IRouterMiddlewareManager {
     Logger.Debug('All caches cleared');
   }
 
-  /**
-   * Get memory usage statistics
-   */
-  public getMemoryStats(): {
-    totalCacheSize: number;
-    pathPatternsSize: number;
-    methodCacheSize: number;
-    headerCacheSize: number;
-    executionStatsSize: number;
-    middlewareCount: number;
-  } {
-    return {
-      totalCacheSize: this.getCacheSize(),
-      pathPatternsSize: this.pathPatterns.exact.size +
-        this.pathPatterns.prefixes.size +
-        this.pathPatterns.suffixes.size +
-        this.pathPatterns.patterns.size,
-      methodCacheSize: this.methodCache.size,
-      headerCacheSize: this.headerCache.size,
-      executionStatsSize: this.executionStats.size,
-      middlewareCount: this.middlewares.size
-    };
-  }
+
 
   /**
    * Create middleware group
