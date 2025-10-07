@@ -29,7 +29,7 @@ import { PayloadOptions } from "../payload/interface";
  *
  * @interface RouterMetadata
  */
-interface RouterMetadata {
+export interface RouterMetadata {
   method: string;
   path: string;
   ctlPath: string;
@@ -44,7 +44,7 @@ interface RouterMetadata {
  *
  * @interface RouterMetadataObject
  */
-interface RouterMetadataObject {
+export interface RouterMetadataObject {
   [key: string]: RouterMetadata;
 }
 

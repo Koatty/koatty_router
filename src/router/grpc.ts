@@ -16,7 +16,6 @@ import {
 import * as Helper from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { ListServices, LoadProto } from "koatty_proto";
-import { payload } from "../payload/payload";
 import { injectParamMetaData, injectRouter, ParamMetadata } from "../utils/inject";
 import { parsePath } from "../utils/path";
 import { RouterOptions } from "./router";
@@ -284,7 +283,6 @@ export class GrpcRouter implements KoattyRouter {
     this.connectionPool = new GrpcConnectionPool(this.options.poolSize);
     this.batchProcessor = new GrpcBatchProcessor(this.options.batchSize);
     this.streamManager = new StreamManager(this.options.streamConfig);
-    app.use(payload(this.options.payload));
   }
 
   /**

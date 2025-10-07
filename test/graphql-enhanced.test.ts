@@ -97,7 +97,6 @@ describe('GraphQLRouter 增强测试', () => {
   describe('构造函数测试', () => {
     test('应该使用默认选项创建GraphQL路由器', () => {
       (getProtocolConfig as jest.Mock).mockReturnValue({ schemaFile: 'test.graphql' });
-      (payload as jest.Mock).mockReturnValue(() => {});
 
       const router = new GraphQLRouter(app as any);
 
@@ -105,8 +104,7 @@ describe('GraphQLRouter 增强测试', () => {
       expect(router.options.protocol).toBe('graphql');
       expect(router.options.prefix).toBe('');
       expect(router.options.schemaFile).toBe('test.graphql');
-      expect(app.use).toHaveBeenCalled();
-      expect(payload).toHaveBeenCalled();
+      // 构造函数不会调用 app.use，LoadRouter 才会调用
     });
 
     test('应该使用自定义选项创建GraphQL路由器', () => {
@@ -117,7 +115,6 @@ describe('GraphQLRouter 增强测试', () => {
       };
       
       (getProtocolConfig as jest.Mock).mockReturnValue({ schemaFile: 'custom.graphql' });
-      (payload as jest.Mock).mockReturnValue(() => {});
 
       const router = new GraphQLRouter(app as any, customOptions);
 
@@ -133,7 +130,6 @@ describe('GraphQLRouter 增强测试', () => {
 
     beforeEach(() => {
       (getProtocolConfig as jest.Mock).mockReturnValue({ schemaFile: 'test.graphql' });
-      (payload as jest.Mock).mockReturnValue(() => {});
       router = new GraphQLRouter(app as any);
     });
 
@@ -182,7 +178,6 @@ describe('GraphQLRouter 增强测试', () => {
   describe('ListRouter方法测试', () => {
     test('应该返回路由映射', () => {
       (getProtocolConfig as jest.Mock).mockReturnValue({ schemaFile: 'test.graphql' });
-      (payload as jest.Mock).mockReturnValue(() => {});
       
       const router = new GraphQLRouter(app as any);
       const routerMap = router.ListRouter();
@@ -197,7 +192,6 @@ describe('GraphQLRouter 增强测试', () => {
 
     beforeEach(() => {
       (getProtocolConfig as jest.Mock).mockReturnValue({ schemaFile: 'test/test.graphql' });
-      (payload as jest.Mock).mockReturnValue(() => {});
       router = new GraphQLRouter(app as any);
     });
 

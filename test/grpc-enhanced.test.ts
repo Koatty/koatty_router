@@ -148,7 +148,6 @@ describe('GrpcRouter 增强测试', () => {
       batchSize: 10,
       streamConfig: {}
     });
-    payload.mockReturnValue(() => {});
 
     const router = new GrpcRouter(mockApp);
 
@@ -156,7 +155,7 @@ describe('GrpcRouter 增强测试', () => {
     expect(router.options.protocol).toBe('grpc');
     expect(router.options.prefix).toBe('');
     expect(router.options.protoFile).toBe('test.proto');
-    expect(mockApp.use).toHaveBeenCalled();
+    // 构造函数不会调用 app.use，LoadRouter 才会调用
   });
 
   test('应该正确设置和获取路由', () => {

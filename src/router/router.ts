@@ -12,6 +12,7 @@ import { Koatty, KoattyRouter } from "koatty_core";
 import { Helper } from "koatty_lib";
 import { RouterFactory } from "./factory";
 import { PayloadOptions } from "../payload/interface";
+import { payload } from "../payload/payload";
 
 /**
  * RouterOptions
@@ -96,5 +97,9 @@ export function NewRouter(app: Koatty, opt?: RouterOptions): KoattyRouter {
   const router = factory.create(options.protocol!, app, options);
 
   Helper.define(router, "protocol", options.protocol);
+  // inject payload middleware
+  app.once("ready", () => {
+    app.use(payload(options.payload));
+  });
   return router;
 }

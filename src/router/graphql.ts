@@ -18,7 +18,6 @@ import {
 import { buildSchema } from "koatty_graphql";
 import { Helper } from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
-import { payload } from "../payload/payload";
 import { injectParamMetaData, injectRouter } from "../utils/inject";
 import { RouterOptions } from "./router";
 import { Handler } from "../utils/handler";
@@ -52,8 +51,6 @@ export class GraphQLRouter implements KoattyRouter {
     // initialize
     this.router = new KoaRouter(this.options);
     this.routerMap = new Map();
-    // payload middleware
-    app.use(payload(this.options.payload));
   }
 
   /**

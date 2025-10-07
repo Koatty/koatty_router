@@ -15,7 +15,6 @@ import {
 import { Helper } from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { RequestMethod } from "../params/mapping";
-import { payload } from "../payload/payload";
 import { injectParamMetaData, injectRouter } from "../utils/inject";
 import { Handler } from "../utils/handler";
 import { parsePath } from "../utils/path";
@@ -88,10 +87,8 @@ export class WebsocketRouter implements KoattyRouter {
     this.routerMap = new Map();
     this.connections = new Map();
     
-    // 启动定期清理
+    // 启动定期清理 
     this.startCleanupTimer();
-    
-    app.use(payload(this.options.payload));
   }
 
   /**
