@@ -74,7 +74,7 @@
     "typescript": "^5.x.x"
   },
   "dependencies": {
-    "@koa/router": "^13.1.0",
+    "@koa/router": "^14.0.0",
     "formidable": "^3.5.2",
     "inflation": "^2.1.0",
     "koatty_container": "^1.x.x",
