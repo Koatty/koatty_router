@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.19.1-0](https://github.com/koatty/koatty_router/compare/v1.19.0...v1.19.1-0) (2025-10-07)
+
+
+### Bug Fixes
+
+* simplify middleware condition interface definition and move to middleware manager ([776e690](https://github.com/koatty/koatty_router/commit/776e690a50468742f50869842c43dde821ea0b35))
+
 ## [1.19.0](https://github.com/koatty/koatty_router/compare/v1.18.0...v1.19.0) (2025-06-15)
 
 
