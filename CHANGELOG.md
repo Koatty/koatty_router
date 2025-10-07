@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.20.0-0](https://github.com/koatty/koatty_router/compare/v1.19.1-0...v1.20.0-0) (2025-10-07)
+
+
+### Features
+
+* skip empty gRPC service registration and add debug logs for service handlers ([8978235](https://github.com/koatty/koatty_router/commit/897823535339d01870e072b3dbd617f3ae5151f6))
+* support gRPC service registration for both single and multi-protocol servers ([4d6c891](https://github.com/koatty/koatty_router/commit/4d6c891de5e0cc0f009054c31342a83fbc63f8f2))
+
 ### [1.19.1-0](https://github.com/koatty/koatty_router/compare/v1.19.0...v1.19.1-0) (2025-10-07)
 
 
