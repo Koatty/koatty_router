@@ -671,8 +671,36 @@ export class GrpcRouter implements KoattyRouter {
         // only register service when impl is not empty
         if (Object.keys(impl).length > 0) {
           this.SetRouter(si.name, { service: si.service, implementation: impl });
-          app.server?.RegisterService({ service: si.service, implementation: impl });
-          Logger.Debug(`Successfully registered gRPC service: ${si.name} with ${Object.keys(impl).length} handlers`);
+          
+          // Handle both single server and MultiProtocolServer
+          const server = app.server as any;
+          let grpcServer = null;
+          
+          // Check if it's MultiProtocolServer (has getAllServers method)
+          if (Helper.isFunction(server.getAllServers)) {
+            // Multi-protocol server: find gRPC server instance
+            const allServers = server.getAllServers();
+            if (allServers && allServers.size > 0) {
+              allServers.forEach((s: any) => {
+                const protocol = Helper.isString(s.options?.protocol) ? s.options.protocol : 
+                               (Helper.isArray(s.options?.protocol) ? s.options.protocol[0] : '');
+                if (protocol === 'grpc' && Helper.isFunction(s.RegisterService)) {
+                  grpcServer = s;
+                }
+              });
+            }
+          } else if (Helper.isFunction(server.RegisterService)) {
+            // Single protocol gRPC server
+            grpcServer = server;
+          }
+          
+          // Register service to gRPC server
+          if (grpcServer) {
+            grpcServer.RegisterService({ service: si.service, implementation: impl });
+            Logger.Debug(`Successfully registered gRPC service: ${si.name} with ${Object.keys(impl).length} handlers`);
+          } else {
+            Logger.Error(`Failed to find gRPC server instance for service registration: ${si.name}`);
+          }
         } else {
           Logger.Warn(`Skip registering service ${si.name}: no matching controller handlers found`);
         }
