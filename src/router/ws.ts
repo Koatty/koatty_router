@@ -15,7 +15,6 @@ import {
 import { Helper } from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { RequestMethod } from "../params/mapping";
-import { payload } from "../params/payload";
 import { Handler, injectParamMetaData, injectRouter } from "../utils/inject";
 import { parsePath } from "../utils/path";
 import { RouterOptions } from "./router";
@@ -40,8 +39,6 @@ export class WebsocketRouter implements KoattyRouter {
     this.options = { ...options, prefix: options.prefix };
     this.router = new KoaRouter(this.options);
     this.routerMap = new Map();
-    // payload middleware
-    app.use(payload(this.options.payload));
   }
 
   /**

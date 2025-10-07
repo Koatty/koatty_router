@@ -10,7 +10,7 @@
 
 import { Koatty, KoattyRouter } from "koatty_core";
 import { Helper } from "koatty_lib";
-import { PayloadOptions } from "../params/payload";
+import { payload, PayloadOptions } from "../params/payload";
 import { GrpcRouter } from "./grpc";
 import { HttpRouter } from "./http";
 import { WebsocketRouter } from "./ws";
@@ -77,6 +77,11 @@ export function NewRouter(app: Koatty, opt?: RouterOptions): KoattyRouter {
   } else {
     router = new HttpRouter(app, options);
   }
+
+  // payload middleware
+  app.once("ready", () => {
+    app.use(payload(this.options.payload));
+  });
 
   Helper.define(router, "protocol", options.protocol);
   return router;

@@ -16,7 +16,6 @@ import {
 import * as Helper from "koatty_lib";
 import { DefaultLogger as Logger } from "koatty_logger";
 import { ListServices, LoadProto } from "koatty_proto";
-import { payload } from "../params/payload";
 import { detectServer, Handler, injectParamMetaData, injectRouter, ParamMetadata } from "../utils/inject";
 import { parsePath } from "../utils/path";
 import { RouterOptions } from "./router";
@@ -63,8 +62,6 @@ export class GrpcRouter implements KoattyRouter {
       protoFile: options.ext.protoFile,
     };
     this.router = new Map();
-    // payload middleware
-    app.use(payload(this.options.payload));
   }
 
   /**
