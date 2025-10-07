@@ -668,8 +668,14 @@ export class GrpcRouter implements KoattyRouter {
           };
         }
         
-        this.SetRouter(si.name, { service: si.service, implementation: impl });
-        app.server?.RegisterService({ service: si.service, implementation: impl });
+        // only register service when impl is not empty
+        if (Object.keys(impl).length > 0) {
+          this.SetRouter(si.name, { service: si.service, implementation: impl });
+          app.server?.RegisterService({ service: si.service, implementation: impl });
+          Logger.Debug(`Successfully registered gRPC service: ${si.name} with ${Object.keys(impl).length} handlers`);
+        } else {
+          Logger.Warn(`Skip registering service ${si.name}: no matching controller handlers found`);
+        }
       }
     } catch (err) {
       Logger.Error(err);
