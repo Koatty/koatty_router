@@ -250,7 +250,33 @@ export class WebsocketRouter implements KoattyRouter {
       // app.Router.SetRouter('/xxx',  {path, method, implementation: (ctx: KoattyContext): Promise<any> => {
       //   ...
       // })
-      app.use(this.router.routes()).use(this.router.allowedMethods());
+      
+      // CRITICAL FIX: Wrap router middleware to only handle WebSocket protocols
+      // In multi-protocol environment, all protocols share the same app instance
+      // We need to ensure WebSocket router only processes WS/WSS requests
+      const wsProtocols = new Set(['ws', 'wss']);
+      const routerMiddleware = this.router.routes();
+      const allowedMethodsMiddleware = this.router.allowedMethods();
+      
+      // Wrap the router middleware with protocol check
+      app.use(async (ctx: KoattyContext, next: any) => {
+        // Only process if it's a WebSocket protocol request
+        if (wsProtocols.has(ctx.protocol)) {
+          return routerMiddleware(ctx as any, next);
+        }
+        // Skip router for non-WebSocket protocols
+        return next();
+      });
+      
+      // Wrap allowed methods middleware with protocol check
+      app.use(async (ctx: KoattyContext, next: any) => {
+        // Only process if it's a WebSocket protocol request
+        if (wsProtocols.has(ctx.protocol)) {
+          return allowedMethodsMiddleware(ctx as any, next);
+        }
+        // Skip for non-WebSocket protocols
+        return next();
+      });
     } catch (err) {
       Logger.Error(err);
     }

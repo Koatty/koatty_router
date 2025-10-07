@@ -127,7 +127,32 @@ export class GraphQLRouter implements KoattyRouter {
 
       // exp: in middleware
       // app.Router.SetRouter('/xxx',  { schema, implementation: rootValue})
-      app.use(this.router.routes()).use(this.router.allowedMethods());
+      
+      // CRITICAL FIX: Wrap router middleware to only handle GraphQL protocol
+      // In multi-protocol environment, all protocols share the same app instance
+      // We need to ensure GraphQL router only processes GraphQL requests
+      const routerMiddleware = this.router.routes();
+      const allowedMethodsMiddleware = this.router.allowedMethods();
+      
+      // Wrap the router middleware with protocol check
+      app.use(async (ctx: KoattyContext, next: any) => {
+        // Only process if it's a GraphQL protocol request
+        if (ctx.protocol === 'graphql') {
+          return routerMiddleware(ctx as any, next);
+        }
+        // Skip router for non-GraphQL protocols
+        return next();
+      });
+      
+      // Wrap allowed methods middleware with protocol check
+      app.use(async (ctx: KoattyContext, next: any) => {
+        // Only process if it's a GraphQL protocol request
+        if (ctx.protocol === 'graphql') {
+          return allowedMethodsMiddleware(ctx as any, next);
+        }
+        // Skip for non-GraphQL protocols
+        return next();
+      });
     } catch (err) {
       Logger.Error(err);
     }

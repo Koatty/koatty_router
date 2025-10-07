@@ -102,7 +102,33 @@ export class HttpRouter implements KoattyRouter {
       }
       // exp: in middleware
       // app.Router.SetRouter('/xxx',  (ctx: Koa.KoattyContext): any => {...}, 'GET')
-      app.use(this.router.routes()).use(this.router.allowedMethods());
+      
+      // CRITICAL FIX: Wrap router middleware to only handle HTTP protocols
+      // In multi-protocol environment, all protocols share the same app instance
+      // We need to ensure HTTP router only processes HTTP/HTTPS/HTTP2 requests
+      const httpProtocols = new Set(['http', 'https', 'http2']);
+      const routerMiddleware = this.router.routes();
+      const allowedMethodsMiddleware = this.router.allowedMethods();
+      
+      // Wrap the router middleware with protocol check
+      app.use(async (ctx: KoattyContext, next: any) => {
+        // Only process if it's an HTTP protocol request
+        if (httpProtocols.has(ctx.protocol)) {
+          return routerMiddleware(ctx as any, next);
+        }
+        // Skip router for non-HTTP protocols (gRPC, WebSocket, etc.)
+        return next();
+      });
+      
+      // Wrap allowed methods middleware with protocol check
+      app.use(async (ctx: KoattyContext, next: any) => {
+        // Only process if it's an HTTP protocol request
+        if (httpProtocols.has(ctx.protocol)) {
+          return allowedMethodsMiddleware(ctx as any, next);
+        }
+        // Skip for non-HTTP protocols
+        return next();
+      });
     } catch (err) {
       Logger.Error(err);
     }
