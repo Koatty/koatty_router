@@ -30,6 +30,28 @@ Middleware builder for fluent API
 </td></tr>
 <tr><td>
 
+[RouterFactory](./koatty_router.routerfactory.md)
+
+
+</td><td>
+
+Router factory implementation
+
+
+</td></tr>
+<tr><td>
+
+[RouterFactoryBuilder](./koatty_router.routerfactorybuilder.md)
+
+
+</td><td>
+
+Router factory builder for advanced configuration
+
+
+</td></tr>
+<tr><td>
+
 [RouterMiddlewareManager](./koatty_router.routermiddlewaremanager.md)
 
 
@@ -244,6 +266,17 @@ Decorator for auto-registering middlewares
 </td></tr>
 <tr><td>
 
+[RegisterRouter(protocol)](./koatty_router.registerrouter.md)
+
+
+</td><td>
+
+Decorator for auto-registering custom routers
+
+
+</td></tr>
+<tr><td>
+
 [RequestBody()](./koatty_router.requestbody.md)
 
 
@@ -304,6 +337,17 @@ Description
 
 </th></tr></thead>
 <tbody><tr><td>
+
+[IRouterFactory](./koatty_router.irouterfactory.md)
+
+
+</td><td>
+
+Router factory interface
+
+
+</td></tr>
+<tr><td>
 
 [IRouterMiddlewareManager](./koatty_router.iroutermiddlewaremanager.md)
 
@@ -453,6 +497,17 @@ Description
 </td><td>
 
 Middleware function type
+
+
+</td></tr>
+<tr><td>
+
+[RouterConstructor](./koatty_router.routerconstructor.md)
+
+
+</td><td>
+
+Router constructor type
 
 
 </td></tr>

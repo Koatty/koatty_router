@@ -463,6 +463,101 @@ const protocolMap = {
 };
 ```
 
+### 3. Graceful Shutdown（优雅关闭）
+
+在生产环境中，正确处理应用终止信号非常重要，特别是使用 WebSocket 或 gRPC 时。`koatty_router` 提供了完善的资源清理机制。
+
+#### 自动清理（推荐）
+
+路由器组件会自动注册到 Koatty 框架的 `stop` 事件，当应用收到 `SIGTERM` 或 `SIGINT` 信号时，框架会自动触发清理：
+
+```typescript
+import { NewRouter } from "koatty_router";
+import { Koatty } from "koatty_core";
+
+const app = new Koatty();
+
+// 创建路由器（自动注册清理处理）
+const wsRouter = NewRouter(app, { 
+  protocol: "ws", 
+  prefix: "/ws" 
+});
+
+const grpcRouter = NewRouter(app, { 
+  protocol: "grpc", 
+  prefix: "/grpc",
+  ext: { protoFile: "./proto/service.proto" }
+});
+
+// 上层框架会在收到终止信号时自动调用清理
+// 无需手动处理
+```
+
+#### 手动清理
+
+在某些场景下，你可能需要手动控制清理时机：
+
+```typescript
+import { RouterFactory } from "koatty_router";
+
+const factory = RouterFactory.getInstance();
+
+// 获取活跃路由器数量
+console.log(`Active routers: ${factory.getActiveRouterCount()}`);
+
+// 手动触发所有路由器的清理
+await factory.shutdownAll();
+```
+
+#### 各协议路由器的清理行为
+
+**WebSocket 路由器：**
+- 清理所有活跃连接的定时器（心跳、超时检测）
+- 清理定期维护定时器
+- 释放连接缓冲区内存
+
+**gRPC 路由器：**
+- 关闭所有活跃的流
+- 刷新批处理队列（处理待处理的请求）
+- 清空连接池
+
+**HTTP/GraphQL 路由器：**
+- 无状态协议，无需特殊清理
+
+#### Kubernetes 部署配置
+
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  terminationGracePeriodSeconds: 60  # 给予足够时间清理资源
+  containers:
+  - name: app
+    lifecycle:
+      preStop:
+        exec:
+          # 可选：延迟确保负载均衡器已摘除节点
+          command: ["/bin/sh", "-c", "sleep 5"]
+```
+
+#### Docker Compose 配置
+
+```yaml
+version: '3.8'
+services:
+  app:
+    image: your-app:latest
+    stop_grace_period: 60s  # 设置停止等待时间
+```
+
+#### 清理流程
+
+1. **接收信号**：上层框架（Koatty）监听 `SIGTERM`/`SIGINT`
+2. **停止接收新请求**：关闭服务器监听端口
+3. **触发清理**：发出 `stop` 事件
+4. **路由器清理**：按顺序清理所有活跃路由器
+5. **完成退出**：所有资源释放后正常退出进程
+
 ## API文档
 
 详细的API文档请参考：[API Documentation](./docs/api.md)
