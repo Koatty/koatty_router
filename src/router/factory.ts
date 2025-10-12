@@ -58,6 +58,7 @@ export class RouterFactory implements IRouterFactory {
     this.routerRegistry.set('http', HttpRouter);
     this.routerRegistry.set('https', HttpRouter);
     this.routerRegistry.set('http2', HttpRouter);
+    this.routerRegistry.set('http3', HttpRouter);
     this.routerRegistry.set('ws', WebsocketRouter);
     this.routerRegistry.set('wss', WebsocketRouter);
     this.routerRegistry.set('grpc', GrpcRouter);

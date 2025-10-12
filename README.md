@@ -4,7 +4,7 @@ Koatty路由组件，支持HTTP1/2、WebSocket、gRPC和GraphQL协议的统一�
 
 ## 特性
 
-- 🚀 **多协议支持** - HTTP、HTTPS、WebSocket、gRPC、GraphQL
+- 🚀 **多协议支持** - HTTP、HTTPS、HTTP/2、HTTP/3、WebSocket、gRPC、GraphQL
 - 🏭 **工厂模式** - 灵活的路由器创建和管理
 - 🔧 **中间件管理器** - 统一的中间件注册、组合和条件执行
 - 📝 **参数验证** - 强大的输入验证和DTO支持
