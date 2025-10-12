@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.20.0-2](https://github.com/koatty/koatty_router/compare/v1.20.0-1...v1.20.0-2) (2025-10-12)
+
+
+### Features
+
+* add HTTP/3 protocol support to router factory and update README ([c4b13bb](https://github.com/koatty/koatty_router/commit/c4b13bbd05320d36c4c88104b08900464ecb0e1a))
+
 ## [1.20.0-1](https://github.com/koatty/koatty_router/compare/v1.20.0-0...v1.20.0-1) (2025-10-07)
 
 ## [1.20.0-0](https://github.com/koatty/koatty_router/compare/v1.19.1-0...v1.20.0-0) (2025-10-07)
