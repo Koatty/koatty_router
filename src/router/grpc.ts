@@ -104,6 +104,14 @@ class GrpcConnectionPool {
   private create(_serviceName: string, _options: any): any {
     // Implementation depends on your gRPC client library
   }
+
+  /**
+   * Cleanup all connections in the pool
+   */
+  clear(): void {
+    this.pool.clear();
+    Logger.Debug('gRPC connection pool cleared');
+  }
 }
 
 /**
@@ -158,6 +166,24 @@ class GrpcBatchProcessor {
     // Then resolve/reject each promise in the queue
 
     this.batchQueue.delete(serviceName);
+  }
+
+  /**
+   * Flush all pending batches and cleanup
+   */
+  flush(): void {
+    // Process all pending batches
+    for (const serviceName of this.batchQueue.keys()) {
+      this.processBatch(serviceName);
+    }
+
+    // Clear all timers
+    for (const timer of this.batchTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.batchTimers.clear();
+
+    Logger.Debug('gRPC batch processor flushed');
   }
 }
 
@@ -241,6 +267,26 @@ class StreamManager {
    */
   getActiveStreamCount(): number {
     return Array.from(this.streams.values()).filter(s => s.isActive).length;
+  }
+
+  /**
+   * Close all active streams
+   */
+  closeAllStreams(): void {
+    const activeCount = this.getActiveStreamCount();
+    if (activeCount > 0) {
+      Logger.Info(`Closing ${activeCount} active gRPC streams...`);
+    }
+
+    for (const [id, state] of this.streams.entries()) {
+      if (state.isActive) {
+        state.isActive = false;
+        Logger.Debug(`Closed stream: ${id}`);
+      }
+    }
+
+    this.streams.clear();
+    Logger.Debug('All gRPC streams closed');
   }
 }
 
@@ -708,5 +754,23 @@ export class GrpcRouter implements KoattyRouter {
     } catch (err) {
       Logger.Error(err);
     }
+  }
+
+  /**
+   * Cleanup all gRPC resources (for graceful shutdown)
+   */
+  public cleanup(): void {
+    Logger.Info('Starting gRPC router cleanup...');
+
+    // Close all active streams
+    this.streamManager.closeAllStreams();
+
+    // Flush pending batches
+    this.batchProcessor.flush();
+
+    // Clear connection pool
+    this.connectionPool.clear();
+
+    Logger.Info('gRPC router cleanup completed');
   }
 }

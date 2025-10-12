@@ -133,4 +133,12 @@ export class HttpRouter implements KoattyRouter {
       Logger.Error(err);
     }
   }
+
+  /**
+   * Cleanup router resources (for graceful shutdown)
+   * HTTP router is stateless, this method is for interface consistency
+   */
+  public cleanup(): void {
+    Logger.Debug('HTTP router cleanup completed (stateless)');
+  }
 }

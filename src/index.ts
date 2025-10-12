@@ -10,6 +10,7 @@
 
 // export
 export * from "./router/router";
+export * from "./router/factory";
 export * from "./params/mapping";
 export * from "./params/params";
 export * from "./middleware/manager";

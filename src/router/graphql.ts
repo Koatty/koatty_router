@@ -158,4 +158,12 @@ export class GraphQLRouter implements KoattyRouter {
     }
   }
 
+  /**
+   * Cleanup router resources (for graceful shutdown)
+   * GraphQL router is relatively stateless, this method is for interface consistency
+   */
+  public cleanup(): void {
+    Logger.Debug('GraphQL router cleanup completed');
+  }
+
 }

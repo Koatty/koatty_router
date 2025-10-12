@@ -36,6 +36,7 @@ export type RouterConstructor = new (app: Koatty, options?: RouterOptions) => Ko
 export class RouterFactory implements IRouterFactory {
   private static instance: RouterFactory;
   private routerRegistry = new Map<string, RouterConstructor>();
+  private activeRouters: KoattyRouter[] = [];
 
   private constructor() {
     this.initializeDefaultRouters();
@@ -81,6 +82,7 @@ export class RouterFactory implements IRouterFactory {
 
     try {
       const router = new RouterClass(app, options);
+      this.activeRouters.push(router); // Track router instance
       Logger.Debug(`Created ${protocol.toUpperCase()} router successfully`);
       return router;
     } catch (error) {
@@ -163,6 +165,51 @@ export class RouterFactory implements IRouterFactory {
     this.clear();
     this.initializeDefaultRouters();
     Logger.Debug('Reset to default routers');
+  }
+
+  /**
+   * Shutdown all active routers (for graceful shutdown)
+   * This method should be called when the application receives termination signal
+   */
+  public async shutdownAll(): Promise<void> {
+    const routerCount = this.activeRouters.length;
+    if (routerCount === 0) {
+      Logger.Debug('No active routers to shutdown');
+      return;
+    }
+
+    Logger.Info(`Starting graceful shutdown for ${routerCount} router(s)...`);
+    
+    const shutdownPromises = this.activeRouters.map(async (router) => {
+      const routerAny = router as any;
+      const protocol = routerAny.protocol || 'unknown';
+      try {
+        if (typeof routerAny.cleanup === 'function') {
+          await routerAny.cleanup();
+          Logger.Debug(`Router ${protocol} shutdown completed`);
+        }
+      } catch (error) {
+        Logger.Error(`Error shutting down ${protocol} router:`, error);
+      }
+    });
+
+    await Promise.all(shutdownPromises);
+    this.activeRouters = [];
+    Logger.Info('All routers shutdown completed');
+  }
+
+  /**
+   * Get count of active routers
+   */
+  public getActiveRouterCount(): number {
+    return this.activeRouters.length;
+  }
+
+  /**
+   * Get active routers list
+   */
+  public getActiveRouters(): KoattyRouter[] {
+    return [...this.activeRouters];
   }
 }
 

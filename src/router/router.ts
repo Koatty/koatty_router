@@ -97,9 +97,17 @@ export function NewRouter(app: Koatty, opt?: RouterOptions): KoattyRouter {
   const router = factory.create(options.protocol!, app, options);
 
   Helper.define(router, "protocol", options.protocol);
+  
   // inject payload middleware
   app.once("ready", () => {
     app.use(payload(options.payload));
   });
+  
+  // Register cleanup handler on app stop event
+  // The upper layer framework (Koatty) will emit 'stop' event when receiving SIGTERM/SIGINT
+  app.once("stop", async () => {
+    await factory.shutdownAll();
+  });
+  
   return router;
 }
