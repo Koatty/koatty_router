@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.20.0-3](https://github.com/koatty/koatty_router/compare/v1.20.0-2...v1.20.0-3) (2025-10-12)
+
+
+### Features
+
+* implement graceful shutdown for all router types with cleanup handlers and active instance tracking ([e5e0511](https://github.com/koatty/koatty_router/commit/e5e05114631bc577e505c11be051ea4ddba650ae))
+
 ## [1.20.0-2](https://github.com/koatty/koatty_router/compare/v1.20.0-1...v1.20.0-2) (2025-10-12)
 
 
