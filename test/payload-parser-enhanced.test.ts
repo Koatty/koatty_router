@@ -196,7 +196,9 @@ describe('Payload解析器增强测试', () => {
 
       const result = await parseGrpc(mockCtx, mockOpts);
 
-      expect(result).toEqual({ body: 'test grpc data' });
+      // gRPC 应该返回原始 Buffer，不是字符串
+      expect(result).toEqual({ body: mockBuffer });
+      expect(Buffer.isBuffer(result.body)).toBe(true);
       expect(inflate).toHaveBeenCalledWith(mockCtx.req);
       expect(getRawBody).toHaveBeenCalledWith(mockInflatedStream, mockOpts);
     });
@@ -210,7 +212,8 @@ describe('Payload解析器增强测试', () => {
 
       const result = await parseGrpc(mockCtx, mockOpts);
 
-      expect(result).toEqual({ body: '' });
+      expect(result).toEqual({ body: mockBuffer });
+      expect(Buffer.isBuffer(result.body)).toBe(true);
     });
 
     test('应该处理二进制gRPC数据', async () => {
@@ -222,7 +225,8 @@ describe('Payload解析器增强测试', () => {
 
       const result = await parseGrpc(mockCtx, mockOpts);
 
-      expect(result).toEqual({ body: binaryData.toString() });
+      expect(result).toEqual({ body: binaryData });
+      expect(Buffer.isBuffer(result.body)).toBe(true);
     });
 
     test('应该处理inflate错误', async () => {
@@ -259,8 +263,9 @@ describe('Payload解析器增强测试', () => {
 
        const result = await parseGrpc(mockCtx, mockOpts);
 
-       expect(result).toEqual({ body: largeData.toString() });
-       if ('body' in result && typeof result.body === 'string') {
+       expect(result).toEqual({ body: largeData });
+       expect(Buffer.isBuffer(result.body)).toBe(true);
+       if ('body' in result && Buffer.isBuffer(result.body)) {
          expect(result.body.length).toBe(1024 * 1024);
        }
      });
@@ -281,7 +286,8 @@ describe('Payload解析器增强测试', () => {
 
        const result = await parseGrpc(mockCtx, customOpts);
 
-       expect(result).toEqual({ body: 'test data' });
+       expect(result).toEqual({ body: mockBuffer });
+       expect(Buffer.isBuffer(result.body)).toBe(true);
        expect(getRawBody).toHaveBeenCalledWith(mockInflatedStream, customOpts);
      });
 

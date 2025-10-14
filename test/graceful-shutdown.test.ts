@@ -24,6 +24,9 @@ describe("Graceful Shutdown", () => {
     factory = RouterFactory.getInstance();
     // Clear active routers from previous tests
     factory['activeRouters'] = [];
+    // Reset shutdown flags
+    factory['hasShutdown'] = false;
+    factory['isShuttingDown'] = false;
     factory.reset();
   });
 

@@ -68,15 +68,17 @@ describe('GrpcRouter - Simple Coverage Tests', () => {
     router = new GrpcRouter(app, {
       protocol: 'grpc',
       prefix: '',
-      protoFile: 'test.proto',
-      streamConfig: {
-        maxConcurrentStreams: 5,
-        streamTimeout: 1000,
-        backpressureThreshold: 100,
-        bufferSize: 1024
-      },
-      poolSize: 5,
-      batchSize: 3
+      ext: {
+        protoFile: 'test.proto',
+        streamConfig: {
+          maxConcurrentStreams: 5,
+          streamTimeout: 1000,
+          backpressureThreshold: 100,
+          bufferSize: 1024
+        },
+        poolSize: 5,
+        batchSize: 3
+      }
     } as any);
   });
 
@@ -156,8 +158,10 @@ describe('GrpcRouter - Simple Coverage Tests', () => {
     it('should handle connection pool operations', () => {
       const pool = (router as any).connectionPool;
       
-      // Test getting from empty pool
-      expect(pool.get('testService')).toBeNull();
+      // Test getting from empty pool - now creates new connection instead of returning null
+      const conn1 = pool.get('testService');
+      expect(conn1).toBeDefined();
+      expect(conn1).toHaveProperty('serviceName', 'testService');
       
       // Test adding and getting connection
       const conn = { id: 'test' };
@@ -169,13 +173,15 @@ describe('GrpcRouter - Simple Coverage Tests', () => {
          pool.release('testService2', { id: i });
        }
        
+       // Get connections from pool (pool size is limited by maxSize)
        const connections: any[] = [];
-       let retrieved;
-       while ((retrieved = pool.get('testService2')) !== null) {
-         connections.push(retrieved);
+       for (let i = 0; i < 5; i++) {
+         const conn = pool.get('testService2');
+         connections.push(conn);
        }
-       // Pool might not be limited in this implementation, check actual behavior
-       expect(connections.length).toBeGreaterThan(0);
+       // Should have retrieved 5 connections (matching the poolSize of 5)
+       expect(connections.length).toBe(5);
+       expect(connections[0]).toHaveProperty('id');
     });
   });
 
@@ -303,18 +309,17 @@ describe('GrpcRouter - Simple Coverage Tests', () => {
     it('should add requests to batch queue', () => {
       const processor = (router as any).batchProcessor;
       
-      // Add requests to trigger batch processing
+      // Add fewer requests than batch size (3) to keep them in queue
       const promise1 = (processor as any).addRequest('testService', { data: 'test1' });
       const promise2 = (processor as any).addRequest('testService', { data: 'test2' });
-      const promise3 = (processor as any).addRequest('testService', { data: 'test3' });
       
       expect(promise1).toBeInstanceOf(Promise);
       expect(promise2).toBeInstanceOf(Promise);
-      expect(promise3).toBeInstanceOf(Promise);
       
-      // Check batch queue has requests
+      // Check batch queue has requests (should have 2, not processed yet)
       const batchQueue = (processor as any).batchQueue;
       expect(batchQueue.has('testService')).toBe(true);
+      expect(batchQueue.get('testService').length).toBe(2);
     });
 
     it('should handle batch size logic', () => {
@@ -474,11 +479,17 @@ describe('GrpcRouter - Simple Coverage Tests', () => {
       expect(pool.get('service2').id).toMatch(/conn2-/);
     });
 
-    it('should return null for empty pools', () => {
+    it('should create connection for empty pools', () => {
       const pool = (router as any).connectionPool;
       
-      expect(pool.get('nonexistent')).toBeNull();
-      expect(pool.get('empty-service')).toBeNull();
+      // New behavior: creates connection instead of returning null
+      const conn1 = pool.get('nonexistent');
+      expect(conn1).toBeDefined();
+      expect(conn1).toHaveProperty('serviceName', 'nonexistent');
+      
+      const conn2 = pool.get('empty-service');
+      expect(conn2).toBeDefined();
+      expect(conn2).toHaveProperty('serviceName', 'empty-service');
     });
   });
 
@@ -487,15 +498,17 @@ describe('GrpcRouter - Simple Coverage Tests', () => {
       const customRouter = new GrpcRouter(app, {
         protocol: 'grpc',
         prefix: '/api',
-        protoFile: 'custom.proto',
-        streamConfig: {
-          maxConcurrentStreams: 10,
-          streamTimeout: 5000,
-          backpressureThreshold: 500,
-          bufferSize: 2048
-        },
-        poolSize: 15,
-        batchSize: 5
+        ext: {
+          protoFile: 'custom.proto',
+          streamConfig: {
+            maxConcurrentStreams: 10,
+            streamTimeout: 5000,
+            backpressureThreshold: 500,
+            bufferSize: 2048
+          },
+          poolSize: 15,
+          batchSize: 5
+        }
       } as any);
       
       expect(customRouter.protocol).toBe('grpc');

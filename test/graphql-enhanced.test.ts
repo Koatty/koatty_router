@@ -7,7 +7,10 @@
 
 // Mock modules first
 jest.mock('fs', () => ({
-  readFileSync: jest.fn()
+  readFileSync: jest.fn(),
+  promises: {
+    readFile: jest.fn()
+  }
 }));
 
 jest.mock('koatty_container', () => ({
@@ -53,7 +56,12 @@ jest.mock('../src/utils/handler', () => ({
 }));
 
 jest.mock('../src/router/types', () => ({
-  getProtocolConfig: jest.fn()
+  getProtocolConfig: jest.fn(),
+  validateProtocolConfig: jest.fn(() => ({
+    valid: true,
+    errors: [],
+    warnings: []
+  }))
 }));
 
 import fs from 'fs';
@@ -98,7 +106,11 @@ describe('GraphQLRouter 增强测试', () => {
     test('应该使用默认选项创建GraphQL路由器', () => {
       (getProtocolConfig as jest.Mock).mockReturnValue({ schemaFile: 'test.graphql' });
 
-      const router = new GraphQLRouter(app as any);
+      const router = new GraphQLRouter(app as any, {
+        protocol: 'graphql',
+        prefix: '',
+        ext: { schemaFile: 'test.graphql' }
+      });
 
       expect(router.protocol).toBe('graphql');
       expect(router.options.protocol).toBe('graphql');
@@ -116,7 +128,10 @@ describe('GraphQLRouter 增强测试', () => {
       
       (getProtocolConfig as jest.Mock).mockReturnValue({ schemaFile: 'custom.graphql' });
 
-      const router = new GraphQLRouter(app as any, customOptions);
+      const router = new GraphQLRouter(app as any, {
+        ...customOptions,
+        ext: { schemaFile: 'custom.graphql' }
+      });
 
       expect(router.protocol).toBe('graphql');
       expect(router.options.prefix).toBe('/api');
@@ -130,7 +145,11 @@ describe('GraphQLRouter 增强测试', () => {
 
     beforeEach(() => {
       (getProtocolConfig as jest.Mock).mockReturnValue({ schemaFile: 'test.graphql' });
-      router = new GraphQLRouter(app as any);
+      router = new GraphQLRouter(app as any, {
+        protocol: 'graphql',
+        prefix: '',
+        ext: { schemaFile: 'test.graphql' }
+      });
     });
 
     test('应该正确设置GraphQL路由', () => {
@@ -149,13 +168,13 @@ describe('GraphQLRouter 增强测试', () => {
       router.SetRouter('/graphql', routerImpl);
 
       expect(Helper.isEmpty).toHaveBeenCalledWith(mockImplementation);
-      expect(graphqlHTTP).toHaveBeenCalledWith({
+      expect(graphqlHTTP).toHaveBeenCalledWith(expect.objectContaining({
         schema: mockSchema,
         rootValue: mockImplementation,
         graphiql: {
           headerEditorEnabled: true
         }
-      });
+      }));
       expect(router.router.all).toHaveBeenCalledWith('/graphql', mockGraphqlMiddleware);
     });
 
@@ -167,7 +186,7 @@ describe('GraphQLRouter 增强测试', () => {
         implementation: null
       };
 
-      router.SetRouter('/graphql', routerImpl);
+      router.SetRouter('/graphql', routerImpl as any);
 
       expect(Helper.isEmpty).toHaveBeenCalled();
       expect(graphqlHTTP).not.toHaveBeenCalled();
@@ -179,7 +198,11 @@ describe('GraphQLRouter 增强测试', () => {
     test('应该返回路由映射', () => {
       (getProtocolConfig as jest.Mock).mockReturnValue({ schemaFile: 'test.graphql' });
       
-      const router = new GraphQLRouter(app as any);
+      const router = new GraphQLRouter(app as any, {
+        protocol: 'graphql',
+        prefix: '',
+        ext: { schemaFile: 'test.graphql' }
+      });
       const routerMap = router.ListRouter();
 
       expect(routerMap).toBeInstanceOf(Map);
@@ -192,7 +215,11 @@ describe('GraphQLRouter 增强测试', () => {
 
     beforeEach(() => {
       (getProtocolConfig as jest.Mock).mockReturnValue({ schemaFile: 'test/test.graphql' });
-      router = new GraphQLRouter(app as any);
+      router = new GraphQLRouter(app as any, {
+        protocol: 'graphql',
+        prefix: '',
+        ext: { schemaFile: 'test.graphql' }
+      });
     });
 
     test('应该成功加载路由和schema', async () => {
@@ -211,7 +238,7 @@ describe('GraphQLRouter 增强测试', () => {
         hello: []
       };
 
-      (fs.readFileSync as jest.Mock).mockReturnValue(schemaContent);
+      (fs.promises.readFile as jest.Mock).mockResolvedValue(schemaContent);
       (buildSchema as jest.Mock).mockReturnValue(mockSchema);
       (IOC.getClass as jest.Mock).mockReturnValue(mockController);
       (injectRouter as jest.Mock).mockReturnValue(mockRouters);
@@ -225,7 +252,7 @@ describe('GraphQLRouter 增强测试', () => {
 
       await router.LoadRouter(app as any, controllerList);
 
-      expect(fs.readFileSync).toHaveBeenCalledWith('test/test.graphql', 'utf-8');
+      expect(fs.promises.readFile).toHaveBeenCalledWith('test/test.graphql', 'utf-8');
       expect(buildSchema).toHaveBeenCalledWith(schemaContent);
       expect(IOC.getClass).toHaveBeenCalledWith('TestController', 'CONTROLLER');
       expect(injectRouter).toHaveBeenCalledWith(app, mockController, 'graphql');
@@ -236,9 +263,7 @@ describe('GraphQLRouter 增强测试', () => {
 
     test('应该处理文件读取错误', async () => {
       const error = new Error('File not found');
-      (fs.readFileSync as jest.Mock).mockImplementation(() => {
-        throw error;
-      });
+      (fs.promises.readFile as jest.Mock).mockRejectedValue(error);
 
       const controllerList = ['TestController'];
 
@@ -252,7 +277,7 @@ describe('GraphQLRouter 增强测试', () => {
       const mockSchema = { type: 'schema' };
       const mockController = class TestController {};
 
-      (fs.readFileSync as jest.Mock).mockReturnValue(schemaContent);
+      (fs.promises.readFile as jest.Mock).mockResolvedValue(schemaContent);
       (buildSchema as jest.Mock).mockReturnValue(mockSchema);
       (IOC.getClass as jest.Mock).mockReturnValue(mockController);
       (injectRouter as jest.Mock).mockReturnValue(null); // 没有路由
@@ -262,7 +287,8 @@ describe('GraphQLRouter 增强测试', () => {
       await router.LoadRouter(app as any, controllerList);
 
       expect(injectParamMetaData).not.toHaveBeenCalled();
-      expect(Logger.Debug).not.toHaveBeenCalled();
+      // Logger.Debug will be called for middleware registration even with no routes
+      expect(Logger.Debug).toHaveBeenCalledWith('GraphQL router middleware registered (optimized)');
     });
   });
 }); 

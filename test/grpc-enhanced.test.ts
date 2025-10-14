@@ -49,7 +49,12 @@ jest.mock('../src/utils/handler', () => ({
 }));
 
 jest.mock('../src/router/types', () => ({
-  getProtocolConfig: jest.fn()
+  getProtocolConfig: jest.fn(),
+  validateProtocolConfig: jest.fn(() => ({
+    valid: true,
+    errors: [],
+    warnings: []
+  }))
 }));
 
 import { GrpcRouter, GrpcStreamType } from '../src/router/grpc';
@@ -149,7 +154,11 @@ describe('GrpcRouter 增强测试', () => {
       streamConfig: {}
     });
 
-    const router = new GrpcRouter(mockApp);
+    const router = new GrpcRouter(mockApp, {
+      protocol: 'grpc',
+      prefix: '',
+      ext: { protoFile: 'test.proto' }
+    });
 
     expect(router.protocol).toBe('grpc');
     expect(router.options.protocol).toBe('grpc');
@@ -165,7 +174,11 @@ describe('GrpcRouter 增强测试', () => {
     getProtocolConfig.mockReturnValue({ protoFile: 'test.proto' });
     payload.mockReturnValue(() => {});
 
-    const router = new GrpcRouter(mockApp);
+    const router = new GrpcRouter(mockApp, {
+      protocol: 'grpc',
+      prefix: '',
+      ext: { protoFile: 'test.proto' }
+    });
     const mockImplementation = {
       implementation: { ping: jest.fn() }
     };
@@ -183,7 +196,11 @@ describe('GrpcRouter 增强测试', () => {
     getProtocolConfig.mockReturnValue({ protoFile: 'test.proto' });
     payload.mockReturnValue(() => {});
 
-    const router = new GrpcRouter(mockApp);
+    const router = new GrpcRouter(mockApp, {
+      protocol: 'grpc',
+      prefix: '',
+      ext: { protoFile: 'test.proto' }
+    });
 
     // 测试一元调用
     const unaryCall = { readable: false, writable: false };
@@ -212,21 +229,28 @@ describe('GrpcRouter 增强测试', () => {
     });
     payload.mockReturnValue(() => {});
 
-    const router = new GrpcRouter(mockApp);
+    const router = new GrpcRouter(mockApp, {
+      protocol: 'grpc',
+      prefix: '',
+      ext: { protoFile: 'test.proto' }
+    });
     const connectionPool = (router as any).connectionPool;
     
-    // 测试获取连接（池为空时）
-    expect(connectionPool.get('TestService')).toBeNull();
+    // 测试获取连接（池为空时会自动创建）
+    const autoCreatedConn = connectionPool.get('TestService');
+    expect(autoCreatedConn).toBeDefined();
+    expect(autoCreatedConn).toHaveProperty('serviceName', 'TestService');
 
     // 测试释放连接
     const mockConnection = { id: 'conn1' };
-    connectionPool.release('TestService', mockConnection);
+    connectionPool.release('TestService2', mockConnection);
 
     // 测试从池中获取连接
-    expect(connectionPool.get('TestService')).toBe(mockConnection);
+    expect(connectionPool.get('TestService2')).toBe(mockConnection);
 
-    // 再次获取应该为空
-    expect(connectionPool.get('TestService')).toBeNull();
+    // 再次获取会创建新连接（因为池已空）
+    const newConn = connectionPool.get('TestService2');
+    expect(newConn).toBeDefined();
   });
 
   test('应该正确管理流状态', () => {
@@ -243,7 +267,11 @@ describe('GrpcRouter 增强测试', () => {
     });
     payload.mockReturnValue(() => {});
 
-    const router = new GrpcRouter(mockApp);
+    const router = new GrpcRouter(mockApp, {
+      protocol: 'grpc',
+      prefix: '',
+      ext: { protoFile: 'test.proto' }
+    });
     const streamManager = (router as any).streamManager;
 
     // 注册流
@@ -273,7 +301,11 @@ describe('GrpcRouter 增强测试', () => {
     getProtocolConfig.mockReturnValue({ protoFile: 'test.proto' });
     payload.mockReturnValue(() => {});
 
-    const router = new GrpcRouter(mockApp);
+    const router = new GrpcRouter(mockApp, {
+      protocol: 'grpc',
+      prefix: '',
+      ext: { protoFile: 'test.proto' }
+    });
     const error = new Error('Proto load failed');
     LoadProto.mockImplementation(() => {
       throw error;
