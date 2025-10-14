@@ -6,6 +6,8 @@
 
 Shutdown all active routers (for graceful shutdown) This method should be called when the application receives termination signal
 
+IMPORTANT: This method uses flags to ensure it only runs once even if called multiple times in multi-protocol environments where each NewRouter() call registers an appStop listener.
+
 **Signature:**
 
 ```typescript

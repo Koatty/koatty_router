@@ -152,6 +152,17 @@ Routes HTTP GET requests to the specified path.
 </td></tr>
 <tr><td>
 
+[getProtocolConfig(protocol, ext)](./koatty_router.getprotocolconfig.md)
+
+
+</td><td>
+
+获取协议特定配置的工具函数
+
+
+</td></tr>
+<tr><td>
+
 [Header(name)](./koatty_router.header.md)
 
 
@@ -312,6 +323,17 @@ Get parsed query-string and path variable(koa ctx.query and ctx.params), and set
 </td></tr>
 <tr><td>
 
+[validateProtocolConfig(protocol, ext, env)](./koatty_router.validateprotocolconfig.md)
+
+
+</td><td>
+
+验证协议特定配置的工具函数（增强版）
+
+
+</td></tr>
+<tr><td>
+
 [withMiddleware(middleware, options)](./koatty_router.withmiddleware.md)
 
 
@@ -337,6 +359,39 @@ Description
 
 </th></tr></thead>
 <tbody><tr><td>
+
+[GraphQLExtConfig](./koatty_router.graphqlextconfig.md)
+
+
+</td><td>
+
+GraphQL 协议特定配置
+
+
+</td></tr>
+<tr><td>
+
+[GrpcExtConfig](./koatty_router.grpcextconfig.md)
+
+
+</td><td>
+
+gRPC 协议特定配置
+
+
+</td></tr>
+<tr><td>
+
+[HttpExtConfig](./koatty_router.httpextconfig.md)
+
+
+</td><td>
+
+HTTP 协议特定配置（目前为空，预留扩展）
+
+
+</td></tr>
+<tr><td>
 
 [IRouterFactory](./koatty_router.irouterfactory.md)
 
@@ -404,6 +459,17 @@ Middleware execution context
 </td></tr>
 <tr><td>
 
+[ProtocolExtConfigMap](./koatty_router.protocolextconfigmap.md)
+
+
+</td><td>
+
+协议扩展配置映射
+
+
+</td></tr>
+<tr><td>
+
 [RouterOption](./koatty_router.routeroption.md)
 
 
@@ -425,6 +491,39 @@ Koatty router options with enhanced middleware support
 RouterOptions
 
   RouterOptions
+
+
+</td></tr>
+<tr><td>
+
+[StreamConfig](./koatty_router.streamconfig.md)
+
+
+</td><td>
+
+gRPC 流配置
+
+
+</td></tr>
+<tr><td>
+
+[ValidationResult](./koatty_router.validationresult.md)
+
+
+</td><td>
+
+配置验证结果
+
+
+</td></tr>
+<tr><td>
+
+[WebSocketExtConfig](./koatty_router.websocketextconfig.md)
+
+
+</td><td>
+
+WebSocket 协议特定配置
 
 
 </td></tr>
@@ -497,6 +596,17 @@ Description
 </td><td>
 
 Middleware function type
+
+
+</td></tr>
+<tr><td>
+
+[ProtocolExtConfig](./koatty_router.protocolextconfig.md)
+
+
+</td><td>
+
+协议扩展配置联合类型
 
 
 </td></tr>
