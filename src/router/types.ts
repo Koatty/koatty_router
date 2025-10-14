@@ -124,26 +124,122 @@ export function getProtocolConfig<T extends keyof ProtocolExtConfigMap>(
 }
 
 /**
- * 验证协议特定配置的工具函数
+ * 配置验证结果
+ */
+export interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+/**
+ * 验证协议特定配置的工具函数（增强版）
  */
 export function validateProtocolConfig(
   protocol: string,
-  ext: Record<string, any>
-): boolean {
-  switch (protocol.toLowerCase()) {
+  ext: Record<string, any> = {},
+  env: string = process.env.NODE_ENV || 'development'
+): ValidationResult {
+  const result: ValidationResult = {
+    valid: true,
+    errors: [],
+    warnings: []
+  };
+
+  const proto = protocol.toLowerCase();
+
+  switch (proto) {
     case 'grpc':
-      return typeof ext.protoFile === 'string' && ext.protoFile.length > 0;
+      // 必需字段验证
+      if (!ext.protoFile || typeof ext.protoFile !== 'string' || ext.protoFile.trim().length === 0) {
+        result.valid = false;
+        result.errors.push('gRPC protocol requires protoFile path');
+      }
+      
+      // 可选字段验证
+      if (ext.poolSize !== undefined && (typeof ext.poolSize !== 'number' || ext.poolSize < 1)) {
+        result.warnings.push('poolSize should be a positive number, using default: 10');
+      }
+      if (ext.batchSize !== undefined && (typeof ext.batchSize !== 'number' || ext.batchSize < 1)) {
+        result.warnings.push('batchSize should be a positive number, using default: 10');
+      }
+      
+      // 流配置验证
+      if (ext.streamConfig) {
+        const sc = ext.streamConfig;
+        if (sc.maxConcurrentStreams !== undefined && sc.maxConcurrentStreams < 1) {
+          result.warnings.push('maxConcurrentStreams should be positive, using default: 50');
+        }
+        if (sc.streamTimeout !== undefined && sc.streamTimeout < 1000) {
+          result.warnings.push('streamTimeout should be >= 1000ms for stability');
+        }
+      }
+      break;
+
     case 'graphql':
-      return typeof ext.schemaFile === 'string' && ext.schemaFile.length > 0;
+      // 必需字段验证
+      if (!ext.schemaFile || typeof ext.schemaFile !== 'string' || ext.schemaFile.trim().length === 0) {
+        result.valid = false;
+        result.errors.push('GraphQL protocol requires schemaFile path');
+      }
+      
+      // 安全配置检查（生产环境）
+      if (env === 'production') {
+        if (ext.playground === true) {
+          result.warnings.push('GraphQL Playground should be disabled in production');
+        }
+        if (ext.debug === true) {
+          result.warnings.push('Debug mode should be disabled in production');
+        }
+        if (!ext.depthLimit) {
+          result.warnings.push('Consider setting depthLimit for production security');
+        }
+        if (!ext.complexityLimit) {
+          result.warnings.push('Consider setting complexityLimit for production security');
+        }
+      }
+      
+      // 深度和复杂度验证
+      if (ext.depthLimit !== undefined && (typeof ext.depthLimit !== 'number' || ext.depthLimit < 1)) {
+        result.warnings.push('depthLimit should be a positive number');
+      }
+      if (ext.complexityLimit !== undefined && (typeof ext.complexityLimit !== 'number' || ext.complexityLimit < 1)) {
+        result.warnings.push('complexityLimit should be a positive number');
+      }
+      break;
+
     case 'ws':
     case 'wss':
-      // WebSocket 配置都是可选的
-      return true;
+      // 心跳配置验证
+      if (ext.heartbeatInterval !== undefined && ext.heartbeatTimeout !== undefined) {
+        if (ext.heartbeatInterval >= ext.heartbeatTimeout) {
+          result.warnings.push('heartbeatInterval should be less than heartbeatTimeout');
+        }
+      }
+      
+      // 资源限制验证
+      if (ext.maxConnections !== undefined && ext.maxConnections < 1) {
+        result.warnings.push('maxConnections should be positive, using default: 1000');
+      }
+      if (ext.maxFrameSize !== undefined && ext.maxFrameSize < 1024) {
+        result.warnings.push('maxFrameSize too small, may cause issues with normal messages');
+      }
+      if (ext.maxBufferSize !== undefined && ext.maxFrameSize !== undefined) {
+        if (ext.maxBufferSize < ext.maxFrameSize * 2) {
+          result.warnings.push('maxBufferSize should be at least 2x maxFrameSize');
+        }
+      }
+      break;
+
     case 'http':
     case 'https':
-      // HTTP 配置都是可选的
-      return true;
+      // HTTP 配置都是可选的，无需严格验证
+      break;
+
     default:
-      return false;
+      result.valid = false;
+      result.errors.push(`Unknown protocol: ${protocol}`);
   }
+
+  return result;
 } 

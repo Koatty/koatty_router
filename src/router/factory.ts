@@ -37,6 +37,8 @@ export class RouterFactory implements IRouterFactory {
   private static instance: RouterFactory;
   private routerRegistry = new Map<string, RouterConstructor>();
   private activeRouters: KoattyRouter[] = [];
+  private isShuttingDown: boolean = false;
+  private hasShutdown: boolean = false;
 
   private constructor() {
     this.initializeDefaultRouters();
@@ -170,32 +172,56 @@ export class RouterFactory implements IRouterFactory {
   /**
    * Shutdown all active routers (for graceful shutdown)
    * This method should be called when the application receives termination signal
+   * 
+   * IMPORTANT: This method uses flags to ensure it only runs once even if called
+   * multiple times in multi-protocol environments where each NewRouter() call
+   * registers an appStop listener.
    */
   public async shutdownAll(): Promise<void> {
-    const routerCount = this.activeRouters.length;
-    if (routerCount === 0) {
-      Logger.Debug('No active routers to shutdown');
+    // Prevent concurrent shutdown attempts
+    if (this.isShuttingDown) {
+      Logger.Debug('Shutdown already in progress, skipping duplicate call');
       return;
     }
-
-    Logger.Info(`Starting graceful shutdown for ${routerCount} router(s)...`);
     
-    const shutdownPromises = this.activeRouters.map(async (router) => {
-      const routerAny = router as any;
-      const protocol = routerAny.protocol || 'unknown';
-      try {
-        if (typeof routerAny.cleanup === 'function') {
-          await routerAny.cleanup();
-          Logger.Debug(`Router ${protocol} shutdown completed`);
-        }
-      } catch (error) {
-        Logger.Error(`Error shutting down ${protocol} router:`, error);
+    // Prevent multiple shutdown attempts
+    if (this.hasShutdown) {
+      Logger.Debug('Shutdown already completed, skipping duplicate call');
+      return;
+    }
+    
+    this.isShuttingDown = true;
+    
+    try {
+      const routerCount = this.activeRouters.length;
+      if (routerCount === 0) {
+        Logger.Debug('No active routers to shutdown');
+        this.hasShutdown = true;
+        return;
       }
-    });
 
-    await Promise.all(shutdownPromises);
-    this.activeRouters = [];
-    Logger.Info('All routers shutdown completed');
+      Logger.Info(`Starting graceful shutdown for ${routerCount} router(s)...`);
+      
+      const shutdownPromises = this.activeRouters.map(async (router) => {
+        const routerAny = router as any;
+        const protocol = routerAny.protocol || 'unknown';
+        try {
+          if (typeof routerAny.cleanup === 'function') {
+            await routerAny.cleanup();
+            Logger.Debug(`Router ${protocol} shutdown completed`);
+          }
+        } catch (error) {
+          Logger.Error(`Error shutting down ${protocol} router:`, error);
+        }
+      });
+
+      await Promise.all(shutdownPromises);
+      this.activeRouters = [];
+      this.hasShutdown = true;
+      Logger.Info('All routers shutdown completed');
+    } finally {
+      this.isShuttingDown = false;
+    }
   }
 
   /**

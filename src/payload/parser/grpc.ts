@@ -19,17 +19,22 @@ import inflate from "inflation";
  * 
  * @param {KoattyContext} ctx - Koatty context object
  * @param {PayloadOptions} opts - Payload parsing options
- * @returns {Promise<{body: string} | {}>} Parsed request body or empty object if parsing fails
- * @description Handles gRPC specific payload parsing using protobuf format
+ * @returns {Promise<{body: Buffer} | {}>} Raw buffer for protobuf data or empty object if parsing fails
+ * @description 
+ * gRPC uses Protocol Buffers binary format. This parser returns the raw buffer
+ * for manual decoding in controllers using proto definitions.
+ * The buffer should NOT be converted to string as it will corrupt the binary data.
  */
 export async function parseGrpc(ctx: KoattyContext, opts: PayloadOptions) {
   try {
-    // gRPC使用protobuf格式，需要特殊处理
+    // gRPC 使用 protobuf 二进制格式，直接返回 Buffer
+    // 不能使用 toString()，否则会破坏二进制数据
     const buffer = await getRawBody(inflate(ctx.req), opts);
-    return { body: buffer.toString() };
+    
+    // 返回原始 Buffer，让控制器使用 proto 定义进行解码
+    return { body: buffer };
   } catch (error) {
     Logger.Error('[GrpcParseError]', error);
-
     return {};
   }
 }

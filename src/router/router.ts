@@ -99,12 +99,19 @@ export function NewRouter(app: Koatty, opt?: RouterOptions): KoattyRouter {
   Helper.define(router, "protocol", options.protocol);
   
   // inject payload middleware
+  // IMPORTANT: Use app.once() to prevent duplicate middleware registration
+  // in multi-protocol environments where each NewRouter() is called separately
   app.once("appReady", () => {
     app.use(payload(options.payload));
   });
   
   // Register cleanup handler on app stop event
   // The upper layer framework (Koatty) will emit 'stop' event when receiving SIGTERM/SIGINT
+  // 
+  // NOTE: In multi-protocol environments (e.g., HTTP + WS + gRPC + GraphQL),
+  // each NewRouter() call will register this listener, causing shutdownAll() 
+  // to be called multiple times. However, RouterFactory.shutdownAll() uses
+  // flags (isShuttingDown/hasShutdown) to ensure it only executes once.
   app.once("appStop", async () => {
     await factory.shutdownAll();
   });

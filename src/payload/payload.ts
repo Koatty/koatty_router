@@ -75,8 +75,15 @@ export function payload(options?: PayloadOptions) {
   const opts = cacheManager.getMergedOptions(options);
 
   return (ctx: KoattyContext, next: KoattyNext) => {
-    Helper.define(ctx, "requestParam", () => queryParser(ctx, opts));
-    Helper.define(ctx, "requestBody", () => bodyParser(ctx, opts));
+    // 防止重复定义：在多协议场景下，多个router会注册payload中间件
+    // 每个请求的ctx虽然是独立实例，但会经过所有中间件
+    // 只在属性未定义时才定义，避免 "Cannot redefine property" 错误
+    if (!Object.prototype.hasOwnProperty.call(ctx, 'requestParam')) {
+      Helper.define(ctx, "requestParam", () => queryParser(ctx, opts));
+    }
+    if (!Object.prototype.hasOwnProperty.call(ctx, 'requestBody')) {
+      Helper.define(ctx, "requestBody", () => bodyParser(ctx, opts));
+    }
     return next();
   }
 }

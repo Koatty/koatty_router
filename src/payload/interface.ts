@@ -18,4 +18,9 @@ export interface PayloadOptions {
   multiples: boolean;
   keepExtensions: boolean;
   length?: number;
+  /**
+   * Protocol Buffer 文件路径（用于 gRPC 自动解析）
+   * 如果提供，gRPC payload 解析器将尝试自动解码
+   */
+  protoFile?: string;
 }
