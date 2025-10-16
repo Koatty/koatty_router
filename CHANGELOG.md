@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.20.0-6](https://github.com/koatty/koatty_router/compare/v1.20.0-5...v1.20.0-6) (2025-10-16)
+
+
+### Features
+
+* improve gRPC server detection for multi-protocol scenarios with array support ([231a8ad](https://github.com/koatty/koatty_router/commit/231a8ad670ef860e8baa9c8fcb567bf25953e737))
+
 ## [1.20.0-5](https://github.com/koatty/koatty_router/compare/v1.20.0-4...v1.20.0-5) (2025-10-15)
 
 
