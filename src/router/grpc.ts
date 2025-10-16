@@ -850,13 +850,25 @@ export class GrpcRouter implements KoattyRouter {
         if (Object.keys(impl).length > 0) {
           this.SetRouter(si.name, { service: si.service, implementation: impl });
           
-          // Handle both single server and MultiProtocolServer
+          // Handle both single server and multi-protocol server
           const server = app.server as any;
           let grpcServer = null;
           
-          // Check if it's MultiProtocolServer (has getAllServers method)
-          if (Helper.isFunction(server.getAllServers)) {
-            // Multi-protocol server: find gRPC server instance
+          // Check if server is an array (multi-protocol mode)
+          if (Helper.isArray(server)) {
+            // Multi-protocol server: app.server is array of SingleProtocolServer instances
+            Logger.Debug(`Detecting gRPC server in multi-protocol array mode (${server.length} servers)`);
+            for (let i = 0; i < server.length; i++) {
+              const s = server[i];
+              const protocol = s.options?.protocol || s.protocol;
+              if (protocol === 'grpc' && Helper.isFunction(s.RegisterService)) {
+                grpcServer = s;
+                Logger.Debug(`Found gRPC server instance at array index ${i}`);
+                break;
+              }
+            }
+          } else if (Helper.isFunction(server?.getAllServers)) {
+            // Alternative multi-protocol structure with getAllServers method
             const allServers = server.getAllServers();
             if (allServers && allServers.size > 0) {
               allServers.forEach((s: any) => {
@@ -867,7 +879,7 @@ export class GrpcRouter implements KoattyRouter {
                 }
               });
             }
-          } else if (Helper.isFunction(server.RegisterService)) {
+          } else if (Helper.isFunction(server?.RegisterService)) {
             // Single protocol gRPC server
             grpcServer = server;
           }
