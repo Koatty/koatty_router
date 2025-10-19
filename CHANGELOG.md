@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.20.0-7](https://github.com/koatty/koatty_router/compare/v1.20.0-6...v1.20.0-7) (2025-10-19)
+
+
+### Features
+
+* refactor gRPC router to use middleware pattern and improve stream handling with enhanced logging ([c8c06b8](https://github.com/koatty/koatty_router/commit/c8c06b8424bfdd4bf9fc01360f6713e13d9aa0c6))
+
 ## [1.20.0-6](https://github.com/koatty/koatty_router/compare/v1.20.0-5...v1.20.0-6) (2025-10-16)
 
 
