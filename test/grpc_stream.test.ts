@@ -60,6 +60,9 @@ class MockKoatty extends EventEmitter {
       return handler(ctx);
     };
   }
+  createContext(call: any, callback: any, protocol: string) {
+    return { protocol };
+  }
   server = {
     RegisterService: () => {}
   };
@@ -351,24 +354,21 @@ describe('GrpcRouter 流处理测试', () => {
       let writeStreamCalled = false;
       let contextCreated = false;
 
-      // Mock app.callback to capture context methods
-      app.callback = (protocol: string, handler: Function) => {
-        return (call: any, callback: any) => {
-          const ctx = { 
-            protocol,
-            streamMessage: null,
-            writeStream: (data: any) => { 
-              writeStreamCalled = true; 
-              return true; 
-            },
-            endStream: () => { 
-              // 不调用call.end()来避免无限循环
-              contextCreated = true;
-            }
-          };
-          contextCreated = true;
-          return handler(ctx);
+      // Mock app.createContext to capture context creation
+      app.createContext = (call: any, callback: any, protocol: string) => {
+        const ctx = { 
+          protocol,
+          streamMessage: null,
+          writeStream: (data: any) => { 
+            writeStreamCalled = true; 
+            return true; 
+          },
+          endStream: () => { 
+            // 不调用call.end()来避免无限循环
+          }
         };
+        contextCreated = true;
+        return ctx;
       };
 
       // 测试双向流处理
