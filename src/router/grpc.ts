@@ -10,7 +10,9 @@ import { IOC } from "koatty_container";
 import {
   IRpcServerCall,
   IRpcServerCallback,
-  Koatty, KoattyRouter,
+  Koatty, 
+  KoattyContext,
+  KoattyRouter,
   RouterImplementation
 } from "koatty_core";
 import * as Helper from "koatty_lib";
@@ -487,17 +489,28 @@ export class GrpcRouter implements KoattyRouter {
    * 检测gRPC流类型
    */
   private detectStreamType(call: any): GrpcStreamType {
-    // 检查call对象的属性来确定流类型
-    const isReadable = call.readable || (call.on && typeof call.read === 'function');
-    const isWritable = call.writable || (call.write && typeof call.write === 'function');
+    // 一元调用：call.request 存在（包含请求数据）
+    // 流调用：call 本身就是流对象，数据通过事件接收
+    if (call.request) {
+      Logger.Debug(`[GRPC_ROUTER] Stream detection: UNARY (call.request exists)`);
+      return GrpcStreamType.UNARY;
+    }
     
-    if (isReadable && isWritable) {
+    // 对于流调用，检查是否是真正的流对象（Stream 类型）
+    const isActuallyReadableStream = call.readable === true;
+    const isActuallyWritableStream = call.writable === true;
+    
+    Logger.Debug(`[GRPC_ROUTER] Stream detection: readable=${call.readable}, writable=${call.writable}`);
+    
+    if (isActuallyReadableStream && isActuallyWritableStream) {
       return GrpcStreamType.BIDIRECTIONAL_STREAMING;
-    } else if (isReadable) {
+    } else if (isActuallyReadableStream) {
       return GrpcStreamType.CLIENT_STREAMING;
-    } else if (isWritable) {
+    } else if (isActuallyWritableStream) {
       return GrpcStreamType.SERVER_STREAMING;
     } else {
+      // 默认返回一元调用
+      Logger.Warn(`[GRPC_ROUTER] Unable to determine stream type, defaulting to UNARY`);
       return GrpcStreamType.UNARY;
     }
   }
@@ -505,21 +518,33 @@ export class GrpcRouter implements KoattyRouter {
   /**
    * 处理一元调用 (Unary RPC)
    */
-  private handleUnaryCall(
+  private async handleUnaryCall(
     call: IRpcServerCall<any, any>, 
     callback: IRpcServerCallback<any>,
     app: Koatty,
     ctlItem: any
-  ): void {
+  ): Promise<void> {
     try {
-      Logger.Debug(`Handling unary call for ${ctlItem.name}.${ctlItem.method}`);
+      Logger.Debug(`[GRPC_ROUTER] Handling unary call for ${ctlItem.name}.${ctlItem.method}`);
       
-      app.callback("grpc", (ctx) => {
-        const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
-        return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.composedMiddleware);
-      })(call, callback);
+      // 创建 gRPC context (context 已经由 koatty_serve 在调用 handler 之前创建好了)
+      // 这里的 call 和 callback 已经被包装在 context 中
+      // 直接从 call 中获取 context，或者使用 app.createContext
+      const ctx = app.createContext(call, callback, 'grpc');
+      
+      Logger.Debug(`[GRPC_ROUTER] Context created, getting controller instance`);
+      const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
+      
+      Logger.Debug(`[GRPC_ROUTER] Calling Handler for ${ctlItem.method}`);
+      const result = await Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.composedMiddleware);
+      
+      // Handler 执行完成后，调用 gRPC callback 返回结果
+      const response = result || ctx.body;
+      Logger.Debug(`[GRPC_ROUTER] gRPC method ${ctlItem.name}.${ctlItem.method} completed, calling callback with response:`, response);
+      callback(null, response);
+      
     } catch (error) {
-      Logger.Error(`Error in unary call: ${error}`);
+      Logger.Error(`[GRPC_ROUTER] Error executing gRPC method ${ctlItem.name}.${ctlItem.method}:`, error);
       callback(error as Error);
     }
   }
@@ -527,65 +552,66 @@ export class GrpcRouter implements KoattyRouter {
   /**
    * 处理服务器流 (Server Streaming RPC)
    */
-  private handleServerStreaming(
+  private async handleServerStreaming(
     call: ServerWritableStream<any, any>,
     app: Koatty,
     ctlItem: any
-  ): void {
+  ): Promise<void> {
     const streamId = `server_${Date.now()}_${Math.random()}`;
     const streamState = this.streamManager.registerStream(streamId, GrpcStreamType.SERVER_STREAMING);
     
     try {
-      Logger.Debug(`Handling server streaming call for ${ctlItem.name}.${ctlItem.method}`);
+      Logger.Debug(`[GRPC_ROUTER] Handling server streaming call for ${ctlItem.name}.${ctlItem.method}`);
       
       // 设置流超时
       const timeout = setTimeout(() => {
-        Logger.Warn(`Server stream ${streamId} timeout`);
+        Logger.Warn(`[GRPC_ROUTER] Server stream ${streamId} timeout`);
         call.end();
         this.streamManager.removeStream(streamId);
       }, this.options.streamConfig?.streamTimeout || 300000);
 
       // 处理流结束
       call.on('cancelled', () => {
-        Logger.Debug(`Server stream ${streamId} cancelled`);
+        Logger.Debug(`[GRPC_ROUTER] Server stream ${streamId} cancelled`);
         clearTimeout(timeout);
         this.streamManager.removeStream(streamId);
       });
 
       call.on('error', (error) => {
-        Logger.Error(`Server stream ${streamId} error:`, error);
+        Logger.Error(`[GRPC_ROUTER] Server stream ${streamId} error:`, error);
         clearTimeout(timeout);
         this.streamManager.removeStream(streamId);
       });
 
-      // 创建自定义上下文，包含流写入方法
-      app.callback("grpc", (ctx) => {
-        // 添加流写入方法到上下文
-        ctx.writeStream = (data: any) => {
-          if (this.streamManager.isBackpressureTriggered(streamId)) {
-            Logger.Warn(`Backpressure triggered for stream ${streamId}`);
-            return false;
-          }
-          
-          call.write(data);
-          this.streamManager.updateStream(streamId, { 
-            messageCount: streamState.messageCount + 1 
-          });
-          return true;
-        };
+      // 直接创建 context，不再调用 app.callback
+      const ctx = app.createContext(call, null, 'grpc');
+      
+      // 添加流写入方法到上下文
+      ctx.writeStream = (data: any) => {
+        if (this.streamManager.isBackpressureTriggered(streamId)) {
+          Logger.Warn(`[GRPC_ROUTER] Backpressure triggered for stream ${streamId}`);
+          return false;
+        }
         
-        ctx.endStream = () => {
-          call.end();
-          clearTimeout(timeout);
-          this.streamManager.removeStream(streamId);
-        };
+        call.write(data);
+        this.streamManager.updateStream(streamId, { 
+          messageCount: streamState.messageCount + 1 
+        });
+        return true;
+      };
+      
+      ctx.endStream = () => {
+        call.end();
+        clearTimeout(timeout);
+        this.streamManager.removeStream(streamId);
+      };
 
-        const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
-        return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.composedMiddleware);
-      })(call, () => {});
+      // 获取控制器实例并执行
+      const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
+      await Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.composedMiddleware);
       
     } catch (error) {
-      Logger.Error(`Error in server streaming: ${error}`);
+      Logger.Error(`[GRPC_ROUTER] Error in server streaming: ${error}`);
       call.end();
       this.streamManager.removeStream(streamId);
     }
@@ -605,11 +631,11 @@ export class GrpcRouter implements KoattyRouter {
     const messages: any[] = [];
     
     try {
-      Logger.Debug(`Handling client streaming call for ${ctlItem.name}.${ctlItem.method}`);
+      Logger.Debug(`[GRPC_ROUTER] Handling client streaming call for ${ctlItem.name}.${ctlItem.method}`);
       
       // 设置流超时
       const timeout = setTimeout(() => {
-        Logger.Warn(`Client stream ${streamId} timeout`);
+        Logger.Warn(`[GRPC_ROUTER] Client stream ${streamId} timeout`);
         callback(new Error('Stream timeout'));
         this.streamManager.removeStream(streamId);
       }, this.options.streamConfig?.streamTimeout || 300000);
@@ -624,42 +650,53 @@ export class GrpcRouter implements KoattyRouter {
         
         // 检查背压
         if (this.streamManager.isBackpressureTriggered(streamId)) {
-          Logger.Warn(`Backpressure triggered for client stream ${streamId}`);
+          Logger.Warn(`[GRPC_ROUTER] Backpressure triggered for client stream ${streamId}`);
           call.pause();
           setTimeout(() => call.resume(), 100);
         }
       });
 
       // 处理流结束
-      call.on('end', () => {
+      call.on('end', async () => {
         clearTimeout(timeout);
-        Logger.Debug(`Client stream ${streamId} ended with ${messages.length} messages`);
+        Logger.Debug(`[GRPC_ROUTER] Client stream ${streamId} ended with ${messages.length} messages`);
         
-        // 处理所有接收到的消息
-        app.callback("grpc", (ctx) => {
+        try {
+          // 直接创建 context，不再调用 app.callback
+          const ctx = app.createContext(call, callback, 'grpc');
           ctx.streamMessages = messages;
+          
+          // 获取控制器实例并执行
           const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
-          return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.composedMiddleware);
-        })(call, callback);
-        
-        this.streamManager.removeStream(streamId);
+          const result = await Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.composedMiddleware);
+          
+          // 调用 callback 返回结果
+          const response = result || ctx.body;
+          callback(null, response);
+          
+          this.streamManager.removeStream(streamId);
+        } catch (error) {
+          Logger.Error(`[GRPC_ROUTER] Error processing client stream: ${error}`);
+          callback(error as Error);
+          this.streamManager.removeStream(streamId);
+        }
       });
 
       call.on('error', (error) => {
-        Logger.Error(`Client stream ${streamId} error:`, error);
+        Logger.Error(`[GRPC_ROUTER] Client stream ${streamId} error:`, error);
         clearTimeout(timeout);
         callback(error);
         this.streamManager.removeStream(streamId);
       });
 
       call.on('cancelled', () => {
-        Logger.Debug(`Client stream ${streamId} cancelled`);
+        Logger.Debug(`[GRPC_ROUTER] Client stream ${streamId} cancelled`);
         clearTimeout(timeout);
         this.streamManager.removeStream(streamId);
       });
       
     } catch (error) {
-      Logger.Error(`Error in client streaming: ${error}`);
+      Logger.Error(`[GRPC_ROUTER] Error in client streaming: ${error}`);
       callback(error as Error);
       this.streamManager.removeStream(streamId);
     }
@@ -677,17 +714,17 @@ export class GrpcRouter implements KoattyRouter {
     const streamState = this.streamManager.registerStream(streamId, GrpcStreamType.BIDIRECTIONAL_STREAMING);
     
     try {
-      Logger.Debug(`Handling bidirectional streaming call for ${ctlItem.name}.${ctlItem.method}`);
+      Logger.Debug(`[GRPC_ROUTER] Handling bidirectional streaming call for ${ctlItem.name}.${ctlItem.method}`);
       
       // 设置流超时
       const timeout = setTimeout(() => {
-        Logger.Warn(`Bidirectional stream ${streamId} timeout`);
+        Logger.Warn(`[GRPC_ROUTER] Bidirectional stream ${streamId} timeout`);
         call.end();
         this.streamManager.removeStream(streamId);
       }, this.options.streamConfig?.streamTimeout || 300000);
 
       // 处理数据接收
-      call.on('data', (data: any) => {
+      call.on('data', async (data: any) => {
         this.streamManager.updateStream(streamId, { 
           messageCount: streamState.messageCount + 1,
           bufferSize: streamState.bufferSize + JSON.stringify(data).length
@@ -695,17 +732,20 @@ export class GrpcRouter implements KoattyRouter {
         
         // 检查背压
         if (this.streamManager.isBackpressureTriggered(streamId)) {
-          Logger.Warn(`Backpressure triggered for bidirectional stream ${streamId}`);
+          Logger.Warn(`[GRPC_ROUTER] Backpressure triggered for bidirectional stream ${streamId}`);
           call.pause();
           setTimeout(() => call.resume(), 100);
         }
 
-        // 为每个消息创建处理上下文
-        app.callback("grpc", (ctx) => {
+        try {
+          // 直接创建 context，不再调用 app.callback
+          const ctx = app.createContext(call, null, 'grpc');
           ctx.streamMessage = data;
+          
+          // 添加流写入方法到上下文
           ctx.writeStream = (responseData: any) => {
             if (this.streamManager.isBackpressureTriggered(streamId)) {
-              Logger.Warn(`Write backpressure triggered for stream ${streamId}`);
+              Logger.Warn(`[GRPC_ROUTER] Write backpressure triggered for stream ${streamId}`);
               return false;
             }
             call.write(responseData);
@@ -718,34 +758,37 @@ export class GrpcRouter implements KoattyRouter {
             this.streamManager.removeStream(streamId);
           };
 
+          // 获取控制器实例并执行
           const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
-          return Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.composedMiddleware);
-        })(call, () => {});
+          await Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.composedMiddleware);
+        } catch (error) {
+          Logger.Error(`[GRPC_ROUTER] Error processing bidirectional stream message: ${error}`);
+        }
       });
 
       // 处理流结束
       call.on('end', () => {
-        Logger.Debug(`Bidirectional stream ${streamId} ended`);
+        Logger.Debug(`[GRPC_ROUTER] Bidirectional stream ${streamId} ended`);
         clearTimeout(timeout);
         call.end();
         this.streamManager.removeStream(streamId);
       });
 
       call.on('error', (error) => {
-        Logger.Error(`Bidirectional stream ${streamId} error:`, error);
+        Logger.Error(`[GRPC_ROUTER] Bidirectional stream ${streamId} error:`, error);
         clearTimeout(timeout);
         call.end();
         this.streamManager.removeStream(streamId);
       });
 
       call.on('cancelled', () => {
-        Logger.Debug(`Bidirectional stream ${streamId} cancelled`);
+        Logger.Debug(`[GRPC_ROUTER] Bidirectional stream ${streamId} cancelled`);
         clearTimeout(timeout);
         this.streamManager.removeStream(streamId);
       });
       
     } catch (error) {
-      Logger.Error(`Error in bidirectional streaming: ${error}`);
+      Logger.Error(`[GRPC_ROUTER] Error in bidirectional streaming: ${error}`);
       call.end();
       this.streamManager.removeStream(streamId);
     }
@@ -760,12 +803,17 @@ export class GrpcRouter implements KoattyRouter {
     app: Koatty,
     ctlItem: any
   ): void {
-    const streamType = this.detectStreamType(call);
+    Logger.Debug(`[GRPC_ROUTER] handleStreamCall called for ${ctlItem.name}.${ctlItem.method}`);
     
-    // 检查并发流限制
-    if (this.streamManager.getActiveStreamCount() >= (this.options.streamConfig?.maxConcurrentStreams || 100)) {
-      Logger.Warn('Maximum concurrent streams reached');
-      if (streamType === GrpcStreamType.UNARY) {
+    // 检测流类型
+    const streamType = this.detectStreamType(call);
+    Logger.Debug(`[GRPC_ROUTER] Detected stream type: ${streamType}`);
+    
+    // 检查并发流限制（只对真正的流调用进行限制）
+    if (streamType !== GrpcStreamType.UNARY && 
+        this.streamManager.getActiveStreamCount() >= (this.options.streamConfig?.maxConcurrentStreams || 100)) {
+      Logger.Warn('[GRPC_ROUTER] Maximum concurrent streams reached');
+      if (callback) {
         callback(new Error('Server busy'));
       } else {
         (call as any).end();
@@ -773,10 +821,11 @@ export class GrpcRouter implements KoattyRouter {
       return;
     }
 
-    Logger.Debug(`Detected stream type: ${streamType} for ${ctlItem.name}.${ctlItem.method}`);
+    Logger.Debug(`[GRPC_ROUTER] Processing stream type: ${streamType} for ${ctlItem.name}.${ctlItem.method}`);
 
     switch (streamType) {
       case GrpcStreamType.UNARY:
+        Logger.Debug(`[GRPC_ROUTER] Calling handleUnaryCall for ${ctlItem.name}.${ctlItem.method}`);
         this.handleUnaryCall(call, callback, app, ctlItem);
         break;
       case GrpcStreamType.SERVER_STREAMING:
@@ -790,9 +839,7 @@ export class GrpcRouter implements KoattyRouter {
         break;
       default:
         Logger.Error(`Unknown stream type: ${streamType}`);
-        if (callback) {
-          callback(new Error('Unknown stream type'));
-        }
+        (call as any).end();
     }
   }
 
@@ -804,12 +851,16 @@ export class GrpcRouter implements KoattyRouter {
   async LoadRouter(app: Koatty, list: any[]) {
     try {
       const pdef = LoadProto(this.options.protoFile);
+      
       const services = ListServices(pdef);
+      
       const ctls: CtlInterface = {};
 
       for (const n of list) {
+        Logger.Debug(`[GRPC_ROUTER] Processing controller: ${n}`);
         const ctlClass = IOC.getClass(n, "CONTROLLER");
         const ctlRouters = await injectRouter(app, ctlClass, this.options.protocol);
+        Logger.Debug(`[GRPC_ROUTER] Controller ${n} routers:`, ctlRouters ? Object.keys(ctlRouters).length : 0);
         if (!ctlRouters) continue;
 
         // 传递 protoFile 给 payload 解析器，用于可能的自动解码
@@ -825,24 +876,39 @@ export class GrpcRouter implements KoattyRouter {
             params: ctlParams[router.method],
             composedMiddleware: router.composedMiddleware
           };
+          Logger.Debug(`[GRPC_ROUTER] Registered controller route: "${router.path}" => ${n}.${router.method}`);
         }
       }
 
-      for (const si of services) {
+
+      for (const si of services) {        
         if (!si.service || si.handlers.length === 0) {
-          Logger.Warn('Ignore', si.name, 'which is an empty service');
+          Logger.Warn(`[GRPC_ROUTER] Ignore ${si.name} which is an empty service`);
           continue;
         }
 
+        Logger.Debug(`[GRPC_ROUTER] Processing gRPC service: ${si.name} with ${si.handlers.length} handlers`);
+
+        // Register placeholder implementations for gRPC service
+        // These are just shells - the actual routing is handled by middleware
         const impl: Record<string, UntypedHandleCall> = {};
         for (const handler of si.handlers) {
           const path = parsePath(handler.path);
+          Logger.Debug(`[GRPC_ROUTER] Looking for handler: "${handler.path}" (parsed: "${path}") => handler name: "${handler.name}"`);
           const ctlItem = ctls[path];
-          if (!ctlItem) continue;
+          if (!ctlItem) {
+            Logger.Warn(`[GRPC_ROUTER] ❌ No matching controller route found for gRPC handler "${handler.path}" (parsed: "${path}")`);
+            continue;
+          }
 
-          Logger.Debug(`Register request mapping: ["${path}" => ${ctlItem.name}.${ctlItem.method}]`);
+          Logger.Debug(`[GRPC_ROUTER] ✅ Register request mapping: ["${path}" => ${ctlItem.name}.${ctlItem.method}]`);
+          
+          // Register a placeholder handler
+          // This handler will never be called because koatty_serve will call app.callback instead
+          // But we still need to register it so grpc server knows this method exists
           impl[handler.name] = (call: IRpcServerCall<any, any>, callback: IRpcServerCallback<any>) => {
-            this.handleStreamCall(call, callback, app, ctlItem);
+            Logger.Warn(`[GRPC_ROUTER] ⚠️ Placeholder handler called for: ${handler.name} - this should not happen!`);
+            callback(new Error('This handler should not be called - routing should go through middleware'));
           };
         }
         
@@ -852,22 +918,20 @@ export class GrpcRouter implements KoattyRouter {
           
           // Handle both single server and multi-protocol server
           const server = app.server as any;
+
           let grpcServer = null;
           
           // Check if server is an array (multi-protocol mode)
           if (Helper.isArray(server)) {
-            // Multi-protocol server: app.server is array of SingleProtocolServer instances
-            Logger.Debug(`Detecting gRPC server in multi-protocol array mode (${server.length} servers)`);
-            for (let i = 0; i < server.length; i++) {
-              const s = server[i];
+            // Multi-protocol server: find gRPC server instance in array
+            for (const s of server) {
               const protocol = s.options?.protocol || s.protocol;
               if (protocol === 'grpc' && Helper.isFunction(s.RegisterService)) {
                 grpcServer = s;
-                Logger.Debug(`Found gRPC server instance at array index ${i}`);
                 break;
               }
             }
-          } else if (Helper.isFunction(server?.getAllServers)) {
+          } else if (Helper.isFunction(server.getAllServers)) {
             // Alternative multi-protocol structure with getAllServers method
             const allServers = server.getAllServers();
             if (allServers && allServers.size > 0) {
@@ -879,7 +943,7 @@ export class GrpcRouter implements KoattyRouter {
                 }
               });
             }
-          } else if (Helper.isFunction(server?.RegisterService)) {
+          } else if (Helper.isFunction(server.RegisterService)) {
             // Single protocol gRPC server
             grpcServer = server;
           }
@@ -887,20 +951,67 @@ export class GrpcRouter implements KoattyRouter {
           // Register service to gRPC server
           if (grpcServer) {
             grpcServer.RegisterService({ service: si.service, implementation: impl });
-            Logger.Debug(`Successfully registered gRPC service: ${si.name} with ${Object.keys(impl).length} handlers`);
           } else {
-            Logger.Error(`Failed to find gRPC server instance for service registration: ${si.name}`);
+            Logger.Error(`[GRPC_ROUTER] ❌ Failed to find gRPC server instance for service registration: ${si.name}`);
           }
         } else {
-          Logger.Warn(`Skip registering service ${si.name}: no matching controller handlers found`);
+          Logger.Warn(`[GRPC_ROUTER] Skip registering service ${si.name}: no matching controller handlers found`);
         }
       }
       
+      // Register gRPC router middleware to app
+      // Similar to HTTP router, this middleware handles routing for gRPC protocol
+      
+      app.use(async (ctx: KoattyContext, next: any) => {
+        // Only handle gRPC protocol
+        if (ctx.protocol !== 'grpc') {
+          await next();
+          return;
+        }
+        
+        Logger.Debug('[GRPC_ROUTER] gRPC router middleware executing', {
+          protocol: ctx.protocol,
+          rpc: ctx.rpc
+        });
+        
+        // Get method path from ctx.rpc (call object)
+        // The call object should have a path property like "/Hello/SayHello"
+        const methodPath = (ctx.rpc as any)?.path || (ctx.rpc as any)?.call?.path;
+        
+        if (!methodPath) {
+          Logger.Error('[GRPC_ROUTER] No method path found in ctx.rpc');
+          throw new Error('gRPC method path not found');
+        }
+        
+        Logger.Debug(`[GRPC_ROUTER] Looking up controller for method: ${methodPath}`);
+        
+        // Find matching controller
+        const ctlItem = ctls[methodPath];
+        if (!ctlItem) {
+          Logger.Error(`[GRPC_ROUTER] No controller found for method: ${methodPath}`);
+          throw new Error(`gRPC method not implemented: ${methodPath}`);
+        }
+        
+        Logger.Debug(`[GRPC_ROUTER] Found controller: ${ctlItem.name}.${ctlItem.method}`);
+        
+        // Execute controller
+        const ctl = IOC.getInsByClass(ctlItem.ctl, [ctx]);
+        const result = await Handler(app, ctx, ctl, ctlItem.method, ctlItem.params, undefined, ctlItem.composedMiddleware);
+        
+        // Set result to ctx.body
+        ctx.body = result;
+        
+        Logger.Debug('[GRPC_ROUTER] Controller execution completed', {
+          method: methodPath,
+          hasResult: !!result
+        });
+      });
+      
+      
       // Protocol Isolation Note:
-      // gRPC services are registered directly to the gRPC server instance,
-      // not through Koa middleware chain, so protocol isolation is naturally enforced.
-      // Only gRPC protocol requests will reach gRPC server.
-      Logger.Debug('gRPC services registered (protocol-isolated by server instance)');
+      // gRPC router now works through Koa middleware chain, just like HTTP router
+      // The gRPC server calls app.callback("grpc") which executes this middleware
+      Logger.Debug('gRPC router middleware registered (integrated with middleware chain)');
     } catch (err) {
       Logger.Error(err);
     }
