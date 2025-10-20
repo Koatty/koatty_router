@@ -1013,7 +1013,7 @@ export class GrpcRouter implements KoattyRouter {
       // The gRPC server calls app.callback("grpc") which executes this middleware
       Logger.Debug('gRPC router middleware registered (integrated with middleware chain)');
     } catch (err) {
-      throw err; // Re-throw to propagate error to upper layer
+      Logger.Error(err);
     }
   }
 
