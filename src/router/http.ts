@@ -125,7 +125,7 @@ export class HttpRouter implements KoattyRouter {
       
       Logger.Debug('HTTP router middleware registered (optimized)');
     } catch (err) {
-      Logger.Error(err);
+      throw err; // Re-throw to propagate error to upper layer
     }
   }
 

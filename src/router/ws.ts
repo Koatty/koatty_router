@@ -277,7 +277,7 @@ export class WebsocketRouter implements KoattyRouter {
       
       Logger.Debug('WebSocket router middleware registered (optimized)');
     } catch (err) {
-      Logger.Error(err);
+      throw err; // Re-throw to propagate error to upper layer
     }
   }
 

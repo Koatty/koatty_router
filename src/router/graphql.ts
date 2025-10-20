@@ -204,7 +204,7 @@ export class GraphQLRouter implements KoattyRouter {
 
       Logger.Debug('GraphQL router middleware registered (optimized)');
     } catch (err) {
-      Logger.Error(err);
+      throw err; // Re-throw to propagate error to upper layer
     }
   }
 
