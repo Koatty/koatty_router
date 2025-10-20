@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.20.0-8](https://github.com/koatty/koatty_router/compare/v1.20.0-7...v1.20.0-8) (2025-10-20)
+
+
+### Bug Fixes
+
+* propagate errors instead of just logging them ([cad6701](https://github.com/koatty/koatty_router/commit/cad6701e91ba5e518bc07e31176fe6a4ffd7b1ec))
+* replace error throwing with logging in routers ([69127a8](https://github.com/koatty/koatty_router/commit/69127a84dfe0406f47e6e210c5983ac8fb6856e6))
+
 ## [1.20.0-7](https://github.com/koatty/koatty_router/compare/v1.20.0-6...v1.20.0-7) (2025-10-19)
 
 
