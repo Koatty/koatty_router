@@ -95,7 +95,7 @@
     "koatty_lib": "^1.x.x",
     "koatty_logger": "^2.x.x",
     "koatty_proto": "^1.x.x",
-    "koatty_validation": "^1.x.x",
+    "koatty_validation": "^1.6.1",
     "lru-cache": "^11.1.0",
     "on-finished": "^2.4.1",
     "raw-body": "^3.0.0"
